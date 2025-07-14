@@ -2,7 +2,7 @@ name: "🛠️  FourKa_FE 리팩터링 이슈 생성"
 description: "✨  FourKa_FE Repo에 새로운 이슈를 생성합니다."
 title: "[HOTFIX] 📌 이슈 제목을 입력해주세요"
 labels:
-  - refactor
+  - hotfix
 body:
 
   - type: input
