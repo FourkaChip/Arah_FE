@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "../styles/globals.scss";
-import "../components/Modal/Buttons/ModalConfirmButton.scss";
+import "../components/Modal/Buttons/ModalButton.scss";
 import { Inter, Roboto_Mono } from "next/font/google";
 
 const inter = Inter({

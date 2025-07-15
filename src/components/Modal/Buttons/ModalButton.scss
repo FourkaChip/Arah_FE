@@ -1,0 +1,31 @@
+// 컴포넌트용 bulma css 사용 예시 코드입니다.
+@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
+
+$primary: #232D64;
+
+
+.common-button {
+  border-radius: 8px;
+  padding: 12px 32px;
+  width: 154px;
+  height: 45px;
+  font-weight: bold;
+  color: white;
+  background-color: $primary;
+  align-content: center;
+
+  &.cancel {
+    background-color: #E9E9E9;
+    color: #232D64;
+  }
+
+  &.delete-data {
+    background-color: #EB1D1D;
+    color: #F5F5F5;
+  }
+}
+
+///* Inside auto layout */
+//flex: none;
+//order: 2;
+//flex-grow: 0;
