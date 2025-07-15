@@ -1,3 +1,4 @@
+// 관리자용 서버 컴포넌트. 여기서 우선적으로 공통 컴포넌트 테스트 예정입니다.
 import styles from 'src/app/page.module.css';
 import ClientModalTrigger from "@/components/utils/ModalTrigger/ClientModalTrigger";
 
