@@ -1,3 +1,5 @@
+@import '../../node_modules/bulma/sass/index';
+//여기서 반드시 bulma/sass 파일을 적용해 주어야 글로벌 scss에 스타일이 적용됩니다!
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -19,7 +21,7 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: work sans sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

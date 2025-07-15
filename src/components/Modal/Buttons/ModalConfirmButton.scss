@@ -1,0 +1,27 @@
+// 컴포넌트용 bulma css 사용 예시 코드입니다.
+@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
+//@use "functions" as *;
+//
+//// Override variable BEFORE importing the module that uses it
+$primary: #232D64;
+//
+//@use "initial-variables" as *;
+//@use "derived-variables" as derived;
+//@use "mixins" as *;
+//@use "generic";
+//@use "button";
+
+.common-agree-button {
+  border-radius: 20px;
+  padding: 12px 32px;
+  background-color: $primary;
+  color: white;
+  width: 205px;
+  height: 60px;
+  font-weight: bold;
+}
+
+///* Inside auto layout */
+//flex: none;
+//order: 2;
+//flex-grow: 0;
