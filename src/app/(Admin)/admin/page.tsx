@@ -9,7 +9,7 @@ export default function Home() {
                 {/*<button className="button is-primary">Return to Home</button>*/}
                 <h1>Test Route Page</h1>
                 <button>클릭시 모달 열림</button>
-                {/*<ModalWindow type='delete' label='삭제하시겠습니까?'/>*/}
+                {/*<ModalDefault type='delete' label='삭제하시겠습니까?'/>*/}
                 <ClientModalTrigger
                     type="delete-data"
                     title="답변이 삭제되었습니다."

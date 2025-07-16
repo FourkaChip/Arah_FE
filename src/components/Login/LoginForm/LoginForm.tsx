@@ -6,12 +6,14 @@ import {usePathname} from 'next/navigation';
 import LoginButton from '@/components/Login/Buttons/LoginButton';
 import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
+import ModalInput from "@/components/Modal/ModalInput/ModalInput";
 
 export default function LoginForm() {
     const pathname = usePathname();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [companyName, setCompanyName] = useState('');
+    const [showModal, setShowModal] = useState(false);
 
     // dummydata 기반 임시 기업명 검색용 변수
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -42,7 +44,11 @@ export default function LoginForm() {
 
     const handleLogin = () => {
         console.log('로그인 시도:', {companyName, email, password});
-        // 여기에 실제 로그인 로직 추가하기
+
+        if (pathname === '/master/login' && companyName && email && password) {
+            setShowModal(true);
+        }
+
     };
 
 
@@ -56,10 +62,9 @@ export default function LoginForm() {
                             id="companyName"
                             name="companyName"
                             type="companyName"
-                            placeholder="이메일을 입력해 주세요."
+                            placeholder="등록하신 기업명을 입력해 주세요."
                             value={companyName}
                             className="login-form-input"
-                            // onChange={(e) => setCompanyName(e.target.value)}/>
                             onChange={handleCompanyInputChange}
                         />
                         {showSuggestions && suggestions.length > 0 && (
@@ -107,6 +112,13 @@ export default function LoginForm() {
                 </p>
                 <LoginButton label="로그인" onClick={handleLogin}/>
             </form>
+            {showModal && (
+                <ModalInput
+                    title="마스터 2차 인증"
+                    description="등록된 이메일로 전송된 인증코드를 입력해 주세요."
+                    onClose={() => setShowModal(false)}
+                />
+            )}
         </>
     );
 }

@@ -1,10 +1,11 @@
 // 공통 모달창 컴포넌트. 여기에 상황별 콘텐츠를 넣어서 사용합니다.
 'use client';
-import './ModalWindow.scss';
+import './ModalDefault.scss';
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
-import { ModalWindowProps} from "@/types/modals";
+import ModalLayout from "@/components/Modal/ModalLayout";
+import { ModalWindowProps } from "@/types/modals";
 
-export default function ModalWindow({ type, label, onClose }: ModalWindowProps) {
+export default function ModalDefault({ type, label, onClose }: ModalWindowProps) {
     let description = '';
     let buttonLabel = '';
     let buttonType = type; // 그대로 넘기기
@@ -25,19 +26,15 @@ export default function ModalWindow({ type, label, onClose }: ModalWindowProps) 
     }
 
     return (
-        <div className="modal-window">
-            <div className="modal-dialog">
-                <button className="modal-close" onClick={onClose}>×</button>
-                <h2 className="modal-title">{label}</h2>
-                <p className="modal-description">{description}</p>
-                <div className="modal-buttons">
-                    <ModalButton
-                        type={buttonType}
-                        label={buttonLabel}
-                        onClick={onClose}
-                    />
-                </div>
+        <ModalLayout title={label} onClose={onClose}>
+            <p className="modal-description">{description}</p>
+            <div className="modal-buttons">
+                <ModalButton
+                    type={buttonType}
+                    label={buttonLabel}
+                    onClick={onClose}
+                />
             </div>
-        </div>
+        </ModalLayout>
     );
 }

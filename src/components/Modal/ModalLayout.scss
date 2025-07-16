@@ -1,5 +1,5 @@
 // 컴포넌트용 bulma css 사용 예시 코드입니다.
-@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
+@use "./../../../node_modules/bulma/sass/utilities/functions" as *;
 //@use "functions" as *;
 //
 //// Override variable BEFORE importing the module that uses it
@@ -23,8 +23,8 @@ $primary: #232D64;
   position: absolute;
   width: 465px;
   height: 229px;
-  left: calc(50% - 465px/2 + 0.5px);
-  top: calc(50% - 229px/2 + 0.5px);
+  left: calc(50% - 465px / 2 + 0.5px);
+  top: calc(50% - 229px / 2 + 0.5px);
 
   background: #FFFFFF;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -62,6 +62,12 @@ $primary: #232D64;
   font-size: 24px;
   cursor: pointer;
   color: #999;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
 }
 
 ///* Inside auto layout */

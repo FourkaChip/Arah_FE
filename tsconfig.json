@@ -20,8 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@bulma/*": ["node_modules/bulma/sass/*"]
+      "@/*": ["./src/*"], // 절대 경로를 지정한 것!
+      "@bulma/*": ["node_modules/bulma/sass/*"] // bulma css 사용을 위해 sass 위치를 지정해준 것!
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
