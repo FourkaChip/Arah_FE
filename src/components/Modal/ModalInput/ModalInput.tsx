@@ -11,6 +11,7 @@ export default function ModalInput({ title, description, onClose }: ModalLayoutP
         <ModalLayout
             title="마스터 2차 인증"
             description="등록된 이메일로 전송된 인증코드를 입력하세요"
+            className="tall-modal"
             footer={
                 <ModalButton
                     type={'default'}
@@ -24,7 +25,7 @@ export default function ModalInput({ title, description, onClose }: ModalLayoutP
                 <h2 className="modal-input-title">인증 코드</h2>
                 <input className="input" placeholder="인증코드 입력" />
             </label>
-            <p>이메일을 받지 못하셨나요? <a>재요청</a></p>
+            <p className="modal-input-noemail">이메일을 받지 못하셨나요? <a>재요청</a></p>
         </ModalLayout>
     );
 }

@@ -30,7 +30,7 @@ export default function LoginForm() {
             return;
         }
 
-        const filtered = dummyCompanies.filter((company:string) => company.toLowerCase().includes(input.toLowerCase()));
+        const filtered = dummyCompanies.filter((company: string) => company.toLowerCase().includes(input.toLowerCase()));
         setSuggestions(filtered);
         setShowSuggestions(true);
     }
@@ -79,7 +79,7 @@ export default function LoginForm() {
                                     </li>
                                 ))}
                             </ul>
-                            )}
+                        )}
                     </label>
                 )}
 
@@ -110,6 +110,16 @@ export default function LoginForm() {
                 <p className="login-form-missing">
                     비밀번호를 잊으셨다면? <a href="#">여기를 클릭하세요</a>
                 </p>
+                {pathname === '/admin/login' && (
+                    <div className="login-form-to-master">
+                        <a href="/master/login">마스터 계정으로 로그인하기</a>
+                    </div>
+                )}
+                {pathname === '/master/login' && (
+                    <div className="login-form-to-master">
+                        <a href="/admin/login">관리자 계정으로 로그인하기</a>
+                    </div>
+                )}
                 <LoginButton label="로그인" onClick={handleLogin}/>
             </form>
             {showModal && (

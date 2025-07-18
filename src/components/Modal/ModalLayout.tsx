@@ -4,13 +4,18 @@ import React from 'react';
 import './ModalLayout.scss';
 import {ModalLayoutProps} from "@/types/modals";
 
-const ModalLayout = ({title, description, onClose, children, footer}: ModalLayoutProps) => {
+const ModalLayout = ({title, description, onClose, children, footer, className}: ModalLayoutProps & { className?: string }) => {
     return (
-        <div className="modal-window">
-            <div className="modal-dialog">
+        <div className={`modal-window ${className ?? ''}`}>
+            {/* className을 분기하여 상황별로 다른 레이아웃을 적용할 수 있도록 하였습니다. */}
+            <div className={`modal-dialog ${className ?? ''}`}>
                 <button className="modal-close" onClick={onClose}>×</button>
-                <h2 className="modal-title">{title}</h2>
-                {description && <p className="modal-description">{description}</p>}
+                <h2 className={`modal-title ${className ? `${className}-title` : ''}`}>{title}</h2>
+                {description && (
+                    <p className={`modal-description ${className ? `${className}-description` : ''}`}>
+                        {description}
+                    </p>
+                )}
                 <div className="modal-content">{children}</div>
                 {footer && <div className="modal-footer">{footer}</div>}
             </div>
