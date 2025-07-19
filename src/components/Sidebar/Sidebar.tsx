@@ -1,23 +1,7 @@
 "use client";
 import { useState } from 'react';
 import './Sidebar.scss';
-
-// ===== 타입 정의 =====
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: string;
-  subItems?: SubMenuItem[];
-}
-
-interface SubMenuItem {
-  id: string;
-  label: string;
-}
-
-interface SidebarProps {
-  className?: string;
-}
+import { MenuItem, SidebarProps } from '../../types/sidebar';
 
 // ===== 메뉴 데이터 =====
 const menuItems: MenuItem[] = [
