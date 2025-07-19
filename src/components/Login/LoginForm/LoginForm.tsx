@@ -7,6 +7,7 @@ import LoginButton from '@/components/Login/Buttons/LoginButton';
 import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/Modal/ModalInput/ModalInput";
+import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
 
 export default function LoginForm() {
     const pathname = usePathname();
@@ -14,6 +15,7 @@ export default function LoginForm() {
     const [password, setPassword] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // dummydata 기반 임시 기업명 검색용 변수
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -111,7 +113,20 @@ export default function LoginForm() {
                         onChange={(e) => setPassword(e.target.value)}/>
                 </label>
                 <p className="login-form-missing">
-                    비밀번호를 잊으셨다면? <a href="#">여기를 클릭하세요</a>
+                    비밀번호를 잊으셨다면?{' '}
+                    {pathname === '/master/login' ? (
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setShowPassword(true);
+                            }}
+                        >
+                            여기를 클릭하세요
+                        </a>
+                    ) : (
+                        <a href="#">여기를 클릭하세요</a>
+                    )}
                 </p>
                 {pathname === '/admin/login' && (
                     <div className="login-form-to-master">
@@ -131,6 +146,12 @@ export default function LoginForm() {
                     title="마스터 2차 인증"
                     description="등록된 이메일로 전송된 인증코드를 입력해 주세요."
                     onClose={() => setShowModal(false)}
+                />
+            )}
+            {showPassword && (
+                <ModalInputFilled
+                    type="password-lost"
+                    onClose={() => setShowPassword(false)}
                 />
             )}
         </>
