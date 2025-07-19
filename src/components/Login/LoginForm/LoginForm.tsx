@@ -48,6 +48,9 @@ export default function LoginForm() {
         if (pathname === '/master/login' && companyName && email && password) {
             setShowModal(true);
         }
+        if (pathname === '/admin/login' && email && password) {
+            window.location.href = '/admin/main';
+        }
 
     };
 
@@ -124,6 +127,7 @@ export default function LoginForm() {
             </form>
             {showModal && (
                 <ModalInput
+                    modalType="auth"
                     title="마스터 2차 인증"
                     description="등록된 이메일로 전송된 인증코드를 입력해 주세요."
                     onClose={() => setShowModal(false)}
