@@ -56,3 +56,21 @@ export interface ModalDepartmentProps {
 export interface ModalUploadProps {
     onClose: () => void;
 }
+
+// ModalFAQProps는 FAQ 등록 모달에서 사용되는 속성 타입입니다.
+export interface ModalFAQProps {
+    onClose: () => void;
+    onSubmit: (data: {
+        category: string;
+        question: string;
+        answer: string;
+    }) => void;
+}
+
+// CustomDropDownProps는 커스텀 드롭다운 컴포넌트에서 사용되는 속성 타입입니다.
+export interface CustomDropDownProps {
+    value: string;
+    options: string[];
+    onChange: (value: string) => void;
+    onAddOption?: () => void;
+}

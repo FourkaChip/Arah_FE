@@ -1,8 +1,7 @@
 import Image from "next/image";
-import LoginForm from "@/components/Login/LoginForm/LoginForm";
 import './MainPage.scss';
-import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
 import ModalUploadTrigger from "@/components/utils/ModalTrigger/ModalUploadTrigger";
+import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 
 export default function AdminMainPage() {
     return (
@@ -11,6 +10,7 @@ export default function AdminMainPage() {
             <h1 className="login-title">관리자 페이지</h1>
             {/* 여기에 데이터셋 관리 페이지가 들어갈 예정입니다. */}
             <ModalUploadTrigger buttonText={"데이터셋 업로드"}/>
+            <ModalFAQTrigger/>
         </div>
     );
 }
