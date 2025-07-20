@@ -2,7 +2,7 @@
 import React from "react";
 
 // ModalButtonType은 모달에서 버튼의 유형을 정의합니다.
-export type ModalButtonType = 'default' | 'cancel' | 'delete-data';
+export type ModalButtonType = 'default' | 'cancel' | 'delete-data' | 'department';
 
 // ModalType은 모달의 종류를 정의합니다.
 export type ModalType =
@@ -50,4 +50,9 @@ export interface ModalDepartmentProps {
     defaultUser?: any;
     defaultChecked?: string[];
     onClose?: () => void;
+}
+
+// ModalUploadProps는 데이터셋 업로드 모달에서 사용되는 속성 타입입니다.
+export interface ModalUploadProps {
+    onClose: () => void;
 }
