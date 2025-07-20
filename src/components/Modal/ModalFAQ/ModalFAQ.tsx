@@ -34,8 +34,8 @@ export default function ModalFAQ({onClose, onSubmit}: ModalFAQProps) {
         <div className="modal-window faq-modal">
             <div className="modal-dialog faq-modal">
                 <button className="modal-close" onClick={onClose}>×</button>
-                <h2 className="modal-title">FAQ 등록</h2>
-                <p className="modal-subtitle">신규 FAQ를 등록합니다.</p>
+                <h2 className="modal-title faq-modal">FAQ 등록</h2>
+                <p className="modal-subtitle faq-modal">신규 FAQ를 등록합니다.</p>
 
                 <div className="form-section">
                     <label className="faq-field-label">
