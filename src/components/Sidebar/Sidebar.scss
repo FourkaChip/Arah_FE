@@ -1,0 +1,110 @@
+:root {
+  // 컬러 변수 정의 (디자인 일관성 & 테마 적용 대비)
+  --sidebar-bg: #fff;
+  --sidebar-content-bg: #F9F9F9;
+  --sidebar-border: #e8e8e8;
+  --text-primary: #828282;
+  --text-active: #232D64;
+  --bg-hover: #f5f5f5;
+  --bg-active: #f5f5f5;
+}
+
+
+// 사이드바 본체
+.sidebar-aside {
+  background-color: var(--sidebar-content-bg);
+  border-radius: 0 100px 0 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 250px;
+  height: 100vh;
+
+  
+  // 메뉴 리스트
+  .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    // 메인 메뉴 아이템
+    li {
+      margin-bottom: 0.5rem;
+      list-style: none;
+
+      a {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+
+        // ────── 호버 상태
+        &:hover {
+          color: var(--text-active);
+
+          .icon {
+            color: var(--text-active);
+          }
+        }
+
+        // ────── 활성 메뉴
+        &.is-active {
+          color: var(--text-active);
+          font-weight: 600;
+
+          .icon {
+            color: var(--text-active);
+          }
+        }
+
+        // ────── 메뉴 아이콘
+        .icon {
+          margin-right: 0.75rem;
+          color: var(--text-secondary);
+          transition: color 0.2s ease;
+          width: 16px;
+          text-align: center;
+
+          &.is-small {
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      // 서브메뉴 영역
+      ul {
+        list-style: none;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        border-left: 2px solid var(--sidebar-border);
+        padding-left: 1rem;
+
+        li {
+          margin-bottom: 0.25rem;
+          list-style: none;
+
+          a {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 유틸리티 클래스
+.is-active {
+  display: block !important;
+}
+
+// 링크 호버 이동 효과
+.menu-list a {
+  &:hover {
+    transform: translateX(2px);
+  }
+}
