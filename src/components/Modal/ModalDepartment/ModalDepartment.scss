@@ -1,0 +1,127 @@
+@use "bulma/sass/utilities" as *;
+@use "bulma/sass/elements/button";
+@use "bulma/sass/form";
+
+.modal-window.department-modal {
+  color-scheme: light !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-dialog.department-modal {
+  width: 640px;
+  height: 574px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #6b6b6b;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #000;
+  }
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-description {
+  font-size: 16px;
+  color: #6b6b6b;
+  margin-bottom: 24px;
+}
+
+.department-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.department-search-input {
+  @extend .input;
+  background-color: #ffffff;
+  color: #232D64;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+
+  &::placeholder {
+    color: #232D64;
+  }
+}
+
+.department-checkbox-input {
+  height: 24px;
+  accent-color: #232D64;
+  cursor: pointer;
+}
+
+.department-search-button {
+  @extend .button;
+  @extend .is-primary;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background-color: #202452;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.department-datagrid {
+  flex: 1;
+
+  .MuiDataGrid-root {
+    border: none;
+  }
+
+  .MuiDataGrid-columnHeaders {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .MuiDataGrid-cell {
+    font-size: 14px;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.button.is-dark {
+  background-color: #232D64;
+  color: white;
+
+  &:hover {
+    background-color: darken(#232D64, 5%);
+  }
+}

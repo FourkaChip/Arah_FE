@@ -1,0 +1,20 @@
+#admin-main-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #fff;
+
+  .main-title {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 20px 0 8px;
+  }
+
+  .main-description {
+    color: #888;
+    font-size: 20px;
+    margin-bottom: 32px;
+  }
+}

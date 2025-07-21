@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
+import "../styles/globals.scss";
+import "../components/Modal/Buttons/ModalButton.scss";
+import { Inter, Roboto_Mono } from "next/font/google";
 import Sidebar from "@/components/Sidebar/Sidebar";
-import "./layout.scss";
-import type { Metadata } from 'next';
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
+});
 
 // ===== 메타데이터 설정 =====
 export const metadata: Metadata = {

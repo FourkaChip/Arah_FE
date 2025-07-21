@@ -1,0 +1,145 @@
+@use "bulma/sass/elements/content";
+
+$content-heading-color: #2E70E8;
+
+.modal-window.commit-modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.modal-dialog.commit-modal {
+  width: 563px;
+  height: 559px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.modal-title.commit-modal {
+  text-align: center;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.modal-subtitle.commit-modal {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0 10px 0;
+}
+
+.commit-message {
+  background: #f2f2f2;
+  padding: 6px;
+  border-radius: 8px;
+  margin-top: 4px;
+  font-weight: 500;
+  color: #232D64;
+}
+
+.commit-message strong {
+  color: $content-heading-color;
+  font-weight: bolder;
+  font-size: 16px;
+  padding: 0 0 0 10px;
+}
+
+.commit-message span {
+  color: #000000;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 0 0 0 10px;
+}
+
+.commit-content {
+  margin: 8px 5px;
+  font-size: 15px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 8px;
+  overflow-y: scroll;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.commit-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.commit-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.diff-title {
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.highlight {
+  color: #2DB400;
+}
+
+.diff-box {
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 8px 5px;
+  font-size: 14px;
+  font-weight: 500;
+  max-height: 270px;
+  overflow-y: scroll;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.diff-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.diff-box::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.diff-line.added {
+  color: #2DB400;
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
+
+.diff-line.removed {
+  color: #FF4242;
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}

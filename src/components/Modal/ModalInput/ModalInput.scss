@@ -1,0 +1,35 @@
+//// 컴포넌트용 bulma css 사용 예시 코드입니다.
+$box-background-color: white;
+@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
+
+
+.input {
+  background: $box-background-color;
+  color: #000000;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: none;
+}
+
+.modal-input-title {
+  font-size: 14px;
+  color: #4F4F4F;
+}
+
+.modal-error-message {
+    font-size: 12px;
+    color: #EB1D1D;
+    margin-top: 0.5rem;
+}
+
+.modal-input-noemail {
+  text-align: right;
+  width: 100%;
+  margin: 0.8rem 0 1rem 0;
+}
+
+.modal-input-noemail a {
+  color: #232D64;
+  font-weight: bolder;
+  //font-size: 1.1rem;
+}

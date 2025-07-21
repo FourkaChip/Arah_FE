@@ -1,0 +1,91 @@
+@use "bulma/sass/form";
+
+.modal-window.faq-modal {
+  position: fixed;
+  width: 563px;
+  height: 559px;
+  padding: 32px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title.faq-modal {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.modal-subtitle.faq-modal {
+  font-size: 14px;
+  text-align: center;
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.form-section {
+  margin-bottom: 20px;
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f6f6f6;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    color: #232D64;
+    height: 54px;
+
+    select {
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      background-color: #fff;
+      margin-left: 12px;
+      color: #232D64;
+    }
+  }
+
+  .input {
+    @extend .input;
+    width: 100%;
+    border: 1px solid #c2c2f3;
+    background-color: #fff;
+    color: #232D64;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    margin-top: 8px;
+
+    &::placeholder {
+      color: #232D64;
+      opacity: 0.4;
+    }
+  }
+
+  .textarea {
+    width: 100%;
+    border: 1px solid #c2c2f3;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    resize: none;
+    margin-top: 8px;
+
+    &::placeholder {
+      color: #232D64;
+      opacity: 0.4;
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  gap: 12px;
+}

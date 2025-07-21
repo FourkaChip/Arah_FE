@@ -1,0 +1,80 @@
+.modal-window-input-filled {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  //padding: 40px;
+  gap: 36px;
+  isolation: isolate;
+
+  position: absolute;
+  width: 640px;
+  height: 325px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+}
+
+.modal-dialog-filled-modal {
+  width: 100%;
+  padding: 40px;
+}
+
+.modal-title-filled {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.modal-description-filled {
+  font-size: 18px;
+  color: #888;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.modal-input-filled {
+  .filled-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-top: 24px;
+
+    input.filled-input {
+      width: 100%;
+      padding: 14px 48px 14px 14px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      color: #777;
+      box-sizing: border-box;
+    }
+
+    .copy-button {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 0;
+    }
+  }
+
+  .footer-modalinput-filled {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

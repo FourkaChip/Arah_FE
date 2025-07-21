@@ -1,0 +1,105 @@
+// 컴포넌트용 bulma css 사용 예시 코드입니다.
+@use "./../../../node_modules/bulma/sass/utilities/functions" as *;
+//@use "functions" as *;
+//
+//// Override variable BEFORE importing the module that uses it
+$primary: #232D64;
+//
+//@use "initial-variables" as *;
+//@use "derived-variables" as derived;
+//@use "mixins" as *;
+//@use "generic";
+//@use "button";
+
+.modal-window {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  //padding: 40px;
+  gap: 36px;
+  isolation: isolate;
+
+  position: absolute;
+  width: 465px;
+  height: 229px;
+  left: calc(50% - 465px / 2 + 0.5px);
+  top: calc(50% - 229px / 2 + 0.5px);
+
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+
+  &.tall-modal {
+    width: 640px;
+    height: 341px;
+    top: auto;
+    left: auto;
+  }
+}
+
+.modal-dialog {
+  //width: 100%;
+  &.tall-modal {
+    width: 576px;
+  }
+
+}
+
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 16px;
+  text-align: center;
+
+  &.tall-modal-title {
+    font-size: 24px;
+    color: navy;
+    text-align: left;
+  }
+}
+
+.modal-description {
+  font-size: 18px;
+  color: #888;
+  margin-bottom: 32px;
+  text-align: center;
+
+  &.tall-modal-description {
+    color: darkgray;
+    font-size: 16px;
+    text-align: left;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+///* Inside auto layout */
+//flex: none;
+//order: 2;
+//flex-grow: 0;
+
