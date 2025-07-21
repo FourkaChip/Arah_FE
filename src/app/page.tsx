@@ -8,6 +8,7 @@ export default function Home() {
       <main className={styles.main}>
         {/*<button className="button is-primary">Return to Home</button>*/}
           <h1>Test Page</h1>
+        <img src="/갱얼쥐.jpeg" alt="갱얼쥐" width="350" height="400" />
           <button>클릭시 모달 열림</button>
         {/*<ModalDefault type='delete' label='삭제하시겠습니까?'/>*/}
           <ClientModalTrigger
