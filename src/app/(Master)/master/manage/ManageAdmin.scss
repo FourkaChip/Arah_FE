@@ -1,21 +1,105 @@
-#master-manage-page {
+@use "bulma/sass/utilities" as *;
+@use "bulma/sass/elements/button";
+@use "bulma/sass/form";
+
+.master-manage-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
   background-color: #fff;
+  width: 100%;
 
-  .master-manage-title {
-    font-size: 36px;
-    font-weight: bold;
-    color: #232D64;
-    margin: 20px 0 8px;
+  .admin-manage-page-wrapper {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
   }
 
-  .login-description {
+  .master-manage-title {
+    font-size: 31px;
+    font-weight: 1000;
+    color: #232D64;
+    margin: 0 0 20px;
+  }
+
+  .master-manage-description {
     color: #888;
-    font-size: 20px;
-    margin-bottom: 32px;
+    font-size: 12px;
+    margin: 20px 0 0 10px;
+  }
+
+  .admin-manage-input-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+    margin: 20px 0 20px;
+  }
+
+  .admin-manage-input {
+    width: 450px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .admin-search-input-wrapper {
+    position: relative;
+    width: 344px;
+    margin-left: 20px;
+  }
+
+  .admin-search-input {
+    @extend .input;
+    display: flex;
+    flex-direction: row;
+    background-color: #ffffff;
+    width: 344px;
+    color: #878790;
+    padding: 12px 38px 12px 16px;
+    margin: 0 0 0 20px;
+    border: 1px solid #ccc;
+    height: 38px;
+    //border-radius: 8px;
+    font-size: 14px;
+
+    &::placeholder {
+      color: #878790;
+    }
+
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .master-admin-table {
+    width: 90%;
+    margin-top: 20px;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      color: #232D64;
+    }
+
+    td {
+      color: #555;
+    }
   }
 }

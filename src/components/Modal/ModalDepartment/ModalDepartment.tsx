@@ -52,10 +52,10 @@ export default function ModalDepartment({
         <button className="modal-close" onClick={onClose}>×</button>
         {step === 'list' ? (
           <>
-            <h2 className="modal-title">관리자 부서 등록</h2>
-            <p className="modal-description">관리자가 관리할 부서를 선택해 주세요.</p>
+            <h2 className="modal-title-dept">관리자 부서 등록</h2>
+            <p className="modal-description-dept">관리자가 관리할 부서를 선택해 주세요.</p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input className="department-search-input" placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요." style={{ flex: 1 }} />
+              <input className="admin-search-input" placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요." style={{ flex: 1 }} />
               <button className="button is-dark">추가</button>
             </div>
             <div style={{ height: 320 }}>
@@ -87,12 +87,12 @@ export default function ModalDepartment({
         ) : (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 className="modal-title">관리자 부서 등록</h2>
-              <span className="modal-description" style={{ fontWeight: 600 }}>
+              <h2 className="modal-title-dept">관리자 부서 등록</h2>
+              <span className="modal-description-dept" style={{ fontWeight: 600 }}>
                 관리자: {selectedUser.name}({selectedUser.departments.split(',')[0]})
               </span>
             </div>
-            <p className="modal-description">
+            <p className="modal-description-dept">
               관리자가 관리할 부서를 선택해 주세요.
             </p>
             <div style={{ flex: 1, marginTop: 16, height: 320 }}>
