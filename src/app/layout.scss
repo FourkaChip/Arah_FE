@@ -10,16 +10,20 @@
   /* ─────────────────────────────
      고정 사이드바 영역
   ───────────────────────────── */
-  .sidebar-wrapper {
-    width: 250px;             // 사이드바 너비 고정
-    min-width: 250px;         // 사이드바 최소 너비 유지
-    height: 100vh;            // 뷰포트 전체 높이
-    position: fixed;          // 화면에 고정 (스크롤 영향 없음)
-    left: 0;
-    top: 0;
-    z-index: 1000;            // 다른 콘텐츠보다 위에 배치
-    overflow-y: auto;         // 콘텐츠 많을 경우 세로 스크롤 허용
-  }
+  //.sidebar-wrapper {
+  //  width: 250px;             // 사이드바 너비 고정
+  //  min-width: 250px;         // 사이드바 최소 너비 유지
+  //  height: 100vh;            // 뷰포트 전체 높이
+  //  position: fixed;          // 화면에 고정 (스크롤 영향 없음)
+  //  left: 0;
+  //  top: 0;
+  //  z-index: 1000;            // 다른 콘텐츠보다 위에 배치
+  //  overflow-y: auto;         // 콘텐츠 많을 경우 세로 스크롤 허용
+  //
+  //  &.hidden {
+  //    display: none;          // 사이드바 숨김
+  //  }
+  //}
   
   /* ─────────────────────────────
      메인 콘텐츠 영역
@@ -27,7 +31,7 @@
   ───────────────────────────── */
   .main-content {
     flex: 1;                  // 사이드바를 제외한 나머지 공간 차지
-    margin-left: 250px;       // 사이드바 너비만큼 왼쪽 여백 확보
+    //margin-left: 250px;       // 사이드바 너비만큼 왼쪽 여백 확보
     min-height: 100vh;        // 화면 전체 높이 유지
     padding: 2rem;            // 내부 여백 (섹션 간 간격 확보용)
     background-color: #fff;   // 콘텐츠 배경색 설정

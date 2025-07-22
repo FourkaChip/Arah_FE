@@ -9,6 +9,21 @@
   --bg-active: #f5f5f5;
 }
 
+.sidebar-wrapper {
+  width: 250px;             // 사이드바 너비 고정
+  min-width: 250px;         // 사이드바 최소 너비 유지
+  height: 100vh;            // 뷰포트 전체 높이
+  position: fixed;          // 화면에 고정 (스크롤 영향 없음)
+  left: 0;
+  top: 0;
+  z-index: 1000;            // 다른 콘텐츠보다 위에 배치
+  overflow-y: auto;         // 콘텐츠 많을 경우 세로 스크롤 허용
+
+  &.hidden {
+    display: none;          // 사이드바 숨김
+  }
+}
+
 
 // 사이드바 본체
 .sidebar-aside {

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "../styles/globals.scss";
+import "./layout.scss"; // 레이아웃 전역 스타일로, 다른 모든 페이지 레이아웃을 보여주기 위해 필요합니다!
 import "../components/Modal/Buttons/ModalButton.scss";
 import { Inter, Roboto_Mono } from "next/font/google";
 import Sidebar from "@/components/Sidebar/Sidebar";
+import SidebarWrapper from "@/components/Sidebar/SidebarWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,11 +45,9 @@ export default function RootLayout({
           
           {/* ===== 사이드바 영역 ===== */}
           {/* 왼쪽에 고정된 사이드바 - 높이 100vh, 너비 250px 고정 */}
-          <div className="sidebar-wrapper">
             {/* 사이드바 컴포넌트 렌더링 */}
-            <Sidebar />
-          </div>
-          
+            <SidebarWrapper />
+
           {/* ===== 메인 콘텐츠 영역 ===== */}
           {/* 사이드바 옆의 메인 콘텐츠 영역 - 나머지 공간 차지 */}
           <div className="main-content">

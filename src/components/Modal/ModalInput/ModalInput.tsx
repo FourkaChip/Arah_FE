@@ -154,7 +154,7 @@ export default function ModalInput({modalType, onClose}: ModalInputProps) {
                             onClick={() => {
                                 setSuccessModal(false);
                                 onClose();
-                                window.location.href = '/master/main';
+                                window.location.href = '/master/manage';
                             }}
                         />
                     }
