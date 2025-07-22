@@ -2,7 +2,7 @@
 import {useState} from "react";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import "./ModalFAQ.scss";
-import CustomDropDown from "@/components/CustomDropdown/CustomDropDown";
+import CustomDropDown from "@/components/Dropdown/CustomDropdown/CustomDropDown";
 import {ModalFAQProps} from "@/types/modals";
 
 export default function ModalFAQ({onClose, onSubmit}: ModalFAQProps) {
