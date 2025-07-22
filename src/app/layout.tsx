@@ -1,18 +1,9 @@
 import type { Metadata } from "next";
 import "../styles/globals.scss";
 import "../components/Modal/Buttons/ModalButton.scss";
-import { Inter, Roboto_Mono } from "next/font/google";
+import "./layout.scss";
 import Sidebar from "@/components/Sidebar/Sidebar";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-});
+import Header from "@/components/Header/Header";
 
 // ===== 메타데이터 설정 =====
 export const metadata: Metadata = {
@@ -36,6 +27,10 @@ export default function RootLayout({
           rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
         />
+        {/* ===== 헤더 영역 ===== */}
+        <div className="header-wrapper">
+          <Header/>
+        </div>
         
         {/* ===== 메인 레이아웃 컨테이너 ===== */}
         {/* 고정 사이드바 레이아웃 - 사이드바는 항상 왼쪽에 고정 */}
