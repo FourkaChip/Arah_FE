@@ -1,5 +1,4 @@
 #master-manage-page {
-  margin-left: 250px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7,9 +6,10 @@
   min-height: 100vh;
   background-color: #fff;
 
-  .login-title {
+  .master-manage-title {
     font-size: 36px;
     font-weight: bold;
+    color: #232D64;
     margin: 20px 0 8px;
   }
 
