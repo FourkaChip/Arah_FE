@@ -1,6 +1,6 @@
-@use "bulma/sass/utilities" as *;
-@use "bulma/sass/elements/button";
-@use "bulma/sass/form";
+@use "../../../../../../node_modules/bulma/sass/utilities/index" as *;
+@use "../../../../../../node_modules/bulma/sass/elements/button";
+@use "../../../../../../node_modules/bulma/sass/form/index";
 
 .master-manage-page {
   display: flex;
