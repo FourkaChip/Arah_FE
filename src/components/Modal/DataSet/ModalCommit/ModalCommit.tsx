@@ -7,7 +7,7 @@ interface ModalCommitProps {
 }
 
 export default function ModalCommit({ onClose }: ModalCommitProps) {
-    const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정. sakfjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkjdsakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfd";
+    const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정. sakfjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkjdsakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfd";
 
     const addedLines = [
         "외부 저장매체 사용 시 사전 승인을 받아야 한다.",
@@ -37,7 +37,7 @@ export default function ModalCommit({ onClose }: ModalCommitProps) {
                 <div className="commit-content">{commitMessage}</div>
 
                 <div className="commit-message">
-                    <strong>현재 사용 중인 <b>버전</b></strong><span>과의 차이 비교</span>
+                    <p><strong>현재 사용 중인 <b>버전</b></strong><span>과의 차이 비교</span></p>
                 </div>
 
                 <div className="diff-box">

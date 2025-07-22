@@ -8,7 +8,7 @@ import { ModalWindowProps } from "@/types/modals";
 export default function ModalDefault({ type, label, onClose }: ModalWindowProps) {
     let description = '';
     let buttonLabel = '';
-    let buttonType = type;
+    const buttonType = type;
 
     switch (type) {
         case 'default':
