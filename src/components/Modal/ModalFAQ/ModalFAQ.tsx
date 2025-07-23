@@ -1,4 +1,3 @@
-"use client";
 import {useState} from "react";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import "./ModalFAQ.scss";

@@ -1,5 +1,4 @@
 // 공통 모달창 컴포넌트. 여기에 상황별 콘텐츠를 넣어서 사용합니다.
-'use client';
 import './ModalDefault.scss';
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import ModalLayout from "@/components/Modal/ModalLayout";
