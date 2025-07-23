@@ -51,7 +51,7 @@ export default function LoginForm() {
             setShowModal(true);
         }
         if (pathname === '/admin/login' && email && password) {
-            window.location.href = '/admin/main';
+            window.location.href = '/admin/manage';
         }
 
     };

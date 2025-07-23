@@ -1,0 +1,32 @@
+// mui datagrid 커스텀 스타일 클래스입니다.
+.MuiDataGrid-root {
+  border: none !important;
+}
+
+.MuiDataGrid-columnHeaders {
+  border-bottom: none;
+  background-color: transparent;
+}
+
+.MuiDataGrid-columnHeader {
+  border-right: none;
+}
+
+.MuiDataGrid-cell {
+  border-bottom: none;
+}
+
+// 이외 스타일 적용 클래스입니다.
+.icon-delete-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #ff4d4d;
+  font-size: 20px;
+  padding: 0;
+  margin-top: 13px;
+
+  &:hover {
+    color: #ff1a1a;
+  }
+}

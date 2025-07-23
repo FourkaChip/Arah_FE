@@ -1,15 +1,15 @@
 // 컴포넌트용 bulma css 사용 예시 코드입니다.
-@use "./../../../node_modules/bulma/sass/utilities/functions" as *;
-//@use "functions" as *;
-//
-//// Override variable BEFORE importing the module that uses it
 $primary: #232D64;
-//
-//@use "initial-variables" as *;
-//@use "derived-variables" as derived;
-//@use "mixins" as *;
-//@use "generic";
-//@use "button";
+@use "./../../../node_modules/bulma/sass/utilities/functions" as *;
+
+
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1020;
+}
 
 .modal-window {
   display: flex;

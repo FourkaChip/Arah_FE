@@ -1,7 +1,6 @@
 // 컴포넌트용 bulma css 사용 예시 코드입니다.
-@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
-
 $primary: #232D64;
+@use "../../../../node_modules/bulma/sass/utilities/functions" as *;
 
 
 .common-button {

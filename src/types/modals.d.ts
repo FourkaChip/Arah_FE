@@ -18,7 +18,7 @@ export type ModalType =
 export interface ClientModalTriggerProps {
     type: ModalButtonType;
     title: string;
-    buttonText: string;
+    buttonText: React.ReactNode;
 }
 
 // ModalButtonProps는 모달에서 버튼에 사용되는 속성 타입입니다.

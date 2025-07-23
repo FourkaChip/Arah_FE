@@ -1,7 +1,8 @@
 "use client";
 import { useState } from 'react';
 import './Sidebar.scss';
-import { MenuItem, SidebarProps } from '../../types/sidebar';
+import { MenuItem, SidebarProps } from '@/types/sidebar';
+import {usePathname} from "next/navigation";
 
 // ===== 메뉴 데이터 =====
 const menuItems: MenuItem[] = [
@@ -40,6 +41,13 @@ const menuItems: MenuItem[] = [
 // ===== 컴포넌트 =====
 export default function Sidebar({ className = '' }: SidebarProps) {
   const [activeMenuItem, setActiveMenuItem] = useState<string>('dataset');
+
+  // 최초 로그인 페이지에서는 사이드바를 보이지 않기 위해 usePathname 훅을 사용하여 현재 경로를 확인합니다.
+  const pathName = usePathname();
+  const hiddenPath = ['/master/login', '/admin/login'];
+  if(hiddenPath.includes(pathName)) {
+    return null;
+  }
 
   // 메뉴 클릭 시 활성 메뉴 상태 업데이트
   const handleMenuItemClick = (
