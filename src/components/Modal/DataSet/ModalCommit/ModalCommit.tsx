@@ -1,4 +1,3 @@
-"use client";
 import "./ModalCommit.scss";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 

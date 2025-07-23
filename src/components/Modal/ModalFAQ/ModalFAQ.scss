@@ -1,9 +1,22 @@
-@use "bulma/sass/form";
+//$white: #fff;
+//@use "bulma/sass/form" with (
+//  $primary: $white,
+//);
+
+.modal-overlay.faq-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1020;
+}
 
 .modal-window.faq-modal {
-  position: fixed;
+  position: absolute;
   width: 563px;
   height: 559px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   padding: 32px;
   border-radius: 12px;
   background-color: #fff;
