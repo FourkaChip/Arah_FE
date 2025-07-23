@@ -20,8 +20,21 @@
   height: 38px;
   //border-radius: 8px;
   font-size: 14px;
+  z-index: 1;
 
   &::placeholder {
     color: #878790;
   }
+}
+
+.search-icon {
+  position:  absolute;
+  top:  8px;
+  right: 0px;
+  cursor: pointer;
+  font-size: 20px;
+  padding-left: 8px;
+  color: #878790;
+  z-index: 2;
+  pointer-events: auto;
 }
