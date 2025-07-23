@@ -1,4 +1,5 @@
 // 전체 공통 스타일. 컴포넌트별 스타일이 없는 경우 이곳의 스타일이 적용됩니다.
+@use 'bulma/bulma';
 @import '../../node_modules/bulma/sass/index';
 // 여기서 반드시 bulma/sass 파일을 적용해 주어야 글로벌 scss에 스타일이 적용됩니다!
 :root {

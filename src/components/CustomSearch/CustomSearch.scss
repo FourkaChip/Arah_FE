@@ -1,0 +1,27 @@
+@use "../../../node_modules/bulma/sass/utilities/index" as *;
+@use "../../../node_modules/bulma/sass/elements/button";
+@use "../../../node_modules/bulma/sass/form/index";
+.admin-search-input-wrapper {
+  position: relative;
+  width: 344px;
+  margin-left: 20px;
+}
+
+.admin-search-input {
+  @extend .input;
+  display: flex;
+  flex-direction: row;
+  background-color: #ffffff;
+  width: 344px;
+  color: #878790;
+  padding: 12px 38px 12px 16px;
+  margin: 0 0 0 20px;
+  border: 1px solid #ccc;
+  height: 38px;
+  //border-radius: 8px;
+  font-size: 14px;
+
+  &::placeholder {
+    color: #878790;
+  }
+}

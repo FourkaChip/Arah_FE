@@ -2,6 +2,7 @@ import './ManageAdmin.scss';
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
 import MasterAdminTable from "@/components/Table/AdminManageTable/AdminManageTable";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
+import CustomSearch from "@/components/CustomSearch/CustomSearch";
 
 export default function ManageAdminPage() {
     return (
@@ -13,10 +14,11 @@ export default function ManageAdminPage() {
             <div className="admin-manage-input-wrapper">
                 <div className="admin-manage-input">
                     <CustomDropDownForDept/>
-                    <div className="admin-search-input-wrapper">
-                      <input className="admin-search-input" placeholder="검색할 관리자를 입력해 주세요." />
-                      <i className="fas fa-search search-icon" />
-                    </div>
+                    {/*<div className="admin-search-input-wrapper">*/}
+                    {/*  <input className="admin-search-input" placeholder="검색할 관리자를 입력해 주세요." />*/}
+                    {/*  <i className="fas fa-search search-icon" />*/}
+                    {/*</div>*/}
+                    <CustomSearch/>
                 </div>
                 <ModalDeptTrigger buttonText="관리자 추가"/>
             </div>

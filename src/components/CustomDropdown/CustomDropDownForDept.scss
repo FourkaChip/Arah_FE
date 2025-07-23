@@ -1,6 +1,17 @@
 .custom-dropdown {
   width: 150px;
   height: 38px;
+
+  .select__control {
+    &:focus, &:focus-within {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  .select__input {
+    caret-color: transparent;
+  }
 }
 
 .basic-single {
