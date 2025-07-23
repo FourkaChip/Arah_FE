@@ -1,3 +1,7 @@
+$blue: #2E70E8;
+$primary: $blue;
+@use "bulma/sass/utilities/functions" as *;
+
 // mui datagrid 커스텀 스타일 클래스입니다.
 .MuiDataGrid-root {
   border: none !important;
@@ -29,4 +33,27 @@
   &:hover {
     color: #ff1a1a;
   }
+}
+
+.corp-token-section {
+  display: flex;
+  flex-direction: row;
+  background-color: #fff;
+  width: 100%;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.title.is-3 {
+  font-size: 24px;
+  font-weight: 1000;
+  color: $blue;
+  margin: 0 10px 0 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.subtitle.is-7 {
+  font-size: 14px;
+  color: #666;
 }

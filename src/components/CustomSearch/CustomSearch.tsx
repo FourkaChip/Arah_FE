@@ -7,7 +7,7 @@ interface CustomSearchProps {
     onSearch: (value: string) => void;
 }
 
-export default function CustomSearch({ onSearch }: CustomSearchProps) {
+export default function CustomSearch({ onSearch, className = "" }: CustomSearchProps & { className?: string }) {
     const [input, setInput] = useState("");
 
     const handleSearch = () => {
@@ -15,7 +15,7 @@ export default function CustomSearch({ onSearch }: CustomSearchProps) {
     };
 
     return (
-        <div className="admin-search-input-wrapper">
+        <div className={`admin-search-input-wrapper ${className}`}>
             <input
                 className="admin-search-input"
                 placeholder="검색할 관리자를 입력해 주세요."
@@ -25,11 +25,6 @@ export default function CustomSearch({ onSearch }: CustomSearchProps) {
                     if (e.key === "Enter") handleSearch();
                 }}
             />
-            {/*<i*/}
-            {/*    className="fas fa-search search-icon"*/}
-            {/*    role="button"*/}
-            {/*    onClick={handleSearch}*/}
-            {/*/>*/}
             <button
                 className="search-icon"
                 onClick={handleSearch}
@@ -37,20 +32,6 @@ export default function CustomSearch({ onSearch }: CustomSearchProps) {
             >
                 <i className="fas fa-search" />
             </button>
-            {/*<i*/}
-            {/*    className="fas fa-search search-icon"*/}
-            {/*    role="button"*/}
-            {/*    onClick={handleSearch}*/}
-            {/*    style={{*/}
-            {/*        position: "absolute",*/}
-            {/*        right: "12px",*/}
-            {/*        top: "50%",*/}
-            {/*        transform: "translateY(-50%)",*/}
-            {/*        cursor: "pointer",*/}
-            {/*        color: "#232D64",*/}
-            {/*        fontSize: "20px",*/}
-            {/*    }}*/}
-            {/*/>*/}
         </div>
     );
 }
