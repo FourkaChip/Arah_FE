@@ -30,44 +30,46 @@ export default function ModalFAQ({onClose, onSubmit}: ModalFAQProps) {
     };
 
     return (
-        <div className="modal-window faq-modal">
-            <div className="modal-dialog faq-modal">
-                <button className="modal-close" onClick={onClose}>×</button>
-                <h2 className="modal-title faq-modal">FAQ 등록</h2>
-                <p className="modal-subtitle faq-modal">신규 FAQ를 등록합니다.</p>
+        <div className="modal-overlay faq-modal">
+            <div className="modal-window faq-modal">
+                <div className="modal-dialog faq-modal">
+                    <button className="modal-close" onClick={onClose}>×</button>
+                    <h2 className="modal-title faq-modal">FAQ 등록</h2>
+                    <p className="modal-subtitle faq-modal">신규 FAQ를 등록합니다.</p>
 
-                <div className="form-section">
-                    <label className="faq-field-label">
-                        <span>사용자 질문</span>
-                        <CustomDropDown
-                            value={selectedCategory}
-                            options={categories}
-                            onChange={setSelectedCategory}
-                            onAddOption={handleAddCategory}
+                    <div className="form-section">
+                        <label className="faq-field-label">
+                            <span>사용자 질문</span>
+                            <CustomDropDown
+                                value={selectedCategory}
+                                options={categories}
+                                onChange={setSelectedCategory}
+                                onAddOption={handleAddCategory}
+                            />
+                        </label>
+                        <input
+                            className="input"
+                            placeholder="예상 질문을 입력해 주세요."
+                            value={question}
+                            onChange={(e) => setQuestion(e.target.value)}
                         />
-                    </label>
-                    <input
-                        className="input"
-                        placeholder="예상 질문을 입력해 주세요."
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                    />
-                </div>
+                    </div>
 
-                <div className="form-section">
-                    <label>제공 답변</label>
-                    <textarea
-                        className="textarea"
-                        placeholder="질문에 대한 답변을 등록해 주세요."
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        style={{height: 160}}
-                    />
-                </div>
+                    <div className="form-section">
+                        <label>제공 답변</label>
+                        <textarea
+                            className="textarea"
+                            placeholder="질문에 대한 답변을 등록해 주세요."
+                            value={answer}
+                            onChange={(e) => setAnswer(e.target.value)}
+                            style={{height: 160}}
+                        />
+                    </div>
 
-                <div className="modal-footer">
-                    <ModalButton type="cancel" label="취소" onClick={onClose}/>
-                    <ModalButton type="default" label="등록" onClick={handleSubmit}/>
+                    <div className="modal-footer">
+                        <ModalButton type="cancel" label="취소" onClick={onClose}/>
+                        <ModalButton type="default" label="등록" onClick={handleSubmit}/>
+                    </div>
                 </div>
             </div>
         </div>
