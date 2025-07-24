@@ -1,8 +1,6 @@
+// 관리자 관리 페이지입니다.
 import './ManageAdmin.scss';
-import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
 import MasterAdminTable from "@/components/Table/AdminManageTable/AdminManageTable";
-import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
-import CustomSearch from "@/components/CustomSearch/CustomSearch";
 
 export default function ManageAdminPage() {
     return (
