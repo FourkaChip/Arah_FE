@@ -5,10 +5,13 @@ import {useState} from "react";
 import {usePathname} from "next/navigation";
 
 interface CustomSearchProps {
-    onSearch: (value: string) => void;
+    onSearch: (params: { search: string; start: string; end: string }) => void;
+    startDate?: string;
+    endDate?: string;
 }
 
-export default function CustomSearch({onSearch, className = ""}: CustomSearchProps & { className?: string }) {
+export default function CustomSearch({onSearch, className = ""}: { onSearch: (search: string) => void; className?: string
+}) {
     const [input, setInput] = useState("");
     const pathname = usePathname();
 
@@ -18,6 +21,8 @@ export default function CustomSearch({onSearch, className = ""}: CustomSearchPro
                 return "검색할 관리자를 입력해 주세요.";
             case '/master/dept':
                 return "검색할 부서를 입력해 주세요.";
+            case '/admin/manage':
+                return "검색할 폴더를 입력해 주세요.";
             default:
                 return "검색어를 입력해 주세요.";
         }
@@ -38,11 +43,7 @@ export default function CustomSearch({onSearch, className = ""}: CustomSearchPro
                     if (e.key === "Enter") handleSearch();
                 }}
             />
-            <button
-                className="search-icon"
-                onClick={handleSearch}
-                aria-label="검색"
-            >
+            <button className="search-icon" onClick={handleSearch} aria-label="검색">
                 <i className="fas fa-search"/>
             </button>
         </div>

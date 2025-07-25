@@ -11,8 +11,8 @@ export default function ModalCommitTrigger() {
 
     return (
         <>
-            <button className="button is-primary" onClick={handleOpen}>
-                변경사항 확인
+            <button className="sub-btn" onClick={handleOpen}>
+                보기
             </button>
             {isOpen && <ModalCommit onClose={handleClose} />}
         </>
