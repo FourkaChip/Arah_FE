@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import './Sidebar.scss';
 import { MenuItem, SubMenuItem, SidebarProps } from '@/types/sidebar';
 
@@ -52,12 +52,27 @@ const MASTER_MENU_ITEMS: MenuItem[] = [
 ] as const;
 
 // 로그인 페이지에서는 사이드바 숨김
-//const HIDDEN_PATHS = ['/master/login', '/admin/login'] as const;
+const HIDDEN_PATHS = ['/master/login', '/admin/login'] as const;
 
 // 기본 활성화 메뉴 설정
 const DEFAULT_ACTIVE_MENU = {
   ADMIN: 'manage-dataset',
   MASTER: 'admin-manage',
+} as const;
+
+// 메뉴 ID와 실제 경로 매핑
+const MENU_ROUTES = {
+  // 관리자 메뉴 경로
+  'manage-dataset': '/admin/manage',
+  'faq': '/admin/faq',
+  'inquiry': '/admin/feedback',
+  'statistics': '/admin/analyze',
+  'alarm': '/admin/noti',
+  'chatbot': '/admin/ara',
+  
+  // 마스터 메뉴 경로
+  'admin-manage': '/master/manage',
+  'company-config': '/master/dept',
 } as const;
 
 /**
@@ -109,6 +124,7 @@ const getUserRole = (pathname: string) => ({
  */
 const useSidebarMenu = (menuItems: MenuItem[]) => {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAdmin, isMaster } = getUserRole(pathname);
   
   const [activeMenuItem, setActiveMenuItem] = useState<string>(DEFAULT_ACTIVE_MENU.ADMIN);
@@ -162,6 +178,11 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
         const firstSubItem = clickedMenu.subItems?.[0];
         if (firstSubItem) {
           setActiveMenuItem(firstSubItem.id);
+          // 첫 번째 서브메뉴로 라우팅
+          const route = MENU_ROUTES[firstSubItem.id as keyof typeof MENU_ROUTES];
+          if (route) {
+            router.push(route);
+          }
         }
         
         const activeParent = findParentMenuId(activeMenuItem, menuItems);
@@ -172,7 +193,7 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
         return newExpanded;
       }
     });
-  }, [activeMenuItem, menuItems]);
+  }, [activeMenuItem, menuItems, router]);
 
   /**
    * 일반 메뉴(서브메뉴가 없는) 클릭 처리
@@ -180,13 +201,19 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
   const handleRegularMenuClick = useCallback((menuId: string) => {
     setActiveMenuItem(menuId);
     
+    // 해당 메뉴로 라우팅
+    const route = MENU_ROUTES[menuId as keyof typeof MENU_ROUTES];
+    if (route) {
+      router.push(route);
+    }
+    
     const parentMenuId = findParentMenuId(menuId, menuItems);
     if (parentMenuId) {
       setExpandedMenus(new Set([parentMenuId]));
     } else {
       setExpandedMenus(new Set());
     }
-  }, [menuItems]);
+  }, [menuItems, router]);
 
   /**
    * 메뉴 아이템 클릭 이벤트 핸들러
@@ -282,9 +309,9 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   }, [isMenuActive, isSubMenuActive, isMenuExpanded, handleMenuItemClick, renderSubMenuItem]);
 
   // 로그인 페이지에서는 사이드바 숨김
-  //if (HIDDEN_PATHS.some(path => pathname === path)) {
-  //  return null;
-  //}
+  if (HIDDEN_PATHS.some(path => pathname === path)) {
+    return null;
+  }
 
   return (
     <aside 

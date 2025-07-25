@@ -8,11 +8,10 @@ export default function FaqPage() {
     return (
         <div id="admin-main-page" className="admin-login-page">
             <Image src="/kaef.png" alt="kakaowork logo" width={300} height={100} />
-            <h1 className="login-title">관리자 페이지</h1>
-            {/* 여기에 데이터셋 관리 페이지가 들어갈 예정입니다. */}
-            <ModalUploadTrigger buttonText={"데이터셋 업로드"}/>
-            <ModalFAQTrigger/>
-            <ModalCommitTrigger/>
+            <h1 className="login-title">FAQ로 3행시 해보겠습니다.</h1>
+            <p>F: 내일부터</p>
+            <p>A: 진짜</p>
+            <p>Q: 다이어트 함</p>
         </div>
     );
 }

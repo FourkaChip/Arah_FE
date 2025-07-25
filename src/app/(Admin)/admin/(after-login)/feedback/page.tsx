@@ -8,11 +8,10 @@ export default function FeedbackPage() {
     return (
         <div id="admin-main-page" className="admin-login-page">
             <Image src="/kaef.png" alt="kakaowork logo" width={300} height={100} />
-            <h1 className="login-title">관리자 페이지</h1>
-            {/* 여기에 데이터셋 관리 페이지가 들어갈 예정입니다. */}
-            <ModalUploadTrigger buttonText={"데이터셋 업로드"}/>
-            <ModalFAQTrigger/>
-            <ModalCommitTrigger/>
+            <h1 className="login-title">똑똑.. 문 좀 열어봐</h1>
+            <p>나야..</p>
+            <p>문 좀 열어봐</p>
+            <p>피드백만 주고 갈게</p>
         </div>
     );
 }
