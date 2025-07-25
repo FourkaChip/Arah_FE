@@ -2,38 +2,6 @@ $blue: #232D64;
 $primary: $blue;
 @use "bulma/sass/utilities/functions" as *;
 
-//// mui datagrid 커스텀 스타일 클래스입니다.
-//.MuiDataGrid-root {
-//  border: none !important;
-//}
-//
-//.MuiDataGrid-columnHeaders {
-//  border-bottom: none;
-//  background-color: transparent;
-//}
-//
-//.MuiDataGrid-columnHeader {
-//  border-right: none;
-//}
-//
-//.MuiDataGrid-cell {
-//  border-bottom: none;
-//}
-
-// 이외 스타일 적용 클래스입니다.
-//.icon-delete-button {
-//  background-color: transparent;
-//  border: none;
-//  cursor: pointer;
-//  color: #ff4d4d;
-//  font-size: 20px;
-//  padding: 0;
-//  margin-top: 13px;
-//
-//  &:hover {
-//    color: #ff1a1a;
-//  }
-//}
 .button.is-danger.is-outlined {
   height: 34px;
 }
@@ -124,6 +92,10 @@ $primary: $blue;
   border-collapse: collapse;
   font-size: 14px;
   margin-top: 16px;
+  .sub-table-row td {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
 
   thead {
     background-color: transparent;
@@ -171,6 +143,14 @@ $primary: $blue;
         padding: 10px 8px;
         vertical-align: middle;
         text-align: center !important;
+
+        &.empty-row {
+          text-align: center;
+          padding: 32px 0;
+          color: #EB1D1D;
+          font-size: 16px;
+          font-weight: bold;
+        }
       }
 
       .button {
@@ -186,19 +166,44 @@ $primary: $blue;
   }
 }
 
+//.sub-table-wrapper {
+//  max-height: 0;
+//  opacity: 0;
+//  overflow: hidden;
+//  transition: max-height 0.3s ease, opacity 0.3s ease;
+//}
+//
+//.sub-table-wrapper.open {
+//  max-height: 1000px;
+//  opacity: 1;
+//  overflow-y: auto;
+//  overflow-x: hidden;
+//}
+//
+//.sub-table-wrapper.open.animated-wrapper {
+//  overflow: hidden;
+//  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+//  max-height: 0;
+//  opacity: 0;
+//
+//  &.open {
+//    max-height: 1000px;
+//    opacity: 1;
+//  }
+//}
 .sub-table-wrapper {
+  overflow: hidden;
   max-height: 0;
   opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+
+  &.open {
+    max-height: 1000px;
+    opacity: 1;
+
+  }
 }
 
-.sub-table-wrapper.open {
-  max-height: 200px;
-  opacity: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
 
 .sub-table {
   width: 100%;
@@ -232,7 +237,7 @@ $primary: $blue;
       background-color: #232D64;
       color: white;
       border: none;
-      padding: 5px 10px;
+      padding: 1px 10px;
       border-radius: 6.29px;
       font-size: 12px;
       cursor: pointer;

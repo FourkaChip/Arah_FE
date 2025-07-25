@@ -12,9 +12,12 @@ import {
 } from "@tanstack/react-table";
 import React from "react";
 import ModalDataTrigger from "@/components/utils/ModalTrigger/ModalDataTrigger";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { dummySubRows } from "@/constants/dummydata/DummySubRows";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faPlus, faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {dummySubRows} from "@/constants/dummydata/DummySubRows";
+import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
+import ModalCommitTrigger from "@/components/utils/ModalTrigger/ModalCommitTrigger";
+import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
 
 type RowData = {
     id: number;
@@ -50,7 +53,12 @@ const defaultData: RowData[] = Array.from({length: 25}, (_, i) => ({
 
 export default function AdminDataTable() {
 
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
+    const [openCommitModal, setOpenCommitModal] = useState(false);
+
     const checkboxRef = useRef<HTMLInputElement>(null);
+    const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
     const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
 
@@ -60,9 +68,25 @@ export default function AdminDataTable() {
 
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
+
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const handleSearch = (search: string) => {
+        setSearchValue(search);
+    };
+    const filteredData = useMemo(() => {
+        return data.filter(row => {
+            const matchesFolder = searchValue === "" || row.folderName.includes(searchValue);
+            const updated = row.updatedAt.replace(/\//g, "-");
+            const afterStart = !startDate || updated >= startDate;
+            const beforeEnd = !endDate || updated <= endDate;
+            return matchesFolder && afterStart && beforeEnd;
+        });
+    }, [data, searchValue, startDate, endDate]);
+
     const paginatedData = useMemo(
-        () => data.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
-        [data, currentPage]
+        () => filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
+        [filteredData, currentPage]
     );
 
     const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
@@ -124,7 +148,7 @@ export default function AdminDataTable() {
             cell: ({row}) => (
                 <button className={`button add-dataset-button ${expandedMap[row.id] ? "is-inverted" : ""}`}>
                     <span className="icon is-small">
-                        <FontAwesomeIcon icon={faPlus} />
+                        <FontAwesomeIcon icon={faPlus}/>
                     </span>
                 </button>
             ),
@@ -164,17 +188,50 @@ export default function AdminDataTable() {
         }
     }, [paginatedData, selectedRowIds]);
 
+    useEffect(() => {
+        Object.entries(subTableRefs.current).forEach(([id, el]) => {
+            if (!el) return;
+            const isExpanded = expandedMap[Number(id)];
+
+            if (isExpanded) {
+                el.classList.add("open");
+                el.style.overflow = "hidden";
+                el.style.maxHeight = "0px";
+
+                requestAnimationFrame(() => {
+                    el.style.maxHeight = el.scrollHeight + "px";
+                });
+            } else {
+                el.classList.remove("open");
+                el.style.overflow = "hidden";
+
+                // 강제 리플로우 유발
+                const _ = el.offsetHeight;
+
+                // 닫을 때
+                el.style.maxHeight = el.scrollHeight + 'px'; // 현재 높이 고정
+                void el.offsetHeight; // 강제 리플로우 (transition 유도)
+                el.style.maxHeight = '0px'; // 이제 트랜지션 적용됨
+            }
+        });
+    }, [expandedMap]);
+
     return (
         <>
             <div className="admin-dataset-header">
                 <div className="date-search-section">
-                    <input type="date" className="date-picker"/>
+                    <input type="date" className="date-picker" value={startDate}
+                           onChange={e => setStartDate(e.target.value)}/>
                     <span>~</span>
-                    <input type="date" className="date-picker"/>
+                    <input type="date" className="date-picker" value={endDate}
+                           onChange={e => setEndDate(e.target.value)}/>
                     {/*<input type="text" className="search-input" placeholder="폴더 검색 input" />*/}
+                    {/*<CustomSearch*/}
+                    {/*    onSearch={setSearchValue}*/}
+                    {/*    // className={pathName === '/master/dept' ? 'wide-search' : ''}*/}
+                    {/*/>*/}
                     <CustomSearch
-                        onSearch={setSearchValue}
-                        // className={pathName === '/master/dept' ? 'wide-search' : ''}
+                        onSearch={handleSearch}
                     />
                     {/*<button className="search-button">검색</button>*/}
                     {/*<button className="button is-link" onClick={() => setOpen(true)}>*/}
@@ -186,7 +243,7 @@ export default function AdminDataTable() {
                     {/*<button className="create-folder">폴더 생성</button>*/}
                     <ModalDataTrigger buttonText="폴더 생성"/>
                     {/*<button className="delete-folder">삭제</button>*/}
-                    <button className="button is-danger is-outlined">
+                    <button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>
                         <span>삭제</span>
                         <span className="icon is-small">
                         <i className="fas fa-times"></i>
@@ -208,19 +265,30 @@ export default function AdminDataTable() {
                     ))}
                     </thead>
                     <tbody>
-                    {table.getRowModel().rows.map(row => (
-                        <React.Fragment key={row.id}>
-                            <tr className={expandedMap[row.id] ? "expanded active-row" : ""}>
-                                {row.getVisibleCells().map(cell => (
-                                    <td key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </td>
-                                ))}
-                            </tr>
-                            {expandedMap[row.id] && (
-                                <tr>
+                    {table.getRowModel().rows.length === 0 ? (
+                        <tr>
+                            <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    ) : (
+                        table.getRowModel().rows.map(row => (
+                            <React.Fragment key={row.id}>
+                                <tr className={expandedMap[row.id] ? "expanded active-row" : ""}>
+                                    {row.getVisibleCells().map(cell => (
+                                        <td key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </td>
+                                    ))}
+                                </tr>
+                                <tr className="sub-table-row">
                                     <td colSpan={table.getAllLeafColumns().length}>
-                                        <div className="sub-table-wrapper open">
+                                        <div
+                                            className={`sub-table-wrapper animated-wrapper ${expandedMap[row.id] ? 'open' : ''}`}
+                                            ref={(el) => {
+                                                subTableRefs.current[Number(row.id)] = el;
+                                            }}
+                                        >
                                             <table className="sub-table">
                                                 <thead>
                                                 <tr>
@@ -237,38 +305,53 @@ export default function AdminDataTable() {
                                                 </thead>
                                                 <tbody>
                                                 {dummySubRows.map((sub, idx) => (
-                                                  <tr key={sub.versionId}>
-                                                    <td><input type="radio" name={`use-${row.id}`} defaultChecked={idx === 0} /></td>
-                                                    <td>{sub.versionId}</td>
-                                                    <td>{sub.date}</td>
-                                                    <td>{sub.name}</td>
-                                                    <td>{sub.version}</td>
-                                                    <td>
-                                                      <button className="sub-btn">보기</button>
-                                                    </td>
-                                                    <td>
-                                                      <button className="sub-btn">다운로드</button>
-                                                    </td>
-                                                    <td>
-                                                      <button className="edit-icon">
-                                                        <FontAwesomeIcon icon={faPen} />
-                                                      </button>
-                                                    </td>
-                                                    <td>
-                                                      <button className="delete-icon">
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                      </button>
-                                                    </td>
-                                                  </tr>
+                                                    <tr key={sub.versionId}>
+                                                        <td><input type="radio" name={`use-${row.id}`}
+                                                                   defaultChecked={idx === 0}/></td>
+                                                        <td>{sub.versionId}</td>
+                                                        <td>{sub.date}</td>
+                                                        <td>{sub.name}</td>
+                                                        <td>{sub.version}</td>
+                                                        <td>
+                                                            {/*<button className="sub-btn">보기</button>*/}
+                                                            <ModalCommitTrigger/>
+                                                        </td>
+                                                        <td>
+                                                            <button className="sub-btn">다운로드</button>
+                                                        </td>
+                                                        <td>
+                                                            <button className="edit-icon">
+                                                                <FontAwesomeIcon icon={faPen}
+                                                                                 onClick={() => setOpenCommitModal(true)}
+                                                                                 style={{
+                                                                                     color: '#232D64',
+                                                                                     cursor: 'pointer',
+                                                                                     width: '14px',
+                                                                                     height: '14px'
+                                                                                 }}/>
+                                                            </button>
+                                                        </td>
+                                                        <td>
+                                                            <button className="delete-icon">
+                                                                <FontAwesomeIcon icon={faTrash}
+                                                                                 onClick={() => setOpenDeleteModal(true)}
+                                                                                 style={{
+                                                                                     color: 'red',
+                                                                                     cursor: 'pointer',
+                                                                                     width: '14px',
+                                                                                     height: '14px'
+                                                                                 }}/>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
                                                 ))}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </td>
                                 </tr>
-                            )}
-                        </React.Fragment>
-                    ))}
+                            </React.Fragment>
+                        )))}
                     </tbody>
                 </table>
                 <div className="pagination-footer">
@@ -279,8 +362,15 @@ export default function AdminDataTable() {
                             disabled={(currentPage + 1) * pageSize >= data.length}>Next
                     </button>
                 </div>
-
             </div>
+            {openDeleteModal &&
+                <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+            {openTopRowDeleteModal &&
+                <ModalDefault type="delete-data" label="선택한 폴더를 삭제하시겠습니까?"
+                              onClose={() => setOpenTopRowDeleteModal(false)}/>}
+            {/* 현재는 따로 파일 props를 받는 로직이 없기 때문에, 차후 API 연결 후 DB 조회가 성립되면 ModalUpload와 연계하여 커밋 수정을 구현할 예정입니다. */}
+            {openCommitModal &&
+                <ModalUpload onClose={() => setOpenCommitModal(false)}/>}
         </>
     );
 }

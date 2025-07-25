@@ -4,6 +4,8 @@
 import {useState} from 'react';
 import './ModalDeptTrigger.scss';
 import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 
 export default function ModalDataTrigger({buttonText}: { buttonText: string }) {
     const [open, setOpen] = useState(false);
@@ -11,10 +13,12 @@ export default function ModalDataTrigger({buttonText}: { buttonText: string }) {
     return (
         <>
             <button className="button is-link" onClick={() => setOpen(true)}>
-                <img src="/AddAdmin.svg" alt="icon" className="icon-left" />
+                {/*<img src="/AddAdmin.svg" alt="icon" className="icon-left"/>*/}
+                <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                 {buttonText}
             </button>
             {open && <ModalUpload onClose={() => setOpen(false)}/>}
         </>
     );
+
 }
