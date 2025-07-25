@@ -60,8 +60,8 @@ export default function AdminDataTable() {
     const checkboxRef = useRef<HTMLInputElement>(null);
     const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-    const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
-
+    // const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+    const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
 
     const [data] = useState(() => defaultData);
@@ -146,7 +146,7 @@ export default function AdminDataTable() {
             id: "add-dataset",
             header: "데이터셋 추가",
             cell: ({row}) => (
-                <button className={`button add-dataset-button ${expandedMap[row.id] ? "is-inverted" : ""}`}>
+                <button className={`button add-dataset-button ${expandedRowId === row.id ? "is-inverted" : ""}`}>
                     <span className="icon is-small">
                         <FontAwesomeIcon icon={faPlus}/>
                     </span>
@@ -160,17 +160,14 @@ export default function AdminDataTable() {
                 row.getCanExpand() ? (
                     <button
                         onClick={() =>
-                            setExpandedMap(prev => ({
-                                ...prev,
-                                [row.id]: !prev[row.id],
-                            }))
+                            setExpandedRowId(expandedRowId === row.id ? null : row.id)
                         }
                     >
-                        {expandedMap[row.id] ? "▲" : "▼"}
+                        {expandedRowId === row.id ? "▲" : "▼"}
                     </button>
                 ) : null,
         },
-    ], [expandedMap, paginatedData, selectedRowIds]);
+    ], [expandedRowId, paginatedData, selectedRowIds]);
 
     const table = useReactTable({
         data: paginatedData,
@@ -188,33 +185,6 @@ export default function AdminDataTable() {
         }
     }, [paginatedData, selectedRowIds]);
 
-    useEffect(() => {
-        Object.entries(subTableRefs.current).forEach(([id, el]) => {
-            if (!el) return;
-            const isExpanded = expandedMap[Number(id)];
-
-            if (isExpanded) {
-                el.classList.add("open");
-                el.style.overflow = "hidden";
-                el.style.maxHeight = "0px";
-
-                requestAnimationFrame(() => {
-                    el.style.maxHeight = el.scrollHeight + "px";
-                });
-            } else {
-                el.classList.remove("open");
-                el.style.overflow = "hidden";
-
-                // 강제 리플로우 유발
-                const _ = el.offsetHeight;
-
-                // 닫을 때
-                el.style.maxHeight = el.scrollHeight + 'px'; // 현재 높이 고정
-                void el.offsetHeight; // 강제 리플로우 (transition 유도)
-                el.style.maxHeight = '0px'; // 이제 트랜지션 적용됨
-            }
-        });
-    }, [expandedMap]);
 
     return (
         <>
@@ -274,7 +244,7 @@ export default function AdminDataTable() {
                     ) : (
                         table.getRowModel().rows.map(row => (
                             <React.Fragment key={row.id}>
-                                <tr className={expandedMap[row.id] ? "expanded active-row" : ""}>
+                                <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
                                     {row.getVisibleCells().map(cell => (
                                         <td key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -284,7 +254,7 @@ export default function AdminDataTable() {
                                 <tr className="sub-table-row">
                                     <td colSpan={table.getAllLeafColumns().length}>
                                         <div
-                                            className={`sub-table-wrapper animated-wrapper ${expandedMap[row.id] ? 'open' : ''}`}
+                                            className={`sub-table-wrapper animated-wrapper ${expandedRowId === row.id ? 'open' : ''}`}
                                             ref={(el) => {
                                                 subTableRefs.current[Number(row.id)] = el;
                                             }}
