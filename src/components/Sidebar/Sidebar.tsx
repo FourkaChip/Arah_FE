@@ -1,15 +1,15 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Sidebar.scss';
 import { MenuItem, SidebarProps } from '@/types/sidebar';
 import {usePathname} from "next/navigation";
 
-// ===== 메뉴 데이터 =====
-const menuItems: MenuItem[] = [
+// ===== Admin 메뉴 데이터 =====
+const adminMenuItems: MenuItem[] = [
   {
     id: 'dataset',
     label: '데이터셋 관리',
-    icon: 'fa-solid fa-user',
+    icon: 'fa-solid fa-database',
     subItems: [
       { id: 'dataset', label: '데이터셋' },
       { id: 'faq', label: 'FAQ' },
@@ -37,12 +37,40 @@ const menuItems: MenuItem[] = [
   },
 ] as const;
 
+// ===== Master 메뉴 데이터 =====
+const masterMenuItems: MenuItem[] = [
+  {
+    id: 'admin-manage',
+    label: '관리자 관리',
+    icon: 'fa-solid fa-users-gear',
+  },
+  {
+    id: 'company-config',
+    label: '기업 설정',
+    icon: 'fa-solid fa-gear',
+  },
+] as const;
+
 // ===== 컴포넌트 =====
 export default function Sidebar({ className = '' }: SidebarProps) {
-  const [activeMenuItem, setActiveMenuItem] = useState<string>('dataset');
-
-  // 최초 로그인 페이지에서는 사이드바를 보이지 않기 위해 usePathname 훅을 사용하여 현재 경로를 확인합니다.
+  // Hook들을 최상단에 배치
   const pathName = usePathname();
+  const [activeMenuItem, setActiveMenuItem] = useState<string>('dataset');
+  
+  // 현재 역할 판단 (경로 기반)
+  const isAdmin = pathName.includes('/admin');
+  const isMaster = pathName.includes('/master');
+  
+  // 역할에 따른 메뉴 선택
+  const menuItems = isAdmin ? adminMenuItems : isMaster ? masterMenuItems : adminMenuItems;
+  
+  // 역할이 변경될 때마다 기본 활성 메뉴 업데이트
+  useEffect(() => {
+    const defaultActiveMenu = isAdmin ? 'dataset' : isMaster ? 'admin-manage' : 'dataset';
+    setActiveMenuItem(defaultActiveMenu);
+  }, [isAdmin, isMaster]);
+
+  // 로그인 페이지에서는 사이드바 숨김
   const hiddenPath = ['/master/login', '/admin/login'];
   if(hiddenPath.includes(pathName)) {
     return null;
@@ -120,6 +148,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   // 사이드바 렌더링
   return (
     <aside className={`sidebar-aside ${className}`} role="navigation" aria-label="메인 네비게이션">
+      
       <ul className="menu-list" role="menubar">
         {menuItems.map(renderMenuItem)}
       </ul>
