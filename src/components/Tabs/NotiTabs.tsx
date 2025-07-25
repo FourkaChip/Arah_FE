@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import './NotiTabs.scss';
 
 interface NotiTabsProps {
     tabs: string[];
