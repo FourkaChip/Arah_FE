@@ -22,11 +22,9 @@ export default function AdminNotiPage() {
 
   return (
     <div id="admin-main-page" className="admin-login-page">
-    
-
       {/* 알림 필터 영역 (드롭다운 + 탭) */}
-      <div className="noti-filter-section" style={{ marginTop: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+      <div className="noti-filter-section">
+        <div className="filter-controls">
           <CustomDropDownForNoti onChange={setSelectedNoti} />
           <NotiTabs
             tabs={tabs}

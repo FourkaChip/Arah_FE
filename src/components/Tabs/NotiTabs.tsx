@@ -1,13 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-interface NotiTabsProps {
-    tabs: string[];
-    defaultActiveTab?: string;
-    onTabChange?: (activeTab: string) => void;
-    className?: string;
-}
+import { NotiTabsProps } from '@/types/notiTabs';
 
 export default function NotiTabs({ 
     tabs, 
