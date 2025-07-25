@@ -7,7 +7,7 @@ $primary: #232D64;
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 1020;
 }
 
@@ -88,6 +88,12 @@ $primary: #232D64;
   font-size: 24px;
   cursor: pointer;
   color: #999;
+}
+
+// bulma modal-close에 적용되어 있는 스타일을 덮어써서 디자인 오류를 방지하는 용도입니다.
+.modal-close::before,
+.modal-close::after {
+  display: none !important;
 }
 
 .modal-footer {

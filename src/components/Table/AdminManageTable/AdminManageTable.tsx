@@ -1,6 +1,6 @@
 "use client";
 import {DataGrid, GridColDef, GridPaginationModel} from "@mui/x-data-grid";
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import ModalDepartment from "@/components/Modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
@@ -13,6 +13,8 @@ import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
 import {usePathname} from "next/navigation";
 import ModalNewDeptTrigger from "@/components/utils/ModalTrigger/ModalNewDeptTrigger";
 import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
+import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
@@ -115,9 +117,15 @@ export default function MasterAdminTable() {
                         onClick={() => setOpenDeleteModal(true)}
                         style={{color: 'red', cursor: 'pointer'}}
                     />
+                    // <FontAwesomeIcon icon={faTrash} />
                 ),
             }
         ];
+
+    const NoRowsOverlay = () => (
+        <div className="empty-row">검색 결과가 없습니다</div>
+    );
+
 
     return (
         <>
@@ -148,7 +156,10 @@ export default function MasterAdminTable() {
                     onPaginationModelChange={setPaginationModel}
                     pageSizeOptions={[8]}
                     // rowCount={filteredRows.length} // rowCount는 현재 클라이언트 사이드 페이지네이션에서는 비활성화해야 함. 만약 서버 사이드 페이지네이션을 사용한다면 활성화해야 함.
-                    slots={{pagination: CustomPagination}}
+                    slots={{
+                        pagination: CustomPagination,
+                        noRowsOverlay: NoRowsOverlay,
+                    }}
                 />
                 {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
                 {openDeleteModal &&
