@@ -10,16 +10,15 @@ const menuItems: MenuItem[] = [
     id: 'dataset',
     label: '데이터셋 관리',
     icon: 'fa-solid fa-user',
+    subItems: [
+      { id: 'dataset', label: '데이터셋' },
+      { id: 'faq', label: 'FAQ' },
+    ],
   },
   {
     id: 'inquiry',
-    label: '문의 및 피드백',
+    label: '피드백',
     icon: 'fa-solid fa-comments',
-    subItems: [
-      { id: 'qna', label: 'Q&A' },
-      { id: 'faq', label: 'FAQ' },
-      { id: 'feedback', label: '피드백' },
-    ],
   },
   {
     id: 'statistics',
