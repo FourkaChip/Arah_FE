@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import './Sidebar.scss';
 import { MenuItem, SubMenuItem, SidebarProps } from '@/types/sidebar';
 
-// ===== 상수 및 설정 =====
+// 관리자용 메뉴 구성
 const ADMIN_MENU_ITEMS: MenuItem[] = [
   {
     id: 'dataset',
@@ -37,6 +37,7 @@ const ADMIN_MENU_ITEMS: MenuItem[] = [
   },
 ] as const;
 
+// 마스터용 메뉴 구성
 const MASTER_MENU_ITEMS: MenuItem[] = [
   {
     id: 'admin-manage',
@@ -50,13 +51,18 @@ const MASTER_MENU_ITEMS: MenuItem[] = [
   },
 ] as const;
 
-const HIDDEN_PATHS = ['/master/login', '/admin/login'] as const;
+// 로그인 페이지에서는 사이드바 숨김
+//const HIDDEN_PATHS = ['/master/login', '/admin/login'] as const;
+
+// 기본 활성화 메뉴 설정
 const DEFAULT_ACTIVE_MENU = {
   ADMIN: 'manage-dataset',
   MASTER: 'admin-manage',
 } as const;
 
-// ===== 유틸리티 함수 =====
+/**
+ * 서브메뉴 아이템의 부모 메뉴 ID를 찾는 함수
+ */
 const findParentMenuId = (itemId: string, menuItems: MenuItem[]): string | null => {
   for (const menu of menuItems) {
     if (menu.subItems?.some(subItem => subItem.id === itemId)) {
@@ -66,21 +72,21 @@ const findParentMenuId = (itemId: string, menuItems: MenuItem[]): string | null 
   return null;
 };
 
+/**
+ * ID로 메뉴 아이템을 찾는 함수 (최상위 메뉴 및 서브메뉴 포함)
+ */
 const findMenuItemById = (itemId: string, menuItems: MenuItem[]): MenuItem | null => {
-  // 먼저 최상위 메뉴에서 찾기
   for (const menu of menuItems) {
     if (menu.id === itemId) {
       return menu;
     }
-    // 서브메뉴에서도 찾기
     if (menu.subItems) {
       for (const subItem of menu.subItems) {
         if (subItem.id === itemId) {
-          // 서브메뉴 아이템을 MenuItem 형태로 변환
           return {
             id: subItem.id,
             label: subItem.label,
-            icon: '', // 서브메뉴는 아이콘이 없음
+            icon: '',
             subItems: undefined
           };
         }
@@ -90,12 +96,17 @@ const findMenuItemById = (itemId: string, menuItems: MenuItem[]): MenuItem | nul
   return null;
 };
 
+/**
+ * 현재 URL 경로로부터 사용자 역할 판단
+ */
 const getUserRole = (pathname: string) => ({
   isAdmin: pathname.includes('/admin'),
   isMaster: pathname.includes('/master'),
 });
 
-// ===== 커스텀 훅 =====
+/**
+ * 사이드바 메뉴 상태 관리 커스텀 훅
+ */
 const useSidebarMenu = (menuItems: MenuItem[]) => {
   const pathname = usePathname();
   const { isAdmin, isMaster } = getUserRole(pathname);
@@ -103,7 +114,6 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
   const [activeMenuItem, setActiveMenuItem] = useState<string>(DEFAULT_ACTIVE_MENU.ADMIN);
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['dataset']));
 
-  // 초기 메뉴 설정
   useEffect(() => {
     const defaultActiveMenu = isAdmin 
       ? DEFAULT_ACTIVE_MENU.ADMIN 
@@ -120,7 +130,6 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
     }
   }, [isAdmin, isMaster]);
 
-  // 메뉴 상태 확인 함수들
   const isMenuActive = useCallback((menuId: string): boolean => {
     return activeMenuItem === menuId;
   }, [activeMenuItem]);
@@ -135,11 +144,14 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
     return expandedMenus.has(menuId);
   }, [expandedMenus]);
 
-  // 부모 메뉴 클릭 처리
+  /**
+   * 하위 메뉴가 있는 부모 메뉴 클릭 처리
+   * - 펼쳐져 있으면 접기 로직 적용
+   * - 접혀져 있으면 펼치고 첫 번째 서브메뉴 활성화
+   */
   const handleParentMenuClick = useCallback((menuId: string, clickedMenu: MenuItem) => {
     setExpandedMenus(prev => {
       if (prev.has(menuId)) {
-        // 이미 펼쳐져 있으면 접기 로직
         const activeParent = findParentMenuId(activeMenuItem, menuItems);
         if (activeParent === menuId) {
           return prev; // 현재 활성 아이템이 이 서브메뉴에 속하면 접지 않음
@@ -147,7 +159,6 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
           return activeParent ? new Set([activeParent]) : new Set();
         }
       } else {
-        // 접혀져 있으면 펼치고 첫 번째 서브메뉴 선택
         const firstSubItem = clickedMenu.subItems?.[0];
         if (firstSubItem) {
           setActiveMenuItem(firstSubItem.id);
@@ -163,7 +174,9 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
     });
   }, [activeMenuItem, menuItems]);
 
-  // 일반 메뉴 클릭 처리
+  /**
+   * 일반 메뉴(서브메뉴가 없는) 클릭 처리
+   */
   const handleRegularMenuClick = useCallback((menuId: string) => {
     setActiveMenuItem(menuId);
     
@@ -175,7 +188,9 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
     }
   }, [menuItems]);
 
-  // 메뉴 클릭 핸들러
+  /**
+   * 메뉴 아이템 클릭 이벤트 핸들러
+   */
   const handleMenuItemClick = useCallback((
     menuId: string,
     event: React.MouseEvent<HTMLAnchorElement>
@@ -202,7 +217,9 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
   };
 };
 
-// ===== 메인 컴포넌트 =====
+/**
+ * 사이드바 메인 컴포넌트
+ */
 export default function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
   const { isAdmin, isMaster } = getUserRole(pathname);
@@ -218,7 +235,6 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     handleMenuItemClick,
   } = useSidebarMenu(menuItems);
 
-  // 메뉴 아이템 렌더링
   const renderSubMenuItem = useCallback((subItem: SubMenuItem) => (
     <li key={subItem.id} role="none">
       <a
@@ -265,10 +281,10 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     );
   }, [isMenuActive, isSubMenuActive, isMenuExpanded, handleMenuItemClick, renderSubMenuItem]);
 
-  // 숨겨진 경로에서는 사이드바 숨김
-  if (HIDDEN_PATHS.some(path => pathname === path)) {
-    return null;
-  }
+  // 로그인 페이지에서는 사이드바 숨김
+  //if (HIDDEN_PATHS.some(path => pathname === path)) {
+  //  return null;
+  //}
 
   return (
     <aside 
