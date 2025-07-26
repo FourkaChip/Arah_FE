@@ -1,21 +1,68 @@
-#admin-main-page {
-  margin-left: 250px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.chatbot-settings-page {
   min-height: 100vh;
-  background-color: #fff;
+  padding: 2rem 0;
 
-  .main-title {
-    font-size: 36px;
-    font-weight: bold;
-    margin: 20px 0 8px;
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
   }
 
-  .main-description {
-    color: #888;
-    font-size: 20px;
-    margin-bottom: 32px;
+  .page-header {
+    margin-bottom: 3rem;
+
+    .title {
+      color: #363636;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+
+    .description-box {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      border: 1px solid #e1e8ed;
+      box-shadow: none;
+
+      p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+        text-align: center;
+      }
+    }
   }
+
+  .settings-content {
+    max-width: 800px;
+    margin: 0 auto;
+
+    .setting-slider-container {
+      background: white;
+      border: 1px solid #e1e8ed;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+.admin-main-title {
+  font-size: 31px;
+  font-weight: 1000;
+  color: #232D64;
+  margin: 0 0 20px;
+}
+
+.admin-main-description {
+  color: #888;
+  font-size: 12px;
+  margin: 20px 0 0 10px;
 }
