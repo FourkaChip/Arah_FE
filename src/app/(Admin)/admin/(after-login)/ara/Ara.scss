@@ -1,77 +1,76 @@
+// CSS 변수 정의
+:root {
+  --ara-primary-color: #232d64;
+  --ara-text-gray: #888;
+  --ara-border-color: #e1e8ed;
+  --ara-container-max-width: 900px;
+}
+
 .chatbot-settings-page {
   min-height: 100vh;
   padding: 2rem 0;
 
   .container {
-    max-width: 900px;
+    max-width: var(--ara-container-max-width);
     margin: 0 auto;
     padding: 0 1.5rem;
   }
 
-  .page-header {
+  .admin-main-page-wrapper {
     margin-bottom: 3rem;
-
-    .title {
-      color: #363636;
-      font-weight: 600;
-      margin-bottom: 2rem;
-    }
-
-    .description-box {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 1.5rem 2rem;
-      border: 1px solid #e1e8ed;
-      box-shadow: none;
-
-      p {
-        font-size: 1rem;
-        line-height: 1.6;
-        margin: 0;
-        text-align: center;
-      }
-      .highlight {
-        color: #232D64;
-        font-weight: bold;
-      }
-    }
-  }
-
-  .settings-content {
-    max-width: 800px;
-    margin: 0 auto;
-
-    .setting-slider-container {
-      background: white;
-      border: 1px solid #e1e8ed;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: box-shadow 0.2s ease;
-
-      &:hover {
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      }
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
   }
 }
+
+// 페이지 제목 스타일
 .admin-main-title {
-  font-size: 31px;
-  font-weight: 1000;
-  color: #232D64;
-  margin: 0 0 20px;
+  font-size: 1.9375rem; // 31px
+  font-weight: bold;
+  color: var(--ara-primary-color);
+  margin: 0 0 1.25rem 0; // 20px
 }
 
+// 페이지 설명 스타일
 .admin-main-description {
-  color: #888;
-  font-size: 14px;
-  margin: 20px 0 0 10px;
+  color: var(--ara-text-gray);
+  font-size: 0.875rem; // 14px
+  margin: 1.25rem 0 0 0.625rem; // 20px 0 0 10px
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 0.5rem 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 
   .highlight {
-    color: #232D64;
+    color: var(--ara-primary-color);
     font-weight: bold;
+  }
+}
+
+// 반응형 디자인
+@media (max-width: 768px) {
+  .chatbot-settings-page {
+    padding: 1rem 0;
+
+    .container {
+      padding: 0 1rem;
+    }
+
+    .admin-main-page-wrapper {
+      margin-bottom: 2rem;
+    }
+  }
+
+  .admin-main-title {
+    font-size: 1.5rem; // 24px
+    margin-bottom: 1rem;
+  }
+
+  .admin-main-description {
+    font-size: 0.8125rem; // 13px
+    margin: 1rem 0 0 0;
   }
 }
