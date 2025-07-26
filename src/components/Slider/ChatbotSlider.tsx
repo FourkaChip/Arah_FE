@@ -23,6 +23,28 @@ export default function ChatbotSlider({
   rightLabel,
   tip,
 }: ChatbotSliderProps) {
+  // 동적으로 marks 생성 - 현재 값만 강조, 0은 투명도 조절
+  const createMarks = () => {
+    const marks: { [key: number]: React.ReactNode } = {};
+    for (let i = 0; i <= 10; i++) {
+      let className = 'default-value';
+      if (i === 0 && i === value) {
+        className = 'zero-current-value';
+      } else if (i === 0) {
+        className = 'zero-value';
+      } else if (i === value) {
+        className = 'current-value';
+      }
+      
+      marks[i] = (
+        <span className={className}>
+          {i}
+        </span>
+      );
+    }
+    return marks;
+  };
+
   return (
     <div className="slider-block">
       <p className="slider-title">{label}</p>
@@ -43,10 +65,14 @@ export default function ChatbotSlider({
       <Slider
         min={0}
         max={10}
-        marks={{ 0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10' }}
+        marks={createMarks()}
         step={1}
         value={value}
-        onChange={(value) => onChange(typeof value === 'number' ? value : value[0])}
+        onChange={(value) => {
+          const numValue = typeof value === 'number' ? value : value[0];
+          // 0으로 가려고 하면 1로 튕기게 함
+          onChange(numValue === 0 ? 1 : numValue);
+        }}
         trackStyle={{ backgroundColor: '#2E3A8C', height: 8 }}
         handleStyle={{
           backgroundColor: '#fff',

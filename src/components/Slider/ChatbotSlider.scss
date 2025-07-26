@@ -3,6 +3,24 @@
 .slider-block {
   margin-bottom: 2.5rem;
   margin-top: 5rem;
+
+  // 슬라이더 mark 스타일링
+  .default-value {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .current-value {
+    color: #2E3A8C;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .zero-value {
+    color: #666;
+    font-size: 14px;
+    opacity: 0.4;
+  }
 }
 
 .slider-title {
@@ -17,7 +35,7 @@
   font-size: 0.9rem;
   color: #666;
   margin-bottom: 0.5rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
 .slider-tip-box-container {
@@ -55,3 +73,4 @@
   font-weight: bold;
   margin-bottom: 0.4rem;
 }
+
