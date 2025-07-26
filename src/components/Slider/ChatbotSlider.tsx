@@ -59,34 +59,36 @@ export default function ChatbotSlider({
         </div>
       </div>
       
-
-      <Slider
-        min={0}
-        max={10}
-        marks={createMarks()}
-        step={1}
-        value={value}
-        onChange={(value) => {
-          const numValue = typeof value === 'number' ? value : value[0];
-          // 0으로 가려고 하면 1로 튕기게 함
-          onChange(numValue === 0 ? 1 : numValue);
-        }}
-        trackStyle={{ backgroundColor: '#2E3A8C', height: 8 }}
-        handleStyle={{
-          backgroundColor: '#fff',
-          border: '2px solid #2E3A8C',
-          height: 24,
-          width: 24,
-          marginTop: -8,
-          marginBottom: 10,
-        }}
-        railStyle={{ backgroundColor: '#d3d3d3', height: 8 }}
-        dotStyle={{ display: 'none' }}
-      />
-      <div className="slider-labels">
-        <span>{leftLabel}</span>
-        <span>{rightLabel}</span>
+      <div className="slider-wrapper">
+        <Slider
+          min={0}
+          max={10}
+          marks={createMarks()}
+          step={1}
+          value={value}
+          onChange={(value) => {
+            const numValue = typeof value === 'number' ? value : value[0];
+            // 0으로 가려고 하면 1로 튕기게 함
+            onChange(numValue === 0 ? 1 : numValue);
+          }}
+          trackStyle={{ backgroundColor: '#2E3A8C', height: 8 }}
+          handleStyle={{
+            backgroundColor: '#fff',
+            border: '2px solid #2E3A8C',
+            height: 24,
+            width: 24,
+            marginTop: -8,
+            marginBottom: 10,
+          }}
+          railStyle={{ backgroundColor: '#d3d3d3', height: 8 }}
+          dotStyle={{ display: 'none' }}
+        />
+        
       </div>
+      <div className="slider-labels">
+          <span>{leftLabel}</span>
+          <span>{rightLabel}</span>
+        </div>
 
       
     </div>

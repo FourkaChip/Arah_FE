@@ -30,6 +30,10 @@
         margin: 0;
         text-align: center;
       }
+      .highlight {
+        color: #232D64;
+        font-weight: bold;
+      }
     }
   }
 
@@ -63,6 +67,11 @@
 
 .admin-main-description {
   color: #888;
-  font-size: 12px;
+  font-size: 14px;
   margin: 20px 0 0 10px;
+
+  .highlight {
+    color: #232D64;
+    font-weight: bold;
+  }
 }
