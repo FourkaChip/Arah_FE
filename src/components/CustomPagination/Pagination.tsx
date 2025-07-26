@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { PaginationProps, PageItem } from '@/types/pagination';
+import './Pagination.scss';
 
 export default function Pagination({
   currentPage,
@@ -14,7 +15,7 @@ export default function Pagination({
     const items: PageItem[] = [];
     const pagesPerGroup = 10; // 한 번에 표시할 페이지 수
     
-    // 현재 페이지가 속한 그룹 계산 (0부터 시작)
+    // 현재 페이지가 속한 그룹 계산 
     const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
     
     // 현재 그룹의 시작 페이지와 끝 페이지 계산
@@ -37,14 +38,6 @@ export default function Pagination({
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       onPageChange(page);
-    }
-  };
-
-  // 키보드 네비게이션 핸들러
-  const handleKeyDown = (event: React.KeyboardEvent, page: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handlePageChange(page);
     }
   };
 
@@ -96,7 +89,7 @@ export default function Pagination({
         disabled={!hasPrevGroup}
         aria-label="이전 페이지 그룹으로 이동"
       >
-        이전
+        <i className="fa-solid fa-angle-left"></i>
       </button>
 
       {/* 다음 그룹 버튼 */}
@@ -112,7 +105,7 @@ export default function Pagination({
         disabled={!hasNextGroup}
         aria-label="다음 페이지 그룹으로 이동"
       >
-        다음
+        <i className="fa-solid fa-angle-right"></i>
       </button>
 
       {/* 페이지 번호 목록 */}
@@ -122,7 +115,6 @@ export default function Pagination({
             <button
               className={`pagination-link ${item.isActive ? 'is-current' : ''}`}
               onClick={() => handlePageChange(item.page!)}
-              onKeyDown={(e) => handleKeyDown(e, item.page!)}
               aria-label={
                 item.isActive 
                   ? `현재 페이지, ${item.page}페이지` 
