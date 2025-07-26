@@ -28,9 +28,7 @@ export default function ChatbotSlider({
     const marks: { [key: number]: React.ReactNode } = {};
     for (let i = 0; i <= 10; i++) {
       let className = 'default-value';
-      if (i === 0 && i === value) {
-        className = 'zero-current-value';
-      } else if (i === 0) {
+      if (i === 0) {
         className = 'zero-value';
       } else if (i === value) {
         className = 'current-value';
