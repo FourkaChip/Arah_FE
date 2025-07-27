@@ -1,3 +1,4 @@
+// FAQ 페이지에 적용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
@@ -44,9 +45,9 @@ export default function FaqAdminTable() {
             const isTagAll = selectedTag === 'all';
             const tagMatch = isTagAll || row.tag === selectedTag;
 
-            // 기존 검색어 필터
-            const matches = searchValue === "" ||
-                row.tag.includes(searchValue) ||
+            // 검색어는 질문/답변에만 적용
+            const matches =
+                searchValue === "" ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
 
