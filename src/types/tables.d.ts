@@ -11,7 +11,7 @@ export type RowData = {
 export type FeedbackRowData = {
     id: number;
     no: number;
-    tag: string;
+    docFaq: string;
     registeredAt: string;
     question: string;
     answer: string;

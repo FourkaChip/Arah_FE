@@ -1,5 +1,6 @@
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
+import { useRouter } from "next/navigation";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import './FeedbackTable.scss';
 import {
@@ -13,21 +14,19 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
-import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
-// import CustomDropDownForTag from "@/components/CustomDropdown/CustomDropDownForTag";
-import {RowData} from "@/types/tables";
-import {defaultData} from "@/constants/dummydata/DummyFaq";
+import {FeedbackRowData} from "@/types/tables";
+import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
+import {faFileClipboard} from "@fortawesome/free-solid-svg-icons/faFileClipboard";
 
 export default function FaqAdminTable() {
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
-    const [openFaqModal, setOpenFaqModal] = useState(false);
-    const [editRow, setEditRow] = useState<RowData | null>(null);
+    const router = useRouter();
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
-    const [data] = useState(() => defaultData);
+    const [data] = useState(() => defaultFeedbackData);
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const [startDate, setStartDate] = useState("");
@@ -41,11 +40,11 @@ export default function FaqAdminTable() {
         return data.filter(row => {
             // 태그 필터 추가
             const isTagAll = selectedTag === 'all';
-            const tagMatch = isTagAll || row.tag === selectedTag;
+            const tagMatch = isTagAll || row.docFaq === selectedTag;
 
             // 기존 검색어 필터
             const matches = searchValue === "" ||
-                row.tag.includes(searchValue) ||
+                row.docFaq.includes(searchValue) ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
 
@@ -65,46 +64,46 @@ export default function FaqAdminTable() {
 
     const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
 
-    const columns = useMemo<ColumnDef<RowData>[]>(() => [
-        {
-            id: "select",
-            header: () => (
-                <input
-                    type="checkbox"
-                    ref={checkboxRef}
-                    onChange={(e) => {
-                        const checked = e.target.checked;
-                        const newSelections: Record<number, boolean> = {};
-                        paginatedData.forEach((row) => {
-                            newSelections[row.id] = checked;
-                        });
-                        setSelectedRowIds(newSelections);
-                    }}
-                    checked={
-                        paginatedData.length > 0 &&
-                        paginatedData.every((row) => selectedRowIds[row.id])
-                    }
-                />
-            ),
-            cell: ({row}) => (
-                <input
-                    type="checkbox"
-                    checked={selectedRowIds[row.original.id]}
-                    onChange={(e) =>
-                        setSelectedRowIds((prev) => ({
-                            ...prev,
-                            [row.original.id]: e.target.checked,
-                        }))
-                    }
-                />
-            ),
-        },
+    const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
+        // {
+        //     id: "select",
+        //     header: () => (
+        //         <input
+        //             type="checkbox"
+        //             ref={checkboxRef}
+        //             onChange={(e) => {
+        //                 const checked = e.target.checked;
+        //                 const newSelections: Record<number, boolean> = {};
+        //                 paginatedData.forEach((row) => {
+        //                     newSelections[row.id] = checked;
+        //                 });
+        //                 setSelectedRowIds(newSelections);
+        //             }}
+        //             checked={
+        //                 paginatedData.length > 0 &&
+        //                 paginatedData.every((row) => selectedRowIds[row.id])
+        //             }
+        //         />
+        //     ),
+        //     cell: ({row}) => (
+        //         <input
+        //             type="checkbox"
+        //             checked={selectedRowIds[row.original.id]}
+        //             onChange={(e) =>
+        //                 setSelectedRowIds((prev) => ({
+        //                     ...prev,
+        //                     [row.original.id]: e.target.checked,
+        //                 }))
+        //             }
+        //         />
+        //     ),
+        // },
         {
             accessorKey: "no",
             header: "No.",
         },
         {
-            accessorKey: "tag",
+            accessorKey: "docFaq",
             header: "태그",
             cell: info => <strong className="faq-strong">{info.getValue() as string}</strong>,
         },
@@ -129,21 +128,22 @@ export default function FaqAdminTable() {
         },
         {
             id: "edit",
-            header: "수정",
+            header: "FAQ 이동",
             cell: ({row}) => (
-                <button className="edit-icon">
-                    <FontAwesomeIcon icon={faPen}
-                                     onClick={() => {
-                                         setEditRow(row.original);
-                                         setOpenFaqModal(true);
-                                     }}
-                                     style={{
-                                         color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
-                                         cursor: 'pointer',
-                                         width: '16px',
-                                         height: '16px'
-                                     }}/>
-                </button>
+                row.original.docFaq === "FAQ" ? (
+                    <button className="edit-icon">
+                        <FontAwesomeIcon
+                            icon={faFileClipboard}
+                            onClick={() => router.push("/admin/faq")}
+                            style={{
+                                color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
+                                cursor: 'pointer',
+                                width: '16px',
+                                height: '16px'
+                            }}
+                        />
+                    </button>
+                ) : null
             ),
         },
         {
@@ -193,26 +193,6 @@ export default function FaqAdminTable() {
     return (
         <>
             <div className="admin-dataset-header">
-                <div className="tag-search-section">
-                    {/*<input type="date" className="date-picker" value={startDate}*/}
-                    {/*       onChange={e => setStartDate(e.target.value)}/>*/}
-                    {/*<span>~</span>*/}
-                    {/*<input type="date" className="date-picker" value={endDate}*/}
-                    {/*       onChange={e => setEndDate(e.target.value)}/>*/}
-                    {/*<CustomDropDownForTag onChange={setSelectedTag}/>*/}
-                    <CustomSearch
-                        onSearch={handleSearch}
-                    />
-                </div>
-                <div className="action-buttons">
-                    <ModalFAQTrigger/>
-                    {/*<button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>*/}
-                    {/*    <span>삭제</span>*/}
-                    {/*    <span className="icon is-small">*/}
-                    {/*    <i className="fas fa-times"></i>*/}
-                    {/*    </span>*/}
-                    {/*</button>*/}
-                </div>
             </div>
             <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
                 <table className="tanstack-table">
@@ -250,8 +230,9 @@ export default function FaqAdminTable() {
                                             className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
                                         >
                                             <div className="faq-detail-view">
-                                                <p><strong>Q.</strong> {row.original.question}</p>
-                                                <p><strong>A.</strong> {row.original.answer}</p>
+                                                <p><strong>질문</strong> {row.original.question}</p>
+                                                <p className="answer"><strong>답변</strong> {row.original.answer}</p>
+                                                <p className="feedback"><strong>사유</strong> {row.original.feedback}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -271,18 +252,6 @@ export default function FaqAdminTable() {
             </div>
             {openDeleteModal &&
                 <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
-            {/*{openFaqModal &&*/}
-            {/*    <ModalFAQ*/}
-            {/*        onClose={() => {*/}
-            {/*            setOpenFaqModal(false);*/}
-            {/*            setEditRow(null);*/}
-            {/*        }}*/}
-            {/*        onSubmit={(data: { category: string; question: string; answer: string }) => {*/}
-            {/*        }}*/}
-            {/*        category={editRow?.tag}*/}
-            {/*        question={editRow?.question}*/}
-            {/*        answer={editRow?.answer}*/}
-            {/*    />}*/}
         </>
     );
 }
