@@ -18,6 +18,7 @@ import {FeedbackRowData} from "@/types/tables";
 import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
 import {faFileClipboard} from "@fortawesome/free-solid-svg-icons/faFileClipboard";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
+import CustomPagination from "@/components/CustomPagination/CustomPagination";
 
 export default function FaqAdminTable() {
 
@@ -190,6 +191,7 @@ export default function FaqAdminTable() {
         }
     }, [paginatedData, selectedRowIds]);
 
+    const pageCount = Math.ceil(filteredData.length / pageSize);
 
     return (
         <>
@@ -242,13 +244,13 @@ export default function FaqAdminTable() {
                         )))}
                     </tbody>
                 </table>
-                <div className="pagination-footer">
-                    <button onClick={() => setCurrentPage(p => Math.max(p - 1, 0))} disabled={currentPage === 0}>Prev
-                    </button>
-                    <span>{currentPage + 1} / {Math.ceil(data.length / pageSize)}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(p + 1, Math.floor(data.length / pageSize - 1)))}
-                            disabled={(currentPage + 1) * pageSize >= data.length}>Next
-                    </button>
+                {/* pagination-footer 제거, CustomPagination 중앙 배치 */}
+                <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                    <CustomPagination
+                        currentPage={currentPage + 1}
+                        totalPages={pageCount}
+                        onPageChange={(page) => setCurrentPage(page - 1)}
+                    />
                 </div>
             </div>
             {openDeleteModal &&

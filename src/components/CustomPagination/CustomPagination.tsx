@@ -1,23 +1,18 @@
 "use client";
 import { Pagination } from "@mui/material";
-import { useGridApiContext, useGridSelector, gridPageCountSelector, gridPaginationModelSelector } from "@mui/x-data-grid";
+import { PaginationProps } from "@/types/pagination";
 
-export default function CustomPagination() {
-    const apiRef = useGridApiContext();
-    const pageCount = useGridSelector(apiRef, gridPageCountSelector);
-    const paginationModel = useGridSelector(apiRef, gridPaginationModelSelector);
-
+export default function CustomPagination({ currentPage, totalPages, onPageChange, className }: PaginationProps) {
     return (
         <Pagination
             color="primary"
-            count={pageCount}
-            page={paginationModel.page + 1}
-            onChange={(event, value) => {
-                apiRef.current.setPage(value - 1);
-            }}
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, value) => onPageChange(value)}
             shape="rounded"
             siblingCount={5}
             boundaryCount={1}
+            className={className}
             sx={{
                 "& .MuiPaginationItem-root": {
                     color: "#333",

@@ -18,22 +18,11 @@ import {dummySubRows} from "@/constants/dummydata/DummySubRows";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalCommitTrigger from "@/components/utils/ModalTrigger/ModalCommitTrigger";
 import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
-
-type RowData = {
-    id: number;
-    no: number;
-    registeredAt: string;
-    updatedAt: string;
-    folderName: string;
-    subRows?: SubRowData[];
-};
-
-export type SubRowData = {
-    versionId: number;
-    date: string;
-    name: string;
-    version: string;
-};
+import CustomPagination from "@/components/CustomPagination/CustomPagination";
+import {
+    AdminDataTableRowData as RowData,
+    AdminDataTableSubRowData as SubRowData
+} from "@/types/tables";
 
 const defaultData: RowData[] = Array.from({length: 25}, (_, i) => ({
     id: i + 1,
@@ -186,6 +175,8 @@ export default function AdminDataTable() {
     }, [paginatedData, selectedRowIds]);
 
 
+    const pageCount = Math.ceil(filteredData.length / pageSize);
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -324,13 +315,13 @@ export default function AdminDataTable() {
                         )))}
                     </tbody>
                 </table>
-                <div className="pagination-footer">
-                    <button onClick={() => setCurrentPage(p => Math.max(p - 1, 0))} disabled={currentPage === 0}>Prev
-                    </button>
-                    <span>{currentPage + 1} / {Math.ceil(data.length / pageSize)}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(p + 1, Math.floor(data.length / pageSize - 1)))}
-                            disabled={(currentPage + 1) * pageSize >= data.length}>Next
-                    </button>
+                {/* pagination-footer 제거, CustomPagination 중앙 배치 */}
+                <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
+                    <CustomPagination
+                        currentPage={currentPage + 1}
+                        totalPages={pageCount}
+                        onPageChange={(page) => setCurrentPage(page - 1)}
+                    />
                 </div>
             </div>
             {openDeleteModal &&
