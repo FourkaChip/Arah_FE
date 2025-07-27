@@ -14,42 +14,11 @@ import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
-
-type RowData = {
-    id: number;
-    no: number;
-    tag: string;
-    registeredAt: string;
-    question: string;
-    answer: string;
-};
-
-const defaultData: RowData[] = [
-    {
-        id: 1,
-        no: 1,
-        tag: "일반",
-        registeredAt: "2024/06/01",
-        question: "서비스 이용 방법이 궁금해요.",
-        answer: "서비스 이용 방법은 홈페이지 상단의 가이드를 참고해 주세요.",
-    },
-    {
-        id: 2,
-        no: 2,
-        tag: "계정",
-        registeredAt: "2024/06/03",
-        question: "비밀번호를 잊어버렸어요.",
-        answer: "로그인 화면에서 비밀번호 찾기를 통해 재설정할 수 있습니다.",
-    },
-    {
-        id: 3,
-        no: 3,
-        tag: "결제",
-        registeredAt: "2024/06/05",
-        question: "결제 영수증은 어디서 확인하나요?",
-        answer: "마이페이지 > 결제 내역에서 영수증을 확인하실 수 있습니다.",
-    },
-];
+import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
+import CustomDropDownForTag from "@/components/CustomDropdown/CustomDropDownForTag";
+import {RowData} from "@/types/tables";
+import {defaultData} from "@/constants/dummydata/DummyFaq";
+import {rows} from "@/constants/dummydata/AdminList";
 
 export default function FaqAdminTable() {
 
@@ -64,22 +33,31 @@ export default function FaqAdminTable() {
     const pageSize = 8;
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [selectedTag, setSelectedTag] = useState('all');
+
     const handleSearch = (search: string) => {
         setSearchValue(search);
     };
     const filteredData = useMemo(() => {
         return data.filter(row => {
-            // For FAQ, let's just filter by tag or question
+            // 태그 필터 추가
+            const isTagAll = selectedTag === 'all';
+            const tagMatch = isTagAll || row.tag === selectedTag;
+
+            // 기존 검색어 필터
             const matches = searchValue === "" ||
                 row.tag.includes(searchValue) ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
+
             const registered = row.registeredAt.replace(/\//g, "-");
             const afterStart = !startDate || registered >= startDate;
             const beforeEnd = !endDate || registered <= endDate;
-            return matches && afterStart && beforeEnd;
+
+            // 태그, 검색어, 날짜 모두 만족해야 함
+            return tagMatch && matches && afterStart && beforeEnd;
         });
-    }, [data, searchValue, startDate, endDate]);
+    }, [data, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
         () => filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
@@ -153,7 +131,7 @@ export default function FaqAdminTable() {
         {
             id: "edit",
             header: "수정",
-            cell: ({ row }) => (
+            cell: ({row}) => (
                 <button className="edit-icon">
                     <FontAwesomeIcon icon={faPen}
                                      onClick={() => setOpenFaqModal(true)}
@@ -184,8 +162,8 @@ export default function FaqAdminTable() {
         },
         {
             id: "detail",
-            header: "상세보기",
-            cell: ({ row }) => (
+            header: "상세",
+            cell: ({row}) => (
                 <button className="detail-toggle" onClick={() =>
                     setExpandedRowId(expandedRowId === row.id ? null : row.id)
                 }>
@@ -213,12 +191,13 @@ export default function FaqAdminTable() {
     return (
         <>
             <div className="admin-dataset-header">
-                <div className="date-search-section">
-                    <input type="date" className="date-picker" value={startDate}
-                           onChange={e => setStartDate(e.target.value)}/>
-                    <span>~</span>
-                    <input type="date" className="date-picker" value={endDate}
-                           onChange={e => setEndDate(e.target.value)}/>
+                <div className="tag-search-section">
+                    {/*<input type="date" className="date-picker" value={startDate}*/}
+                    {/*       onChange={e => setStartDate(e.target.value)}/>*/}
+                    {/*<span>~</span>*/}
+                    {/*<input type="date" className="date-picker" value={endDate}*/}
+                    {/*       onChange={e => setEndDate(e.target.value)}/>*/}
+                    <CustomDropDownForTag onChange={setSelectedTag}/>
                     <CustomSearch
                         onSearch={handleSearch}
                     />

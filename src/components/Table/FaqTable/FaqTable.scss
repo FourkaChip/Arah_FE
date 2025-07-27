@@ -14,7 +14,7 @@ $primary: $blue;
   gap: 16px;
 }
 
-.date-search-section {
+.tag-search-section {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -63,6 +63,7 @@ $primary: $blue;
   border-collapse: collapse;
   font-size: 14px;
   margin-top: 16px;
+  table-layout: fixed;
 
   thead {
     background-color: transparent;
@@ -72,6 +73,16 @@ $primary: $blue;
       border-bottom: 1px solid #ddd;
       text-align: center !important;
       font-weight: 600;
+      // 컬럼별 고정비율입니다.
+      &:nth-child(1) { width: 40px; }   // 체크박스
+      &:nth-child(2) { width: 50px; }   // No.
+      &:nth-child(3) { width: 90px; }   // 태그
+      &:nth-child(4) { width: 110px; }  // 등록일
+      &:nth-child(5) { width: 25%; }    // 질문
+      &:nth-child(6) { width: 30%; }    // 답변
+      &:nth-child(7) { width: 60px; }   // 수정
+      &:nth-child(8) { width: 60px; }   // 삭제
+      &:nth-child(9) { width: 60px; }   // 상세
     }
   }
 
@@ -87,6 +98,9 @@ $primary: $blue;
         padding: 10px 8px;
         vertical-align: middle;
         text-align: center !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
         &.empty-row {
           text-align: center;
