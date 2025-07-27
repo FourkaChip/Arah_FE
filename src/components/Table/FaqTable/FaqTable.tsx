@@ -14,16 +14,15 @@ import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
-import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import CustomDropDownForTag from "@/components/CustomDropdown/CustomDropDownForTag";
 import {RowData} from "@/types/tables";
 import {defaultData} from "@/constants/dummydata/DummyFaq";
-import {rows} from "@/constants/dummydata/AdminList";
 
 export default function FaqAdminTable() {
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openFaqModal, setOpenFaqModal] = useState(false);
+    const [editRow, setEditRow] = useState<RowData | null>(null);
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
@@ -134,13 +133,16 @@ export default function FaqAdminTable() {
             cell: ({row}) => (
                 <button className="edit-icon">
                     <FontAwesomeIcon icon={faPen}
-                                     onClick={() => setOpenFaqModal(true)}
-                                     style={{
-                                         color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
-                                         cursor: 'pointer',
-                                         width: '16px',
-                                         height: '16px'
-                                     }}/>
+                        onClick={() => {
+                            setEditRow(row.original);
+                            setOpenFaqModal(true);
+                        }}
+                        style={{
+                            color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
+                            cursor: 'pointer',
+                            width: '16px',
+                            height: '16px'
+                        }}/>
                 </button>
             ),
         },
@@ -271,9 +273,15 @@ export default function FaqAdminTable() {
                 <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
             {openFaqModal &&
                 <ModalFAQ
-                    onClose={() => setOpenFaqModal(false)}
+                    onClose={() => {
+                        setOpenFaqModal(false);
+                        setEditRow(null);
+                    }}
                     onSubmit={(data: { category: string; question: string; answer: string }) => {
                     }}
+                    category={editRow?.tag}
+                    question={editRow?.question}
+                    answer={editRow?.answer}
                 />}
         </>
     );
