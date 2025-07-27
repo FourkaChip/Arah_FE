@@ -13,7 +13,6 @@ export default function ModalDataTrigger({buttonText}: { buttonText: string }) {
     return (
         <>
             <button className="button is-link" onClick={() => setOpen(true)}>
-                {/*<img src="/AddAdmin.svg" alt="icon" className="icon-left"/>*/}
                 <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                 {buttonText}
             </button>

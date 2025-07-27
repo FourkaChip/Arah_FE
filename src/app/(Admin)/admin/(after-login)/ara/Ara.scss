@@ -1,21 +1,52 @@
-#admin-main-page {
-  margin-left: 250px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #fff;
+// CSS 변수 정의
+:root {
+  --ara-primary-color: #232d64;
+  --ara-text-gray: #888;
+  --ara-border-color: #e1e8ed;
+  --ara-container-max-width: 900px;
+}
 
-  .main-title {
-    font-size: 36px;
-    font-weight: bold;
-    margin: 20px 0 8px;
+.chatbot-settings-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+  overflow-y: scroll;
+
+  .container {
+    max-width: var(--ara-container-max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
   }
 
-  .main-description {
-    color: #888;
-    font-size: 20px;
-    margin-bottom: 32px;
+  .admin-main-page-wrapper {
+    margin-bottom: 3rem;
+  }
+}
+
+// 페이지 제목 스타일
+.admin-main-title {
+  font-size: 1.9375rem; // 31px
+  font-weight: bold;
+  color: var(--ara-primary-color);
+  margin: 0 0 1.25rem 0; // 20px
+}
+
+// 페이지 설명 스타일
+.admin-main-description {
+  color: var(--ara-text-gray);
+  font-size: 0.875rem; // 14px
+  margin: 1.25rem 0 0 0.625rem; // 20px 0 0 10px
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 0.5rem 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .highlight {
+    color: var(--ara-primary-color);
+    font-weight: bold;
   }
 }

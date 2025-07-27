@@ -17,12 +17,14 @@ export default function CustomSearch({onSearch, className = ""}: { onSearch: (se
 
     const getPlaceholder = () => {
         switch (pathname) {
-            case '/master/managers':
+            case '/master/manage':
                 return "검색할 관리자를 입력해 주세요.";
             case '/master/dept':
                 return "검색할 부서를 입력해 주세요.";
             case '/admin/manage':
                 return "검색할 폴더를 입력해 주세요.";
+            case '/admin/faq':
+                return "검색할 질문을 입력해 주세요.";
             default:
                 return "검색어를 입력해 주세요.";
         }

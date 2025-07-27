@@ -23,6 +23,11 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.modal-dialog.faq-modal {
+  width: 510px;
+  //height: 394px;
+}
+
 .modal-title.faq-modal {
   font-size: 20px;
   font-weight: bold;
@@ -81,7 +86,10 @@
   }
 
   .textarea {
+    @extend .textarea;
     width: 100%;
+    background-color: #fff;
+    color: black;
     border: 1px solid #c2c2f3;
     border-radius: 8px;
     padding: 12px;
