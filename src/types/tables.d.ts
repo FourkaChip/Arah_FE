@@ -7,3 +7,13 @@ export type RowData = {
     question: string;
     answer: string;
 };
+
+export type FeedbackRowData = {
+    id: number;
+    no: number;
+    docFaq: string;
+    registeredAt: string;
+    question: string;
+    answer: string;
+    feedback: string;
+};
