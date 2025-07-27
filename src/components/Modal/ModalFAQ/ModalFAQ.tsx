@@ -1,14 +1,21 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import "./ModalFAQ.scss";
 import CustomDropDown from "@/components/CustomDropdown/CustomDropDown";
 import {ModalFAQProps} from "@/types/modals";
 
-export default function ModalFAQ({onClose, onSubmit}: ModalFAQProps) {
-    const [question, setQuestion] = useState("");
-    const [answer, setAnswer] = useState("");
+export default function ModalFAQ({onClose, onSubmit, category, question: initQuestion, answer: initAnswer}: ModalFAQProps) {
+    const [question, setQuestion] = useState(initQuestion ?? "");
+    const [answer, setAnswer] = useState(initAnswer ?? "");
     const [categories, setCategories] = useState(["회사 비전", "사업 정책", "인센티브", "복지제도"]);
-    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState(category ?? "");
+
+    // props가 바뀔 때마다 값 동기화
+    useEffect(() => {
+        setQuestion(initQuestion ?? "");
+        setAnswer(initAnswer ?? "");
+        setSelectedCategory(category ?? "");
+    }, [initQuestion, initAnswer, category]);
 
     const handleAddCategory = () => {
         const newCategory = prompt("새로운 태그를 입력하세요.");

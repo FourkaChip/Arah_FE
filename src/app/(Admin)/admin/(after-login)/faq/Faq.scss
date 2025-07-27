@@ -1,21 +1,54 @@
-#admin-faq-page {
-  //margin-left: 250px;
+@use "../../../../../../node_modules/bulma/sass/utilities/index" as *;
+@use "../../../../../../node_modules/bulma/sass/elements/button";
+@use "../../../../../../node_modules/bulma/sass/form/index";
+
+.admin-faq-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
   background-color: #fff;
+  width: 100%;
 
-  .main-title {
-    font-size: 36px;
-    font-weight: bold;
-    margin: 20px 0 8px;
+  .admin-faq-page-wrapper {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
   }
 
-  .main-description {
+  .faq-title {
+    font-size: 31px;
+    font-weight: 1000;
+    color: #232D64;
+    margin: 0 0 20px;
+  }
+
+  .faq-description {
     color: #888;
-    font-size: 20px;
-    margin-bottom: 32px;
+    font-size: 12px;
+    margin: 20px 0 0 10px;
+  }
+
+  .admin-faq-table {
+    width: 90%;
+    margin-top: 20px;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      color: #232D64;
+    }
+
+    td {
+      color: #555;
+    }
   }
 }
