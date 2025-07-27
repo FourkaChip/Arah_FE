@@ -17,6 +17,7 @@ import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 import {FeedbackRowData} from "@/types/tables";
 import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
 import {faFileClipboard} from "@fortawesome/free-solid-svg-icons/faFileClipboard";
+import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
 
 export default function FaqAdminTable() {
 
@@ -131,9 +132,9 @@ export default function FaqAdminTable() {
             header: "FAQ 이동",
             cell: ({row}) => (
                 row.original.docFaq === "FAQ" ? (
-                    <button className="edit-icon">
+                    <button className="goto-faq-icon">
                         <FontAwesomeIcon
-                            icon={faFileClipboard}
+                            icon={faUpRightFromSquare}
                             onClick={() => router.push("/admin/faq")}
                             style={{
                                 color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
