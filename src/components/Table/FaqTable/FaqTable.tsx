@@ -250,8 +250,8 @@ export default function FaqAdminTable() {
                                             className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
                                         >
                                             <div className="faq-detail-view">
-                                                <p><strong>Q.</strong> {row.original.question}</p>
-                                                <p><strong>A.</strong> {row.original.answer}</p>
+                                                <p className="faq-detail-view question"><strong>Q.</strong> {row.original.question}</p>
+                                                <p className="faq-detail-view answer"><strong>A.</strong> {row.original.answer}</p>
                                             </div>
                                         </div>
                                     </td>
