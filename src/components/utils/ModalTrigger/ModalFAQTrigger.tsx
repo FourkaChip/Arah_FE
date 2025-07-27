@@ -2,6 +2,9 @@
 
 import {useState} from 'react';
 import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
+import './ModalFAQTrigger.scss';
+import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export default function ModalFAQTrigger() {
     const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +14,8 @@ export default function ModalFAQTrigger() {
 
     return (
         <>
-            <button className="button is-primary" onClick={handleOpen}>
+            <button className="button is-link" onClick={handleOpen}>
+                <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                 FAQ 등록
             </button>
             {isOpen && <ModalFAQ
