@@ -9,6 +9,7 @@
 .chatbot-settings-page {
   min-height: 100vh;
   padding: 2rem 0;
+  overflow-y: scroll;
 
   .container {
     max-width: var(--ara-container-max-width);
@@ -47,30 +48,5 @@
   .highlight {
     color: var(--ara-primary-color);
     font-weight: bold;
-  }
-}
-
-// 반응형 디자인
-@media (max-width: 768px) {
-  .chatbot-settings-page {
-    padding: 1rem 0;
-
-    .container {
-      padding: 0 1rem;
-    }
-
-    .admin-main-page-wrapper {
-      margin-bottom: 2rem;
-    }
-  }
-
-  .admin-main-title {
-    font-size: 1.5rem; // 24px
-    margin-bottom: 1rem;
-  }
-
-  .admin-main-description {
-    font-size: 0.8125rem; // 13px
-    margin: 1rem 0 0 0;
   }
 }
