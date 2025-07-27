@@ -1,7 +1,6 @@
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import { useRouter } from "next/navigation";
-import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import './FeedbackTable.scss';
 import {
     useReactTable,
@@ -11,12 +10,10 @@ import {
 } from "@tanstack/react-table";
 import React from "react";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
-import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 import {FeedbackRowData} from "@/types/tables";
 import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
-import {faFileClipboard} from "@fortawesome/free-solid-svg-icons/faFileClipboard";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
 import CustomPagination from "@/components/CustomPagination/CustomPagination";
 
@@ -67,39 +64,6 @@ export default function FaqAdminTable() {
     const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
 
     const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
-        // {
-        //     id: "select",
-        //     header: () => (
-        //         <input
-        //             type="checkbox"
-        //             ref={checkboxRef}
-        //             onChange={(e) => {
-        //                 const checked = e.target.checked;
-        //                 const newSelections: Record<number, boolean> = {};
-        //                 paginatedData.forEach((row) => {
-        //                     newSelections[row.id] = checked;
-        //                 });
-        //                 setSelectedRowIds(newSelections);
-        //             }}
-        //             checked={
-        //                 paginatedData.length > 0 &&
-        //                 paginatedData.every((row) => selectedRowIds[row.id])
-        //             }
-        //         />
-        //     ),
-        //     cell: ({row}) => (
-        //         <input
-        //             type="checkbox"
-        //             checked={selectedRowIds[row.original.id]}
-        //             onChange={(e) =>
-        //                 setSelectedRowIds((prev) => ({
-        //                     ...prev,
-        //                     [row.original.id]: e.target.checked,
-        //                 }))
-        //             }
-        //         />
-        //     ),
-        // },
         {
             accessorKey: "no",
             header: "No.",
