@@ -1,3 +1,4 @@
+// FAQ 페이지에 적용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
@@ -17,6 +18,7 @@ import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
 import CustomDropDownForTag from "@/components/CustomDropdown/CustomDropDownForTag";
 import {RowData} from "@/types/tables";
 import {defaultData} from "@/constants/dummydata/DummyFaq";
+import Pagination from "@/components/CustomPagination/Pagination";
 
 export default function FaqAdminTable() {
 
@@ -43,9 +45,9 @@ export default function FaqAdminTable() {
             const isTagAll = selectedTag === 'all';
             const tagMatch = isTagAll || row.tag === selectedTag;
 
-            // 기존 검색어 필터
-            const matches = searchValue === "" ||
-                row.tag.includes(searchValue) ||
+            // 검색어는 질문/답변에만 적용
+            const matches =
+                searchValue === "" ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
 
@@ -190,6 +192,8 @@ export default function FaqAdminTable() {
     }, [paginatedData, selectedRowIds]);
 
 
+    const pageCount = Math.ceil(filteredData.length / pageSize);
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -260,13 +264,13 @@ export default function FaqAdminTable() {
                         )))}
                     </tbody>
                 </table>
-                <div className="pagination-footer">
-                    <button onClick={() => setCurrentPage(p => Math.max(p - 1, 0))} disabled={currentPage === 0}>Prev
-                    </button>
-                    <span>{currentPage + 1} / {Math.ceil(data.length / pageSize)}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(p + 1, Math.floor(data.length / pageSize - 1)))}
-                            disabled={(currentPage + 1) * pageSize >= data.length}>Next
-                    </button>
+                {/* pagination-footer 제거, Pagination 중앙 배치 */}
+                <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                    <Pagination
+                        currentPage={currentPage + 1}
+                        totalPages={pageCount}
+                        onPageChange={(page) => setCurrentPage(page - 1)}
+                    />
                 </div>
             </div>
             {openDeleteModal &&

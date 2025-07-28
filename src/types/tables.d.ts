@@ -1,4 +1,5 @@
 // 테이블에 사용되는 타입을 정의해놓은 파일입니다.
+
 export type RowData = {
     id: number;
     no: number;
@@ -16,4 +17,21 @@ export type FeedbackRowData = {
     question: string;
     answer: string;
     feedback: string;
+};
+
+// AdminDataTable용 타입 추가
+export type AdminDataTableRowData = {
+    id: number;
+    no: number;
+    registeredAt: string;
+    updatedAt: string;
+    folderName: string;
+    subRows?: AdminDataTableSubRowData[];
+};
+
+export type AdminDataTableSubRowData = {
+    versionId: number;
+    date: string;
+    name: string;
+    version: string;
 };

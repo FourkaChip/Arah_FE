@@ -60,9 +60,9 @@ export default function Pagination({
   };
 
   // 페이지가 1개 이하면 페이지네이션을 렌더링하지 않음
-  if (totalPages <= 1) {
-    return null;
-  }
+  // if (totalPages <= 1) {
+  //   return null;
+  // }
 
   // 현재 그룹 정보 계산
   const pagesPerGroup = 10;

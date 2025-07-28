@@ -67,11 +67,12 @@ $primary: $blue;
 
   thead {
     background-color: transparent;
+    //background-color: #e9eff8;
 
     th {
       padding: 12px 8px;
       border-bottom: 1px solid #ddd;
-      color: $primary !important;
+      //color: $primary !important;
       text-align: center !important;
       font-weight: 600;
       // 컬럼별 고정비율입니다.
