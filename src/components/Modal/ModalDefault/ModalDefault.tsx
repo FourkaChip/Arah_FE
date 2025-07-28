@@ -27,13 +27,6 @@ export default function ModalDefault({ type, label, onClose }: ModalWindowProps)
     return (
         <ModalLayout title={label} onClose={onClose}>
             <p className="modal-description">{description}</p>
-            {/*{type === 'delete-data' && (*/}
-            {/*    <input*/}
-            {/*        type="password"*/}
-            {/*        className="modal-input"*/}
-            {/*        placeholder="비밀번호 입력"*/}
-            {/*    />*/}
-            {/*)}*/}
             <div className="modal-buttons">
                 <ModalButton
                     type={buttonType}
