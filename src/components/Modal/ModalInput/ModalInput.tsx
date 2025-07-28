@@ -77,12 +77,8 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
                         label={config.buttonLabel}
                         onClick={() => {
                             if (modalType === 'auth') {
-                                if (inputValue === 'valid-auth-code') {
-                                    if (onSubmit) {
-                                        onSubmit(inputValue);
-                                    }
-                                } else {
-                                    setError(true);
+                                if (onSubmit) {
+                                    onSubmit(inputValue);
                                 }
                                 return;
                             } else if (modalType === 'token') {
