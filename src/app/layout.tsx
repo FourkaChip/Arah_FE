@@ -6,6 +6,7 @@ export const metadata = {
 };
 
 import type { ReactNode } from 'react';
+import ClientProviders from "@/utils/QueryClientProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        {children}
+      <ClientProviders>
+          {children}
+      </ClientProviders>
       </body>
     </html>
   );

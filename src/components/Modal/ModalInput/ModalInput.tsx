@@ -4,20 +4,23 @@ import '@/components/Modal/ModalLayout.scss';
 import ModalLayout from "@/components/Modal/ModalLayout";
 import {ModalLayoutProps} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
+import {router} from "next/client";
 
 export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
 
 interface ModalInputProps extends ModalLayoutProps {
     modalType: ModalInputType;
+    onSubmit?: (code: string) => void;
+    onResendCode?: () => void;
 }
 
-export default function ModalInput({modalType, onClose}: ModalInputProps) {
+export default function ModalInput({modalType, onClose, onSubmit, onResendCode}: ModalInputProps) {
     const getModalConfig = () => {
         // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
         switch (modalType) {
             case 'token':
                 return {
-                    title: '토큰 등록',
+                    title: '토��� 등록',
                     description: '카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다.',
                     placeholder: '토큰 입력',
                     subText: '토큰을 분실하셨나요? ',
@@ -74,11 +77,14 @@ export default function ModalInput({modalType, onClose}: ModalInputProps) {
                         label={config.buttonLabel}
                         onClick={() => {
                             if (modalType === 'auth') {
-                                if (inputValue === 'success') {
-                                    setSuccessModal(true);
+                                if (inputValue === 'valid-auth-code') {
+                                    if (onSubmit) {
+                                        onSubmit(inputValue);
+                                    }
                                 } else {
                                     setError(true);
                                 }
+                                return;
                             } else if (modalType === 'token') {
                                 if (inputValue === 'valid-token') {
                                     setSuccessModal(true);
@@ -111,18 +117,27 @@ export default function ModalInput({modalType, onClose}: ModalInputProps) {
                         }}
                     />
                 </label>
-                {error && modalType === 'auth' && (
-                    <p className="modal-error-message">인증코드를 다시 확인해 주세요</p>
-                )}
-                {error && modalType === 'token' && (
-                    <p className="modal-error-message">유효한 토큰을 입력해 주세요</p>
-                )}
-                {config.subText && (
-                    <p className="modal-input-noemail">
-                        {config.subText}
-                        <a>{config.subLinkText}</a>
-                    </p>
-                )}
+                <div className="modal-input-row">
+                    <span className="modal-error-message">
+                        {error && modalType === 'auth' ? '인증코드를 다시 확인해 주세요' : ''}
+                        {error && modalType === 'token' ? '유효한 토큰을 입력해 주세요' : ''}
+                    </span>
+                    {config.subText && (
+                        <span className="modal-input-noemail">
+                            {config.subText}
+                            <a
+                                onClick={() => {
+                                    if (modalType === 'auth' && onResendCode) {
+                                        onResendCode();
+                                    }
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {config.subLinkText}
+                            </a>
+                        </span>
+                    )}
+                </div>
             </ModalLayout>
             {/* 마스터 로그인 인증 성공 시 */}
             {/* 토큰 모달이 나오는 경우는, DB 조회 후 토큰 column이 비어 있으면 로그인버튼 클릭 시 나타납니다.(구현 예정) */}
@@ -153,7 +168,7 @@ export default function ModalInput({modalType, onClose}: ModalInputProps) {
                             onClick={() => {
                                 setSuccessModal(false);
                                 onClose();
-                                window.location.href = '/master/manage';
+                                router.push('/master/manage');
                             }}
                         />
                     }

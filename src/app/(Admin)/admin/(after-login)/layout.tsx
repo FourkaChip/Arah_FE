@@ -4,6 +4,7 @@ import "@/components/Modal/Buttons/ModalButton.scss";
 import "./layout.scss";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import Header from "@/components/Header/Header";
+import ClientProviders from '@/utils/QueryClientProvider';
 
 // ===== 메타데이터 설정 =====
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <ClientProviders>
       <div className="header-wrapper">
         <Header/>
       </div>
@@ -30,6 +31,6 @@ export default function RootLayout({
           {children}
         </div>
       </div>
-    </>
+    </ClientProviders>
   );
 }

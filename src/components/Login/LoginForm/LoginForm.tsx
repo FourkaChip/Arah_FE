@@ -8,14 +8,22 @@ import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/Modal/ModalInput/ModalInput";
 import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
+import { masterLogin, confirmMasterVerifyCode, adminLogin, sendMasterVerifyCode } from '@/api/auth/master';
+import { useAuthStore} from "@/store/auth.store";
+import { saveRefreshToken} from "@/utils/tokenStorage";
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
     const pathname = usePathname();
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [verifyToken, setVerifyToken] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
 
     // dummydata 기반 임시 기업명 검색용 변수
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -43,18 +51,59 @@ export default function LoginForm() {
         setShowSuggestions(false);
     }
 
+    // 마스터 로그인 뮤테이션
+    const masterLoginMutation = useMutation({
+      mutationFn: () => masterLogin(email, password),
+      onSuccess: async ({ verifyToken }) => {
+        setPasswordError(false);
+        setVerifyToken(verifyToken);
+        try {
+          await sendMasterVerifyCode(verifyToken);
+          setShowModal(true);
+        } catch {
+          alert('인증번호 전송 실패');
+        }
+      },
+      onError: () => {
+        setPasswordError(true);
+      },
+    });
 
+    // 어드민 로그인 뮤테이션
+    const adminLoginMutation = useMutation({
+      mutationFn: () => adminLogin(email, password),
+      onSuccess: ({ accessToken, refreshToken }) => {
+        setPasswordError(false);
+        useAuthStore.getState().setAccessToken(accessToken);
+        saveRefreshToken(refreshToken);
+        router.push('/admin/manage');
+      },
+      onError: () => {
+        setPasswordError(true);
+      },
+    });
+
+    // 로그인 버튼 핸들러
     const handleLogin = () => {
-        console.log('로그인 시도:', {companyName, email, password});
-
-        if (pathname === '/master/login' && companyName && email && password) {
-            setShowModal(true);
-        }
-        if (pathname === '/admin/login' && email && password) {
-            window.location.href = '/admin/manage';
-        }
-
+      if (pathname === '/master/login') {
+        masterLoginMutation.mutate();
+      } else if (pathname === '/admin/login') {
+        adminLoginMutation.mutate();
+      }
     };
+
+    const verifyMutation = useMutation({
+      mutationFn: (code: string) =>
+        confirmMasterVerifyCode({ verifyToken, code }),
+      onSuccess: ({ accessToken, refreshToken }) => {
+        useAuthStore.getState().setAccessToken(accessToken);
+        saveRefreshToken(refreshToken);
+        router.push('/master/manage');
+      },
+      onError: () => {
+        // 인증 실패 시 처리 로직 (필요하면 상태값으로 에러 메시지 표시)
+      },
+    });
 
 
     return (
@@ -109,8 +158,14 @@ export default function LoginForm() {
                         type="password"
                         placeholder="비밀번호를 입력해 주세요."
                         value={password}
-                        className="login-form-input"
-                        onChange={(e) => setPassword(e.target.value)}/>
+                        className={`login-form-input ${passwordError ? 'is-error' : ''}`}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setPasswordError(false);
+                        }}/>
+                    {passwordError && (
+                      <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
+                    )}
                 </label>
                 <p className="login-form-missing">
                     비밀번호를 잊으셨다면?{' '}
@@ -146,6 +201,14 @@ export default function LoginForm() {
                     title="마스터 2차 인증"
                     description="등록된 이메일로 전송된 인증코드를 입력해 주세요."
                     onClose={() => setShowModal(false)}
+                    onSubmit={(code: string) => verifyMutation.mutate(code)}
+                    onResendCode={() => {
+                      if (verifyToken) {
+                        sendMasterVerifyCode(verifyToken)
+                          .then(() => alert('인증 코드가 재전송되었습니다.'))
+                          .catch(() => alert('인증 코드 전송에 실패했습니다.'));
+                      }
+                    }}
                 />
             )}
             {showPassword && (
