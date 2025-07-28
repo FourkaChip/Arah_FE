@@ -15,7 +15,7 @@ import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import {FeedbackRowData} from "@/types/tables";
 import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
-import CustomPagination from "@/components/CustomPagination/CustomPagination";
+import Pagination from "@/components/CustomPagination/Pagination";
 
 export default function FaqAdminTable() {
 
@@ -208,9 +208,9 @@ export default function FaqAdminTable() {
                         )))}
                     </tbody>
                 </table>
-                {/* pagination-footer 제거, CustomPagination 중앙 배치 */}
+                {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
-                    <CustomPagination
+                    <Pagination
                         currentPage={currentPage + 1}
                         totalPages={pageCount}
                         onPageChange={(page) => setCurrentPage(page - 1)}

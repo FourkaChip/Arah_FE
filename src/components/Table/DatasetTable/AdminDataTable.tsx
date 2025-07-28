@@ -18,7 +18,7 @@ import {dummySubRows} from "@/constants/dummydata/DummySubRows";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalCommitTrigger from "@/components/utils/ModalTrigger/ModalCommitTrigger";
 import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
-import CustomPagination from "@/components/CustomPagination/CustomPagination";
+import Pagination from "@/components/CustomPagination/Pagination";
 import {
     AdminDataTableRowData as RowData,
     AdminDataTableSubRowData as SubRowData
@@ -315,9 +315,9 @@ export default function AdminDataTable() {
                         )))}
                     </tbody>
                 </table>
-                {/* pagination-footer 제거, CustomPagination 중앙 배치 */}
+                {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
-                    <CustomPagination
+                    <Pagination
                         currentPage={currentPage + 1}
                         totalPages={pageCount}
                         onPageChange={(page) => setCurrentPage(page - 1)}

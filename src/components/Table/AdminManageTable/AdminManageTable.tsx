@@ -3,7 +3,7 @@ import React, {useState, useEffect, useMemo, useRef} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import ModalDepartment from "@/components/Modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
-import CustomPagination from "@/components/CustomPagination/CustomPagination";
+import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {rows} from "@/constants/dummydata/AdminList";
@@ -190,7 +190,7 @@ export default function MasterAdminTable() {
                     </tbody>
                 </table>
                 <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
-                    <CustomPagination
+                    <Pagination
                         currentPage={currentPage + 1}
                         totalPages={pageCount}
                         onPageChange={(page) => setCurrentPage(page - 1)}
