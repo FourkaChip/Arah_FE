@@ -1,10 +1,11 @@
+"use client";
 import {useState} from 'react';
 import './ModalInput.scss';
 import '@/components/Modal/ModalLayout.scss';
 import ModalLayout from "@/components/Modal/ModalLayout";
 import {ModalLayoutProps} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
-import {router} from "next/client";
+import {useRouter} from "next/navigation";
 
 export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
 
@@ -15,6 +16,7 @@ interface ModalInputProps extends ModalLayoutProps {
 }
 
 export default function ModalInput({modalType, onClose, onSubmit, onResendCode}: ModalInputProps) {
+    const router = useRouter();
     const getModalConfig = () => {
         // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
         switch (modalType) {
