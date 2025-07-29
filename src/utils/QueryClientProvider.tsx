@@ -1,12 +1,12 @@
 // React Query를 사용하여 서버의 각종 상태를 관리하는 컴포넌트입니다.
 'use client';
 
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { ReactNode, useState, useEffect } from 'react';
-import { useAuthStore} from "@/store/auth.store";
-import { getRefreshToken, removeRefreshToken} from "@/utils/tokenStorage";
+import {QueryClientProvider, QueryClient} from '@tanstack/react-query';
+import {ReactNode, useState, useEffect} from 'react';
+import {useAuthStore} from "@/store/auth.store";
+import {getRefreshToken, removeRefreshToken} from "@/utils/tokenStorage";
 
-export default function ClientProviders({ children }: { children: ReactNode }) {
+export default function ClientProviders({children}: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient());
     const setAccessToken = useAuthStore((state) => state.setAccessToken);
 

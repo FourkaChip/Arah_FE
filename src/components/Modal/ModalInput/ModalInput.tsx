@@ -22,7 +22,7 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
         switch (modalType) {
             case 'token':
                 return {
-                    title: '토��� 등록',
+                    title: '토큰 등록',
                     description: '카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다.',
                     placeholder: '토큰 입력',
                     subText: '토큰을 분실하셨나요? ',
