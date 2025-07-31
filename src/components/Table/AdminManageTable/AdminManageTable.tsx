@@ -8,7 +8,7 @@ import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchAdminList, removeAdminRole} from "@/api/auth/master";
+import {fetchAdminList, fetchDepartmentList, removeAdminRole} from "@/api/auth/master";
 import {AdminListResponseDto} from "@/types/tables";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
@@ -45,7 +45,22 @@ export default function MasterAdminTable() {
         queryFn: fetchAdminList,
     });
 
+    // 부서 목록 데이터 (기업 설정 페이지에서 사용)
+    const {data: deptRows = [], isLoading: deptLoading, error: deptError} = useQuery<any[]>({
+        queryKey: ['departmentList'],
+        queryFn: fetchDepartmentList,
+        enabled: pathName === '/master/dept',
+    });
+
     const filteredRows = useMemo(() => {
+        if (pathName === '/master/dept') {
+            // 기업 설정에서는 부서 목록만 보여줌
+            return deptRows.filter(row => {
+                const isSearchEmpty = !searchValue;
+                if (isSearchEmpty) return true;
+                return (row.name ?? '').toLowerCase().includes(searchValue.toLowerCase());
+            });
+        }
         if (pathName === '/master/manage') {
             return adminRows.filter(row => {
                 const isDeptAll = selectedDept === 'all';
@@ -55,15 +70,9 @@ export default function MasterAdminTable() {
                 if (isDeptAll && !isSearchEmpty) return row.name.toLowerCase().includes(searchValue.toLowerCase());
                 return (row.departmentName ?? '') === selectedDept && row.name.toLowerCase().includes(searchValue.toLowerCase());
             });
-        } else if (pathName === '/master/dept') {
-            return adminRows.filter(row => {
-                const isSearchEmpty = !searchValue;
-                if (isSearchEmpty) return true;
-                return (row.departmentName ?? '').toLowerCase().includes(searchValue.toLowerCase());
-            });
         }
         return adminRows;
-    }, [selectedDept, searchValue, pathName, adminRows]);
+    }, [selectedDept, searchValue, pathName, adminRows, deptRows]);
 
     const paginatedData = useMemo(
         () => filteredRows.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
@@ -71,7 +80,26 @@ export default function MasterAdminTable() {
     );
 
     // tanstack-table 컬럼 정의
-    const columns: ColumnDef<RowType>[] = useMemo(() => {
+    const columns: ColumnDef<any>[] = useMemo(() => {
+        if (pathName === '/master/dept') {
+            return [
+                {
+                    accessorKey: "name",
+                    header: "부서명",
+                },
+                {
+                    id: "edit",
+                    header: "편집",
+                    cell: ({ row }) => (
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            onClick={() => handleOpenDeleteModal(row.original.departmentId)}
+                            style={{color: 'red', cursor: 'pointer'}}
+                        />
+                    ),
+                }
+            ];
+        }
         if (pathName === '/master/manage') {
             return [
                 {
@@ -129,24 +157,9 @@ export default function MasterAdminTable() {
                     ),
                 }
             ];
-        } else {
-            return [
-                {
-                    accessorKey: "departmentName",
-                    header: "부서명",
-                },
-                {
-                    id: "edit",
-                    header: "편집",
-                    cell: ({ row }) => (
-                        <FontAwesomeIcon icon={faTrash}
-                            onClick={() => handleOpenDeleteModal(row.original.email)}
-                            style={{color: 'red', cursor: 'pointer'}}
-                        />
-                    ),
-                }
-            ];
         }
+        // 타입 에러 방지를 위해, 기본적으로 빈 배열을 반환합니다.
+        return [];
     }, [pathName, deletingEmail]);
 
     const table = useReactTable({
@@ -171,10 +184,14 @@ export default function MasterAdminTable() {
         }
     };
 
-    const handleOpenDeleteModal = (email: string) => {
-        setDeletingEmail(email);
+    // 삭제 버튼 클릭 핸들러
+    const handleOpenDeleteModal = (email: string | number) => {
+        setDeletingEmail(typeof email === 'string' ? email : String(email));
         setOpenDeleteModal(true);
     };
+
+    if (pathName === '/master/dept' && deptLoading) return <div>로딩 중...</div>;
+    if (pathName === '/master/dept' && deptError) return <div>에러 발생: {deptError.message}</div>;
 
     if (isLoading) return <div>로딩 중...</div>;
     if (error) return <div>에러 발생: {error.message}</div>;
@@ -234,7 +251,7 @@ export default function MasterAdminTable() {
                 <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination
                         currentPage={currentPage + 1}
-                        totalPages={pageCount}
+                        totalPages={Math.ceil(filteredRows.length / pageSize)}
                         onPageChange={(page) => setCurrentPage(page - 1)}
                     />
                 </div>

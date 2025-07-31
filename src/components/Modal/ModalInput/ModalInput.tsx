@@ -6,17 +6,24 @@ import ModalLayout from "@/components/Modal/ModalLayout";
 import {ModalLayoutProps} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
+import { useQueryClient } from '@tanstack/react-query';
 
 export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
 
 interface ModalInputProps extends ModalLayoutProps {
     modalType: ModalInputType;
-    onSubmit?: (code: string) => void;
+    onSubmit?: (code: string) => Promise<boolean | void> | boolean | void;
     onResendCode?: () => void;
 }
 
-export default function ModalInput({modalType, onClose, onSubmit, onResendCode}: ModalInputProps) {
+export default function ModalInput({modalType, title, onClose, onSubmit, onResendCode}: ModalInputProps) {
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const [inputValue, setInputValue] = useState('');
+    const [error, setError] = useState(false);
+    const [successModal, setSuccessModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const getModalConfig = () => {
         // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
         switch (modalType) {
@@ -63,42 +70,64 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
 
     const config = getModalConfig();
 
-    const [inputValue, setInputValue] = useState('');
-    const [error, setError] = useState(false);
-    const [successModal, setSuccessModal] = useState(false);
+    const handleSubmit = async () => {
+        if (!inputValue.trim()) {
+            setError(true);
+            return;
+        }
+
+        if (modalType === 'auth') {
+            if (onSubmit) {
+                onSubmit(inputValue);
+            }
+            return;
+        }
+
+        if (modalType === 'department') {
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        // 부서 목록을 다시 불러오기
+                        await queryClient.invalidateQueries({ queryKey: ['departmentList'] });
+                        setSuccessModal(true);
+                        setInputValue('');
+                    } else {
+                        setError(true);
+                    }
+                } catch (e) {
+                    console.error("부서 등록 실패:", e);
+                    setError(true);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            return;
+        }
+
+        if (modalType === 'token') {
+            if (inputValue === 'valid-token') {
+                setSuccessModal(true);
+            } else {
+                setError(true);
+            }
+        } else {
+            onClose();
+        }
+    };
 
     return (
         <>
             <ModalLayout
-                title={config.title}
+                title={title || config.title}
                 description={config.description}
                 className="tall-modal"
                 footer={
                     <ModalButton
                         type={config.buttonType as 'default' | 'delete-data'}
-                        label={config.buttonLabel}
-                        onClick={() => {
-                            if (modalType === 'auth') {
-                                if (onSubmit) {
-                                    onSubmit(inputValue);
-                                }
-                                return;
-                            } else if (modalType === 'token') {
-                                if (inputValue === 'valid-token') {
-                                    setSuccessModal(true);
-                                } else {
-                                    setError(true);
-                                }
-                            } else if (modalType === 'department') {
-                                if (inputValue === 'valid-dept') {
-                                    setSuccessModal(true);
-                                } else {
-                                    setError(true);
-                                }
-                            } else {
-                                onClose();
-                            }
-                        }}
+                        label={loading ? '처리중...' : config.buttonLabel}
+                        onClick={handleSubmit}
                     />
                 }
                 onClose={onClose}
@@ -113,12 +142,18 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
                             setInputValue(e.target.value);
                             setError(false);
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSubmit();
+                            }
+                        }}
                     />
                 </label>
                 <div className="modal-input-row">
                     <span className="modal-error-message">
                         {error && modalType === 'auth' ? '인증코드를 다시 확인해 주세요' : ''}
                         {error && modalType === 'token' ? '유효한 토큰을 입력해 주세요' : ''}
+                        {error && modalType === 'department' ? '부서 등록에 실패했습니다' : ''}
                     </span>
                     {config.subText && (
                         <span className="modal-input-noemail">
@@ -137,8 +172,6 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
                     )}
                 </div>
             </ModalLayout>
-            {/* 마스터 로그인 인증 성공 시 */}
-            {/* 토큰 모달이 나오는 경우는, DB 조회 후 토큰 column이 비어 있으면 로그인버튼 클릭 시 나타납니다.(구현 예정) */}
             {successModal && (
                 <ModalLayout
                     title={
@@ -166,7 +199,10 @@ export default function ModalInput({modalType, onClose, onSubmit, onResendCode}:
                             onClick={() => {
                                 setSuccessModal(false);
                                 onClose();
-                                router.push('/master/manage');
+                                // 2차인증 & 부서 등록 분기 설정하였습니다.
+                                if (modalType !== 'department') {
+                                    router.push('/master/manage');
+                                }
                             }}
                         />
                     }

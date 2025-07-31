@@ -133,5 +133,37 @@ export const fetchDepartmentList = async () => {
     if (!res.ok) throw new Error('부서 리스트 조회 실패');
     const data = await res.json();
     if (!data.result) throw new Error('부서 리스트가 없습니다.');
-    return data.result; // [{ departmentId, name }]
+    // 백엔드에서 companyId가 포함되지 않으므로 임시로 companyId=2 추가
+    return data.result.map((dept: any) => ({
+        ...dept,
+        companyId: 2 // 임시 고정값
+    }));
 };
+
+// 부서 생성 함수입니다.
+export const createDepartment = async (name: string, companyId: number = 2) => {
+    console.log(`부서 생성 요청: 이름=${name}, 회사ID=${companyId}`);
+
+    if (!name) {
+        throw new Error('부서명은 필수 입력값입니다.');
+    }
+
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments`, {
+        method: 'POST',
+        body: JSON.stringify({ name, companyId: 2 }), // TODO: companyId는 현재 2로 고정되어 있습니다. 추후 동적으로 변경 필요
+    });
+
+    if (!res.ok) {
+        try {
+            const errorData = await res.json();
+            console.error('부서 생성 에러 응답:', errorData);
+            throw new Error(errorData.message || '부서 생성 실패');
+        } catch (e) {
+            throw new Error('부서 생성 실패');
+        }
+    }
+
+    const responseData = await res.json();
+    console.log('부서 생성 성공:', responseData);
+    return responseData.result;
+}
