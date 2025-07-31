@@ -46,6 +46,32 @@
   color: #000;
 }
 
+.login-form-input.is-error {
+  border: 1.5px solid #e74c3c;
+  background-color: rgba(255, 235, 235, 0.8);
+  color: #e74c3c;
+}
+
+.login-form-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 500px;
+  max-width: 600px;
+  margin: 0.8rem 0 1rem 0;
+}
+
+.login-form-error-text {
+  color: #e74c3c;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  text-align: left;
+  width: 100%;
+  max-width: 600px;
+}
+
 .login-form-missing {
   text-align: right;
   width: 100%;

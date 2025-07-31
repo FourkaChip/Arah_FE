@@ -1,3 +1,4 @@
+$red: #ff0000;
 @import "~bulma/bulma";
 
 // 헤더 로고 크기 조정
@@ -37,8 +38,7 @@
 
 .button:hover,
 .button.is-hovered {
-  //background-color: #f8f8f8 !important; /* 원하는 배경색 */
-  //color: #ff0000 !important;               /* 원하는 텍스트색 */
+  color: $red !important;
   font-weight: 600 !important;
   transform: translateY(-1px) !important;
 }

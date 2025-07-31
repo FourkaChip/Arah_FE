@@ -1,10 +1,9 @@
 "use client";
-import {DataGrid, GridColDef, GridPaginationModel} from "@mui/x-data-grid";
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useMemo, useRef} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import ModalDepartment from "@/components/Modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
-import CustomPagination from "@/components/CustomPagination/CustomPagination";
+import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {rows} from "@/constants/dummydata/AdminList";
@@ -15,6 +14,14 @@ import ModalNewDeptTrigger from "@/components/utils/ModalTrigger/ModalNewDeptTri
 import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {
+    useReactTable,
+    getCoreRowModel,
+    flexRender,
+    ColumnDef
+} from "@tanstack/react-table";
+
+type RowType = typeof rows[number];
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
@@ -23,109 +30,112 @@ export default function MasterAdminTable() {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openTokenModal, setOpenTokenModal] = useState(false);
 
-    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
-        page: 0,
-        pageSize: 8,
-    });
+    const [searchValue, setSearchValue] = useState("");
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 8;
     const pathName = usePathname();
 
-    const [searchValue, setSearchValue] = useState("");
-    const [filteredRows, setFilteredRows] = useState(rows);
-
-    // 관리자 관리 페이지에서의 검색 useEffect
-    useEffect(() => {
-        setFilteredRows(
-            rows.filter(row => {
+    // 필터링
+    const filteredRows = useMemo(() => {
+        if (pathName === '/master/manage') {
+            return rows.filter(row => {
                 const isDeptAll = selectedDept === 'all';
                 const isSearchEmpty = !searchValue;
-
-                // 둘 다 기본값이면 전체 데이터를 반환
                 if (isDeptAll && isSearchEmpty) return true;
-
-                // 부서만 선택하는 경우
                 if (!isDeptAll && isSearchEmpty) return row.department === selectedDept;
-
-                // 검색어만 입력하는 경우
                 if (isDeptAll && !isSearchEmpty) return row.name.toLowerCase().includes(searchValue.toLowerCase());
-
-                // 둘 다 입력하는 경우, AND 조건이 적용됩니다.
                 return row.department === selectedDept && row.name.toLowerCase().includes(searchValue.toLowerCase());
-            })
-        );
-    }, [selectedDept, searchValue]);
-
-    // 기업 설정 페이지에서의 검색 useEffect
-    useEffect(() => {
-        if (pathName === '/master/dept') {
-            setFilteredRows(
-                rows.filter(row => {
-                    const isSearchEmpty = !searchValue;
-                    // 검색어만 입력하는 경우
-                    if (isSearchEmpty) return true;
-                    // 검색어가 입력된 경우, 부서명에 포함되는지 확인
-                    return row.department.toLowerCase().includes(searchValue.toLowerCase());
-                })
-            );
+            });
+        } else if (pathName === '/master/dept') {
+            return rows.filter(row => {
+                const isSearchEmpty = !searchValue;
+                if (isSearchEmpty) return true;
+                return row.department.toLowerCase().includes(searchValue.toLowerCase());
+            });
         }
-    }, [searchValue, pathName]);
+        return rows;
+    }, [selectedDept, searchValue, pathName]);
 
-    const columns: GridColDef[] = pathName === '/master/manage'
-        ? [
-            {field: "department", headerName: "부서", flex: 0.8, resizable: false},
-            {field: "joinDate", headerName: "가입일", flex: 1, resizable: false},
-            {field: "position", headerName: "직급", flex: 1, resizable: false},
-            {field: "userId", headerName: "사용자ID", flex: 1, resizable: false},
-            {field: "name", headerName: "사용자명", flex: 1, resizable: false},
-            {field: "email", headerName: "이메일", flex: 1, resizable: false},
-            {
-                field: "departmentSetting",
-                headerName: "부서 설정",
-                sortable: false,
-                flex: 1,
-                resizable: false,
-                renderCell: () => (
-                    <button className="text-blue-600 underline" onClick={() => setOpenDeptModal(true)}>부서 설정</button>
-                ),
-            },
-            {
-                field: "delete",
-                headerName: "삭제",
-                sortable: false,
-                flex: 0.5,
-                resizable: false,
-                renderCell: () => (
-                    <img
-                        src="/delete.svg"
-                        alt="삭제"
-                        className="icon-delete-button"
-                        onClick={() => setOpenDeleteModal(true)}
-                    />
-                ),
-            }
-        ]
-        : [
-            {field: "department", headerName: "부서명", flex: 1, resizable: false},
-            {
-                field: "edit",
-                headerName: "편집",
-                sortable: false,
-                flex: 0.3,
-                resizable: false,
-                renderCell: () => (
-                    <i
-                        className="fa fa-trash"
-                        onClick={() => setOpenDeleteModal(true)}
-                        style={{color: 'red', cursor: 'pointer'}}
-                    />
-                    // <FontAwesomeIcon icon={faTrash} />
-                ),
-            }
-        ];
-
-    const NoRowsOverlay = () => (
-        <div className="empty-row">검색 결과가 없습니다</div>
+    const paginatedData = useMemo(
+        () => filteredRows.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
+        [filteredRows, currentPage]
     );
 
+    // tanstack-table 컬럼 정의
+    const columns: ColumnDef<RowType>[] = useMemo(() => {
+        if (pathName === '/master/manage') {
+            return [
+                {
+                    accessorKey: "department",
+                    header: "부서",
+                },
+                {
+                    accessorKey: "joinDate",
+                    header: "가입일",
+                },
+                {
+                    accessorKey: "position",
+                    header: "직급",
+                },
+                {
+                    accessorKey: "userId",
+                    header: "사용자ID",
+                },
+                {
+                    accessorKey: "name",
+                    header: "사용자명",
+                },
+                {
+                    accessorKey: "email",
+                    header: "이메일",
+                },
+                {
+                    id: "departmentSetting",
+                    header: "부서 설정",
+                    cell: () => (
+                        <button className="text-blue-600 underline" onClick={() => setOpenDeptModal(true)}>부서 설정</button>
+                    ),
+                },
+                {
+                    id: "delete",
+                    header: "삭제",
+                    cell: () => (
+                        <img
+                            src="/delete.svg"
+                            alt="삭제"
+                            className="icon-delete-button"
+                            onClick={() => setOpenDeleteModal(true)}
+                        />
+                    ),
+                }
+            ];
+        } else {
+            return [
+                {
+                    accessorKey: "department",
+                    header: "부서명",
+                },
+                {
+                    id: "edit",
+                    header: "편집",
+                    cell: () => (
+                        <FontAwesomeIcon icon={faTrash}
+                                         onClick={() => setOpenDeleteModal(true)}
+                                         style={{color: 'red', cursor: 'pointer'}}
+                        />
+                    ),
+                }
+            ];
+        }
+    }, [pathName]);
+
+    const table = useReactTable({
+        data: paginatedData,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
+
+    const pageCount = Math.ceil(filteredRows.length / pageSize);
 
     return (
         <>
@@ -134,7 +144,6 @@ export default function MasterAdminTable() {
                     {pathName === '/master/manage' && (
                         <CustomDropDownForDept onChange={setSelectedDept}/>
                     )}
-                    {/*<CustomSearch onSearch={setSearchValue}/>*/}
                     <CustomSearch
                         onSearch={setSearchValue}
                         className={pathName === '/master/dept' ? 'wide-search' : ''}
@@ -147,27 +156,53 @@ export default function MasterAdminTable() {
                     <ModalNewDeptTrigger buttonText={"부서 추가"}/>
                 )}
             </div>
-            <div id="master-admin-table" className="master-admin-table" style={{height: 526, width: "100%"}}>
-                <DataGrid
-                    rows={filteredRows}
-                    columns={columns}
-                    disableColumnResize
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={setPaginationModel}
-                    pageSizeOptions={[8]}
-                    // rowCount={filteredRows.length} // rowCount는 현재 클라이언트 사이드 페이지네이션에서는 비활성화해야 함. 만약 서버 사이드 페이지네이션을 사용한다면 활성화해야 함.
-                    slots={{
-                        pagination: CustomPagination,
-                        noRowsOverlay: NoRowsOverlay,
-                    }}
-                />
+            <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
+                <table className="tanstack-table">
+                    <thead>
+                    {table.getHeaderGroups().map(headerGroup => (
+                        <tr key={headerGroup.id}>
+                            {headerGroup.headers.map(header => (
+                                <th key={header.id}>
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                </th>
+                            ))}
+                        </tr>
+                    ))}
+                    </thead>
+                    <tbody>
+                    {table.getRowModel().rows.length === 0 ? (
+                        <tr>
+                            <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    ) : (
+                        table.getRowModel().rows.map(row => (
+                            <tr key={row.id}>
+                                {row.getVisibleCells().map(cell => (
+                                    <td key={cell.id}>
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    )}
+                    </tbody>
+                </table>
+                <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                    <Pagination
+                        currentPage={currentPage + 1}
+                        totalPages={pageCount}
+                        onPageChange={(page) => setCurrentPage(page - 1)}
+                    />
+                </div>
                 {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
                 {openDeleteModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openTokenModal &&
-                    <ModalInputFilled type={"token-check"} onClose={()=>setOpenTokenModal(false)}/>}
+                    <ModalInputFilled type={"token-check"} onClose={() => setOpenTokenModal(false)}/>}
 
             </div>
             {pathName === '/master/dept' && (

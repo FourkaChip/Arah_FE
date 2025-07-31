@@ -2,24 +2,6 @@ $blue: #2E70E8;
 $primary: $blue;
 @use "bulma/sass/utilities/functions" as *;
 
-// mui datagrid 커스텀 스타일 클래스입니다.
-.MuiDataGrid-root {
-  border: none !important;
-}
-
-.MuiDataGrid-columnHeaders {
-  border-bottom: none;
-  background-color: transparent;
-}
-
-.MuiDataGrid-columnHeader {
-  border-right: none;
-}
-
-.MuiDataGrid-cell {
-  border-bottom: none;
-}
-
 // 이외 스타일 적용 클래스입니다.
 .icon-delete-button {
   background-color: transparent;
@@ -56,4 +38,52 @@ $primary: $blue;
 .subtitle.is-7 {
   font-size: 14px;
   color: #666;
+}
+
+.tanstack-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 16px;
+  table-layout: fixed;
+
+  thead {
+    background-color: transparent;
+
+    th {
+      padding: 12px 8px;
+      border-bottom: 1px solid #ddd;
+      color: #232d64 !important;
+      text-align: center !important;
+      font-weight: 600;
+      // 필요시 컬럼별 width 지정
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #eee;
+
+      &:nth-child(even) {
+        background-color: #fafafa;
+      }
+
+      td {
+        padding: 10px 8px;
+        vertical-align: middle;
+        text-align: center !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.empty-row {
+          text-align: center;
+          padding: 32px 0;
+          color: #eb1d1d;
+          font-size: 16px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
 }

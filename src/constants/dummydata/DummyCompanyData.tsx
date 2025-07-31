@@ -6,4 +6,5 @@ export const dummyCompanies = [
     '라인플러스',
     '삼성전자',
     'LG CNS',
+    'DK techin'
 ];
