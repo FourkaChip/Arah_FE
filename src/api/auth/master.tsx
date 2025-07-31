@@ -2,6 +2,8 @@
 
 // 마스터 로그인 함수입니다.
 import {getAccessToken} from "@/utils/tokenStorage";
+import {useAuthStore} from "@/store/auth.store";
+import {getRefreshToken} from "@/utils/tokenStorage";
 
 export const masterLogin = async (email: string, password: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
@@ -48,23 +50,42 @@ export const confirmMasterVerifyCode = async ({
 
 // 관리자 목록 조회 API 함수입니다.
 export const fetchAdminList = async () => {
-    // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`, {
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    // });
-    // accessToken 재발급 로직 전 임시 사용
-    const accessToken = getAccessToken();
-    console.log("accessToken from localStorage:", accessToken);
+    const accessToken = useAuthStore.getState().accessToken;
+    let token = accessToken;
+    // accessToken이 없고 refreshToken이 있으면 재발급 시도
+    if (!token) {
+        const refreshToken = getRefreshToken();
+        if (refreshToken) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken }),
+            });
+            if (res.ok) {
+                // 백엔드 응답: { accessToken: ... } 또는 { result: { accessToken: ... } }
+                const data = await res.json();
+                const newAccessToken = data.accessToken || (data.result && data.result.accessToken);
+                if (newAccessToken) {
+                    useAuthStore.getState().setAccessToken(newAccessToken);
+                    token = newAccessToken;
+                } else {
+                    throw new Error('accessToken 재발급 실패');
+                }
+            } else {
+                throw new Error('accessToken 재발급 실패');
+            }
+        }
+    }
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`, {
         headers: {
             'Content-Type': 'application/json',
-            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+            ...(token && { Authorization: `Bearer ${token}` }),
         },
     });
 
     if (!res.ok) throw new Error('관리자 목록 조회 실패');
-    return res.json();
+    const json = await res.json();
+    return json.result;
 };
 
 // 관리자 권한 부여 API 함수입니다.

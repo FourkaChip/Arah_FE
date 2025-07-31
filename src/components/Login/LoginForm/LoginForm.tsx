@@ -75,9 +75,8 @@ export default function LoginForm() {
         mutationFn: () => adminLogin(email, password),
         onSuccess: ({accessToken, refreshToken}) => {
             setPasswordError(false);
-            useAuthStore.getState().setAccessToken(accessToken);
-            saveAccessToken(accessToken); // accessToken 재발급 로직 구현 전 임의 사용
-            saveRefreshToken(refreshToken);
+            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
+            saveRefreshToken(refreshToken); // localStorage 저장
             router.push('/admin/manage');
         },
         onError: () => {
@@ -98,9 +97,8 @@ export default function LoginForm() {
         mutationFn: (code: string) =>
             confirmMasterVerifyCode({verifyToken, code}),
         onSuccess: ({accessToken, refreshToken}) => {
-            useAuthStore.getState().setAccessToken(accessToken);
-            saveAccessToken(accessToken); // accessToken 재발급 로직 구현 전 임의 사용
-            saveRefreshToken(refreshToken);
+            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
+            saveRefreshToken(refreshToken); // localStorage 저장
             router.push('/master/manage');
         },
         onError: () => {

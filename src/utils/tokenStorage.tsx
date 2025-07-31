@@ -21,22 +21,16 @@ export const removeRefreshToken = () => {
     }
 };
 
-// access token 관련 재발급 로직 구현 전 임시 사용
+// accessToken은 메모리(상태)에서만 관리
 export const saveAccessToken = (token: string) => {
-    if (typeof window !== "undefined") {
-        localStorage.setItem(ACCESS_TOKEN_KEY, token);
-    }
+    // no-op
 };
 
 export const getAccessToken = () => {
-    if (typeof window !== "undefined") {
-        return localStorage.getItem(ACCESS_TOKEN_KEY);
-    }
+    // no-op
     return null;
 };
 
 export const removeAccessToken = () => {
-    if (typeof window !== "undefined") {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-    }
+    // no-op
 };
