@@ -1,14 +1,47 @@
-import Image from "next/image";
+'use client';
+
+import dynamic from 'next/dynamic';
 import './Analyze.scss';
-import ModalUploadTrigger from "@/components/utils/ModalTrigger/ModalUploadTrigger";
-import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
-import ModalCommitTrigger from "@/components/utils/ModalTrigger/ModalCommitTrigger";
+
+const FeedbackLineChart = dynamic(() => import('@/components/analyze/FeedbackLineChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const KeywordDonutChart = dynamic(() => import('@/components/analyze/KeywordDonutChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const FeedbackTypeBarChart = dynamic(() => import('@/components/analyze/FeedbackTypeBarChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const SatisfactionDonutChart = dynamic(() => import('@/components/analyze/SatisfactionDonutChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+
 
 export default function AnalysisPage() {
     return (
-        <div id="admin-main-page" className="admin-login-page">
-            <Image src="/kaef.png" alt="kakaowork logo" width={300} height={100} />
-            <h1 className="login-title">안녕 내 이름은 통계!</h1>
+        <div className="analyze-page">
+            <div className="analyze-header">
+                <h1 className="title">통계</h1>
+            </div>
+            
+            <div className="analyze-grid">
+                <div className="grid-item">
+                    <FeedbackLineChart />
+                </div>
+                <div className="grid-item">
+                    <KeywordDonutChart />
+                </div>
+                <div className="grid-item">
+                    <FeedbackTypeBarChart />
+                </div>
+                <div className="grid-item">
+                    <SatisfactionDonutChart />
+                </div>
+            </div>
         </div>
     );
 }

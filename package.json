@@ -21,11 +21,13 @@
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-table": "^8.21.3",
     "bulma": "^1.0.4",
+    "dayjs": "^1.11.13",
     "next": "^14.2.30",
     "rc-slider": "^11.1.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-select": "^5.10.2",
+    "recharts": "^3.1.0",
     "sass": "^1.89.2",
     "zustand": "^5.0.6"
   },
