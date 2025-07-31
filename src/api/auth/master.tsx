@@ -88,16 +88,18 @@ export const fetchAdminList = async () => {
     return json.result;
 };
 
-// 관리자 권한 부여 API 함수입니다.
-export const assignAdminRole = async (email: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins/assign`, {
-        method: 'PATCH',
+// 관리자 부서 등록(업데이트) API 함수입니다.
+export const assignAdminRole = async (payload: { departmentIds: number[]; userId: number }[]) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/admin/departments`, {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify({email}),
+        body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error('관리자 권한 부여 실패');
+    if (!res.ok) throw new Error('관리자 부서 등록 실패');
     return res.json();
 };
 
@@ -114,4 +116,36 @@ export const removeAdminRole = async (email: string) => {
     });
     if (!res.ok) throw new Error('관리자 권한 해제 실패');
     return res.json();
+};
+
+// 이메일 기반 사용자 정보 조회 함수입니다.
+export const fetchUserInfoByEmail = async (email: string) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/${email}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+    });
+    if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
+    const data = await res.json();
+    if (!data.result) throw new Error('사용자 정보가 없습니다.');
+    return data.result;
+};
+
+// 부서 리스트 조회 함수입니다.
+export const fetchDepartmentList = async () => {
+    const accessToken = useAuthStore.getState().accessToken;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments/list`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+    });
+    if (!res.ok) throw new Error('부서 리스트 조회 실패');
+    const data = await res.json();
+    if (!data.result) throw new Error('부서 리스트가 없습니다.');
+    return data.result; // [{ departmentId, name }]
 };
