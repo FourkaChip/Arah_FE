@@ -1,9 +1,47 @@
 // 마스터 로그인 관련 API 함수들입니다.
 
 // 마스터 로그인 함수입니다.
-import {getAccessToken} from "@/utils/tokenStorage";
 import {useAuthStore} from "@/store/auth.store";
 import {getRefreshToken} from "@/utils/tokenStorage";
+
+// 모든 API Fetching 함수에서 공통으로 사용될 JWT 인증 함수입니다.
+const authorizedFetch = async (
+  input: RequestInfo,
+  init: RequestInit = {},
+): Promise<Response> => {
+  let token = useAuthStore.getState().accessToken;
+  if (!token) {
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newToken = data.accessToken || (data.result && data.result.accessToken);
+        if (newToken) {
+          useAuthStore.getState().setAccessToken(newToken);
+          token = newToken;
+        } else {
+          throw new Error('accessToken 재발급 실패');
+        }
+      } else {
+        throw new Error('accessToken 재발급 실패');
+      }
+    }
+  }
+
+  return fetch(input, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init.headers || {}),
+    },
+  });
+};
 
 export const masterLogin = async (email: string, password: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
@@ -50,37 +88,7 @@ export const confirmMasterVerifyCode = async ({
 
 // 관리자 목록 조회 API 함수입니다.
 export const fetchAdminList = async () => {
-    const accessToken = useAuthStore.getState().accessToken;
-    let token = accessToken;
-    if (!token) {
-        const refreshToken = getRefreshToken();
-        if (refreshToken) {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({refreshToken}),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const newAccessToken = data.accessToken || (data.result && data.result.accessToken);
-                if (newAccessToken) {
-                    useAuthStore.getState().setAccessToken(newAccessToken);
-                    token = newAccessToken;
-                } else {
-                    throw new Error('accessToken 재발급 실패');
-                }
-            } else {
-                throw new Error('accessToken 재발급 실패');
-            }
-        }
-    }
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`, {
-        headers: {
-            'Content-Type': 'application/json',
-            ...(token && {Authorization: `Bearer ${token}`}),
-        },
-    });
-
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`);
     if (!res.ok) throw new Error('관리자 목록 조회 실패');
     const json = await res.json();
     return json.result;
@@ -88,13 +96,8 @@ export const fetchAdminList = async () => {
 
 // 관리자 부서 등록(업데이트) API 함수입니다.
 export const assignAdminRole = async (payload: { departmentIds: number[]; userId: number }[]) => {
-    const accessToken = useAuthStore.getState().accessToken;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/admin/departments`, {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/admin/departments`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('관리자 부서 등록 실패');
@@ -103,13 +106,8 @@ export const assignAdminRole = async (payload: { departmentIds: number[]; userId
 
 // 관리자 권한 해제 API 함수입니다.
 export const removeAdminRole = async (email: string) => {
-    const accessToken = useAuthStore.getState().accessToken;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins/remove`, {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins/remove`, {
         method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? {Authorization: `Bearer ${accessToken}`} : {}),
-        },
         body: JSON.stringify({email}),
     });
     if (!res.ok) throw new Error('관리자 권한 해제 실패');
@@ -118,13 +116,8 @@ export const removeAdminRole = async (email: string) => {
 
 // 이메일 기반 사용자 정보 조회 함수입니다.
 export const fetchUserInfoByEmail = async (email: string) => {
-    const accessToken = useAuthStore.getState().accessToken;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/${email}`, {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/${email}`, {
         method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
     });
     if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
     const data = await res.json();
@@ -134,13 +127,8 @@ export const fetchUserInfoByEmail = async (email: string) => {
 
 // 부서 리스트 조회 함수입니다.
 export const fetchDepartmentList = async () => {
-    const accessToken = useAuthStore.getState().accessToken;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments/list`, {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments/list`, {
         method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
     });
     if (!res.ok) throw new Error('부서 리스트 조회 실패');
     const data = await res.json();
