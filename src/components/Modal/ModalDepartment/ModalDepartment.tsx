@@ -21,7 +21,7 @@ export default function ModalDepartment({
   const [emailInput, setEmailInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [users, setUsers] = useState<any[]>(userRows); // 기존 목록 + 추가된 사용자
+  const [users, setUsers] = useState<any[]>(userRows);
   const [departmentList, setDepartmentList] = useState<{ departmentId: number; name: string }[]>([]);
   const queryClient = useQueryClient();
 
@@ -43,6 +43,12 @@ export default function ModalDepartment({
     setErrorMsg('');
     try {
       const result = await fetchUserInfoByEmail(email);
+      // role이 "USER"인 경우에만 사용자가 추가됩니다.
+      if (result.role !== 'USER') {
+        setErrorMsg('이미 관리자이거나 마스터인 사용자는 추가할 수 없습니다.');
+        setLoading(false);
+        return;
+      }
       // 이미 목록에 있다면 추가하지 않고 에러 메시지를 띄웁니다.
       if (users.some(u => u.email === email)) {
         setErrorMsg('이미 목록에 있는 사용자입니다.');
@@ -60,7 +66,7 @@ export default function ModalDepartment({
         setEmailInput('');
       }
     } catch (e: any) {
-      setErrorMsg(e.message || '사용자 정보를 불러올 수 없습니다.');
+      setErrorMsg(e.message || '등록된 사용자가 없습니다.');
     } finally {
       setLoading(false);
     }
