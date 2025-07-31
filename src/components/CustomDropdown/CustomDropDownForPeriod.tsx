@@ -2,18 +2,10 @@
 "use client";
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
+import type { OptionType, CustomDropDownForPeriodProps } from '@/types/analyze';
 
-interface OptionType {
-    value: string;
-    label: string;
-}
 
-interface Props {
-    value: string;
-    onChange: (value: string) => void;
-}
-
-export default function CustomDropDownForPeriod({value, onChange}: Props) {
+export default function CustomDropDownForPeriod({value, onChange}: CustomDropDownForPeriodProps) {
     const options: OptionType[] = [
         {value: '시간별 보기', label: '시간별 보기'},
         {value: '주별 보기', label: '주별 보기'},

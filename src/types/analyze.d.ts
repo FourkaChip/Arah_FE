@@ -56,3 +56,15 @@ export interface DateRange {
   startDate: string;
   endDate: string;
 } 
+
+// 커스텀 드롭다운 옵션 타입
+export interface OptionType {
+  value: string;
+  label: string;
+}
+
+//기간 선택 드롭다운 컴포넌트의 props 타입
+export interface CustomDropDownForPeriodProps {
+  value: string;
+  onChange: (value: string) => void;
+}
