@@ -42,7 +42,30 @@ export interface AdminListResponseDto {
     email: string;
     name: string;
     position: string;
-    companyName: string | null;
-    departmentName: string | null;
+    companyName: string;
+    departmentName: string;
     createdAt: string;
 }
+
+// 회사별 관리자 목록 응답 타입
+export interface CompanyAdminListResponse {
+    userId: number;
+    name: string;
+    adminDepartments: string[]; // 부서명 리스트
+}
+
+// 관리자 상세 정보와 회사별 관리자 정보를 합친 통합 타입
+export interface CombinedAdminInfo {
+    userId: number;
+    email?: string;
+    name: string;
+    position?: string;
+    companyName?: string;
+    departmentName?: string;
+    createdAt?: string;
+    adminDepartments: string[];
+    departmentId?: number; // 부서 ID (부서 삭제할 때 필요)
+}
+
+// 테이블 컴포넌트에서 사용할 수 있는 통합 AdminRowType 타입
+export type AdminRowType = CombinedAdminInfo;

@@ -1,28 +1,35 @@
 "use client";
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import './ModalInput.scss';
 import '@/components/Modal/ModalLayout.scss';
 import ModalLayout from "@/components/Modal/ModalLayout";
-import {ModalLayoutProps} from "@/types/modals";
+import {ModalInputProps, ModalInputType} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
-import { useQueryClient } from '@tanstack/react-query';
+import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
+import {useQueryClient} from '@tanstack/react-query';
 
-export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
-
-interface ModalInputProps extends ModalLayoutProps {
-    modalType: ModalInputType;
-    onSubmit?: (code: string) => Promise<boolean | void> | boolean | void;
-    onResendCode?: () => void;
-}
-
-export default function ModalInput({modalType, title, onClose, onSubmit, onResendCode}: ModalInputProps) {
+export default function ModalInput({
+                                       modalType,
+                                       title,
+                                       onClose,
+                                       onSubmit,
+                                       onResendCode,
+                                       error: externalError
+                                   }: ModalInputProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [inputValue, setInputValue] = useState('');
     const [error, setError] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | undefined>(externalError);
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // 외부에서 전달된 에러 메시지가 변경되면 state를 업데이트
+    useEffect(() => {
+        setErrorMsg(externalError);
+        setError(!!externalError);
+    }, [externalError]);
 
     const getModalConfig = () => {
         // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
@@ -70,6 +77,12 @@ export default function ModalInput({modalType, title, onClose, onSubmit, onResen
 
     const config = getModalConfig();
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && inputValue && !loading) {
+            handleSubmit();
+        }
+    };
+
     const handleSubmit = async () => {
         if (!inputValue.trim()) {
             setError(true);
@@ -89,16 +102,18 @@ export default function ModalInput({modalType, title, onClose, onSubmit, onResen
                 try {
                     const result = await onSubmit(inputValue);
                     if (result !== false) {
-                        // 부서 목록을 다시 불러오기
-                        await queryClient.invalidateQueries({ queryKey: ['departmentList'] });
+                        await queryClient.invalidateQueries({queryKey: ['departmentList']});
                         setSuccessModal(true);
-                        setInputValue('');
+                        setInputValue(''); // 입력 필드 초기화
+                        setError(false);
+                        setErrorMsg(undefined);
                     } else {
                         setError(true);
                     }
-                } catch (e) {
+                } catch (e: any) {
                     console.error("부서 등록 실패:", e);
                     setError(true);
+                    setErrorMsg(e.message || '부서 등록에 실패했습니다.');
                 } finally {
                     setLoading(false);
                 }
@@ -141,19 +156,17 @@ export default function ModalInput({modalType, title, onClose, onSubmit, onResen
                         onChange={(e) => {
                             setInputValue(e.target.value);
                             setError(false);
+                            setErrorMsg(undefined);
                         }}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSubmit();
-                            }
-                        }}
+                        onKeyDown={handleKeyDown}
                     />
                 </label>
                 <div className="modal-input-row">
                     <span className="modal-error-message">
-                        {error && modalType === 'auth' ? '인증코드를 다시 확인해 주세요' : ''}
-                        {error && modalType === 'token' ? '유효한 토큰을 입력해 주세요' : ''}
-                        {error && modalType === 'department' ? '부서 등록에 실패했습니다' : ''}
+                        {error && modalType === 'auth' && !errorMsg ? '인증코드를 다시 확인해 주세요' : ''}
+                        {error && modalType === 'token' && !errorMsg ? '유효한 토큰을 입력해 주세요' : ''}
+                        {error && modalType === 'department' && !errorMsg ? '부서 등록에 실패했습니다' : ''}
+                        {errorMsg || ''}
                     </span>
                     {config.subText && (
                         <span className="modal-input-noemail">
@@ -164,7 +177,7 @@ export default function ModalInput({modalType, title, onClose, onSubmit, onResen
                                         onResendCode();
                                     }
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{cursor: 'pointer'}}
                             >
                                 {config.subLinkText}
                             </a>
@@ -178,19 +191,19 @@ export default function ModalInput({modalType, title, onClose, onSubmit, onResen
                         modalType === 'auth'
                             ? '인증 완료'
                             : modalType === 'token'
-                            ? '토큰 등록 완료'
-                            : modalType === 'department'
-                            ? '부서 등록 완료'
-                            : ''
+                                ? '토큰 등록 완료'
+                                : modalType === 'department'
+                                    ? '부서 등록 완료'
+                                    : ''
                     }
                     description={
                         modalType === 'auth'
                             ? '인증되었습니다.'
                             : modalType === 'token'
-                            ? '토큰이 등록되었습니다.'
-                            : modalType === 'department'
-                            ? '부서가 등록되었습니다.'
-                            : ''
+                                ? '토큰이 등록되었습니다.'
+                                : modalType === 'department'
+                                    ? '부서가 등록되었습니다.'
+                                    : ''
                     }
                     footer={
                         <ModalButton

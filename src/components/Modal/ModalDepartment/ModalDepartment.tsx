@@ -6,7 +6,7 @@ import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import './ModalDepartment.scss';
 import { userRows} from "@/constants/dummydata/DummyMasterFile";
 import { ModalDepartmentProps} from "@/types/modals";
-import { fetchUserInfoByEmail, fetchDepartmentList, assignAdminRole } from "@/api/auth/master";
+import { fetchUserInfoByEmail, fetchDepartmentList, assignAdminRole, fetchCurrentUserInfo } from "@/api/auth/master";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function ModalDepartment({
@@ -23,7 +23,31 @@ export default function ModalDepartment({
   const [errorMsg, setErrorMsg] = useState('');
   const [users, setUsers] = useState<any[]>(userRows);
   const [departmentList, setDepartmentList] = useState<{ departmentId: number; name: string }[]>([]);
+  const [currentUserCompanyId, setCurrentUserCompanyId] = useState<number | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
   const queryClient = useQueryClient();
+
+  // 컴포넌트 마운트 시 현재 로그인한 사용자 정보 로드
+  useEffect(() => {
+    const loadCurrentUserInfo = async () => {
+      setInitialLoading(true);
+      try {
+        const userInfo = await fetchCurrentUserInfo();
+        if (userInfo && userInfo.companyId !== undefined) {
+          setCurrentUserCompanyId(userInfo.companyId);
+        } else {
+          setErrorMsg('현재 로그인한 사용자의 회사 정보를 가져올 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+        setErrorMsg('사용자 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadCurrentUserInfo();
+  }, []);
 
   const handleDepartmentClick = (user: any) => {
     setSelectedUser(user);
@@ -39,16 +63,23 @@ export default function ModalDepartment({
 
   // 이메일로 사용자 정보 조회 후 목록에 추가합니다.
   const fetchUserInfo = async (email: string) => {
+    if (currentUserCompanyId === null) {
+      setErrorMsg('회사 정보를 가져올 수 없습니다. 다시 로그인해 주세요.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
     try {
-      const result = await fetchUserInfoByEmail(email);
+      // 현재 사용자의 회사 ID를 전달하여 같은 회사 사용자인지 확인
+      const result = await fetchUserInfoByEmail(email, currentUserCompanyId);
+
       // role이 "USER"인 경우에만 사용자가 추가됩니다.
       if (result.role !== 'USER') {
         setErrorMsg('이미 관리자이거나 마스터인 사용자는 추가할 수 없습니다.');
-        setLoading(false);
         return;
       }
+
       // 이미 목록에 있다면 추가하지 않고 에러 메시지를 띄웁니다.
       if (users.some(u => u.email === email)) {
         setErrorMsg('이미 목록에 있는 사용자입니다.');
@@ -58,17 +89,25 @@ export default function ModalDepartment({
           {
             id: email,
             name: result.name,
-            departments: (result.amdinDepartments || []).join(','),
+            departments: (result.AdminDepartments || []).join(','),
             email: email,
             userId: result.userId,
+            companyId: result.companyId
           }
         ]);
         setEmailInput('');
       }
     } catch (e: any) {
-      setErrorMsg(e.message || '등록된 사용자가 없습니다.');
+      setErrorMsg(e.message || '사용자 정보를 불러올 수 없습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 엔터키 입력 처리 핸들러 추가
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && emailInput && !loading && currentUserCompanyId !== null) {
+      fetchUserInfo(emailInput);
     }
   };
 
@@ -133,7 +172,11 @@ export default function ModalDepartment({
         <div className="modal-window department-modal">
           <div className="modal-dialog department-modal" style={{ width: 640, height: 574 }}>
             <button className="modal-close" onClick={onClose}>×</button>
-            {step === 'list' ? (
+            {initialLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <p>로딩 중...</p>
+              </div>
+            ) : step === 'list' ? (
               <>
                 <h2 className="modal-title-dept">관리자 부서 등록</h2>
                 <p className="modal-description-dept">관리자가 관리할 부서를 선택해 주세요.</p>
@@ -144,12 +187,13 @@ export default function ModalDepartment({
                     style={{ flex: 1 }}
                     value={emailInput}
                     onChange={e => setEmailInput(e.target.value)}
-                    disabled={loading}
+                    onKeyDown={handleKeyDown}
+                    disabled={loading || currentUserCompanyId === null}
                   />
                   <button
                     className="button is-dark"
                     onClick={() => fetchUserInfo(emailInput)}
-                    disabled={loading || !emailInput}
+                    disabled={loading || !emailInput || currentUserCompanyId === null}
                   >
                     {loading ? '조회 중...' : '추가'}
                   </button>
