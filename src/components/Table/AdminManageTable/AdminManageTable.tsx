@@ -1,3 +1,4 @@
+// 관리자 관리 및 기업 설정 테이블 컴포넌트입니다.
 "use client";
 import React, {useState, useMemo} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
@@ -6,8 +7,8 @@ import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
-import {useQuery} from "@tanstack/react-query";
-import {fetchAdminList} from "@/api/auth/master";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {fetchAdminList, removeAdminRole} from "@/api/auth/master";
 import {AdminListResponseDto} from "@/types/tables";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
@@ -36,6 +37,8 @@ export default function MasterAdminTable() {
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const pathName = usePathname();
+    const queryClient = useQueryClient();
+    const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
 
     const {data: adminRows = [], isLoading, error} = useQuery<AdminListResponseDto[]>({
         queryKey: ['adminList'],
@@ -115,12 +118,13 @@ export default function MasterAdminTable() {
                 {
                     id: "delete",
                     header: "삭제",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <img
                             src="/delete.svg"
                             alt="삭제"
                             className="icon-delete-button"
-                            onClick={() => setOpenDeleteModal(true)}
+                            style={{ opacity: deletingEmail === row.original.email ? 0.5 : 1, cursor: 'pointer' }}
+                            onClick={() => handleOpenDeleteModal(row.original.email)}
                         />
                     ),
                 }
@@ -134,16 +138,16 @@ export default function MasterAdminTable() {
                 {
                     id: "edit",
                     header: "편집",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <FontAwesomeIcon icon={faTrash}
-                                         onClick={() => setOpenDeleteModal(true)}
-                                         style={{color: 'red', cursor: 'pointer'}}
+                            onClick={() => handleOpenDeleteModal(row.original.email)}
+                            style={{color: 'red', cursor: 'pointer'}}
                         />
                     ),
                 }
             ];
         }
-    }, [pathName]);
+    }, [pathName, deletingEmail]);
 
     const table = useReactTable({
         data: paginatedData,
@@ -152,6 +156,25 @@ export default function MasterAdminTable() {
     });
 
     const pageCount = Math.ceil(filteredRows.length / pageSize);
+
+    // 삭제 로직 핸들러입니다.
+    const handleDelete = async (email: string) => {
+        setDeletingEmail(email);
+        try {
+            await removeAdminRole(email);
+            await queryClient.invalidateQueries({queryKey: ['adminList']});
+        } catch (e) {
+            // TODO: 에러 처리 필요시 추가
+        } finally {
+            setDeletingEmail(null);
+            setOpenDeleteModal(false);
+        }
+    };
+
+    const handleOpenDeleteModal = (email: string) => {
+        setDeletingEmail(email);
+        setOpenDeleteModal(true);
+    };
 
     if (isLoading) return <div>로딩 중...</div>;
     if (error) return <div>에러 발생: {error.message}</div>;
@@ -217,7 +240,12 @@ export default function MasterAdminTable() {
                 </div>
                 {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
                 {openDeleteModal &&
-                    <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+                    <ModalDefault
+                        type="delete-data"
+                        label="삭제하시겠습니까?"
+                        onClose={() => setOpenDeleteModal(false)}
+                        onSubmit={() => deletingEmail && handleDelete(deletingEmail)}
+                    />}
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openTokenModal &&

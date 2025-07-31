@@ -4,7 +4,7 @@ import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import ModalLayout from "@/components/Modal/ModalLayout";
 import { ModalWindowProps } from "@/types/modals";
 
-export default function ModalDefault({ type, label, onClose }: ModalWindowProps) {
+export default function ModalDefault({ type, label, onClose, onSubmit }: ModalWindowProps) {
     let description = '';
     let buttonLabel = '';
     const buttonType = type;
@@ -28,11 +28,19 @@ export default function ModalDefault({ type, label, onClose }: ModalWindowProps)
         <ModalLayout title={label} onClose={onClose}>
             <p className="modal-description">{description}</p>
             <div className="modal-buttons">
-                <ModalButton
-                    type={buttonType}
-                    label={buttonLabel}
-                    onClick={onClose}
-                />
+                {type === 'delete-data' ? (
+                    <ModalButton
+                        type={buttonType}
+                        label={buttonLabel}
+                        onClick={onSubmit}
+                    />
+                ) : (
+                    <ModalButton
+                        type={buttonType}
+                        label={buttonLabel}
+                        onClick={onClose}
+                    />
+                )}
             </div>
         </ModalLayout>
     );

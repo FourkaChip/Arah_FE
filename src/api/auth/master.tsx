@@ -58,8 +58,8 @@ export const fetchAdminList = async () => {
         if (refreshToken) {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refreshToken }),
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({refreshToken}),
             });
             if (res.ok) {
                 // 백엔드 응답: { accessToken: ... } 또는 { result: { accessToken: ... } }
@@ -79,7 +79,7 @@ export const fetchAdminList = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`, {
         headers: {
             'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
+            ...(token && {Authorization: `Bearer ${token}`}),
         },
     });
 
@@ -95,7 +95,7 @@ export const assignAdminRole = async (email: string) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({email}),
     });
     if (!res.ok) throw new Error('관리자 권한 부여 실패');
     return res.json();
@@ -103,12 +103,14 @@ export const assignAdminRole = async (email: string) => {
 
 // 관리자 권한 해제 API 함수입니다.
 export const removeAdminRole = async (email: string) => {
+    const accessToken = useAuthStore.getState().accessToken;
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins/remove`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
+            ...(accessToken ? {Authorization: `Bearer ${accessToken}`} : {}),
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({email}),
     });
     if (!res.ok) throw new Error('관리자 권한 해제 실패');
     return res.json();
