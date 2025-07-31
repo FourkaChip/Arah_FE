@@ -1,8 +1,25 @@
+'use client';
+
+import dynamic from 'next/dynamic';
 import './Analyze.scss';
-import FeedbackLineChart from '@/components/analyze/FeedbackLineChart';
-import KeywordDonutChart from '@/components/analyze/KeywordDonutChart';
-import FeedbackTypeBarChart from '@/components/analyze/FeedbackTypeBarChart';
-import SatisfactionDonutChart from '@/components/analyze/SatisfactionDonutChart';
+
+const FeedbackLineChart = dynamic(() => import('@/components/analyze/FeedbackLineChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const KeywordDonutChart = dynamic(() => import('@/components/analyze/KeywordDonutChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const FeedbackTypeBarChart = dynamic(() => import('@/components/analyze/FeedbackTypeBarChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+const SatisfactionDonutChart = dynamic(() => import('@/components/analyze/SatisfactionDonutChart'), { 
+    ssr: false,
+    loading: () => <p>Loading chart...</p> 
+});
+
 
 export default function AnalysisPage() {
     return (
