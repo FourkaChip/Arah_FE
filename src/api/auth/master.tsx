@@ -52,7 +52,6 @@ export const confirmMasterVerifyCode = async ({
 export const fetchAdminList = async () => {
     const accessToken = useAuthStore.getState().accessToken;
     let token = accessToken;
-    // accessToken이 없고 refreshToken이 있으면 재발급 시도
     if (!token) {
         const refreshToken = getRefreshToken();
         if (refreshToken) {
@@ -62,7 +61,6 @@ export const fetchAdminList = async () => {
                 body: JSON.stringify({refreshToken}),
             });
             if (res.ok) {
-                // 백엔드 응답: { accessToken: ... } 또는 { result: { accessToken: ... } }
                 const data = await res.json();
                 const newAccessToken = data.accessToken || (data.result && data.result.accessToken);
                 if (newAccessToken) {

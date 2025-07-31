@@ -2,6 +2,9 @@
 "use client";
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
+import { useEffect, useState } from "react";
+import { fetchDepartmentList } from "@/api/auth/master";
+import { useAuthStore } from "@/store/auth.store";
 
 interface OptionType {
     value: string;
@@ -13,13 +16,21 @@ interface Props {
 }
 
 export default function CustomDropDownForDept({onChange}: Props) {
-    const options: OptionType[] = [
-        {value: 'all', label: '전체'},
-        {value: '인사담당부', label: '인사담당부'},
-        {value: '재정기획부', label: '재정기획부'},
-        {value: '사업기획부', label: '사업기획부'},
-        {value: '행정안전부', label: '행정안전부'}
-    ];
+    const [options, setOptions] = useState<OptionType[]>([{value: 'all', label: '전체'}]);
+
+    useEffect(() => {
+        fetchDepartmentList()
+            .then((list) => {
+                const deptOptions = list.map((dept: { departmentId: number; name: string }) => ({
+                    value: dept.name,
+                    label: dept.name
+                }));
+                setOptions([{value: 'all', label: '전체'}, ...deptOptions]);
+            })
+            .catch(() => {
+                setOptions([{value: 'all', label: '전체'}]);
+            });
+    }, []);
 
     return (
         <div className="custom-dropdown">
