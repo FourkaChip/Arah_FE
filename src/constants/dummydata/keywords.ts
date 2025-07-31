@@ -87,11 +87,6 @@ export const aggregateKeywordData = (startDate: string, endDate: string): Keywor
   // 상위 5개 키워드 모두 반환
   const result = keywordArray.slice(0, 5);
   
-  // 디버깅용 로그 (개발 환경에서만)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('키워드 집계 결과:', keywordArray.map(k => `${k.name}: ${k.value}`));
-    console.log('상위 5개:', result.map(k => `${k.name}: ${k.value} (${k.percentage}%)`));
-  }
 
   return result;
 };

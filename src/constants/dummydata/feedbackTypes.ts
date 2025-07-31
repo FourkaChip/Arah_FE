@@ -80,11 +80,6 @@ export const aggregateFeedbackTypeData = (startDate: string, endDate: string): F
     }))
     .sort((a, b) => b.count - a.count); // 값이 높은 순으로 정렬
 
-  // 디버깅용 로그 (개발 환경에서만)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('피드백 유형 집계 결과:', feedbackTypeArray.map(f => `${f.type}: ${f.count}`));
-  }
-
   return feedbackTypeArray;
 };
 
