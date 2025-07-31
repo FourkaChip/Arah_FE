@@ -1,0 +1,171 @@
+// 공통 차트 컨테이너 스타일
+.chartContainer {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  // &:hover,
+  // &:focus,
+  // &:active,
+  // &:focus-visible,
+  // &:focus-within {
+  //   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  // }
+}
+
+// 공통 차트 제목 스타일
+.chartTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+// 공통 차트 래퍼 스타일
+.chartWrapper {
+  height: 300px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// 공통 툴팁 스타일
+.tooltip {
+  // background: #2D3748;
+  color: #333;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  // border: 1px solid #4A5568;
+  font-weight: 500;
+}
+
+// ========== 피드백 라인차트 전용 스타일 ==========
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.yearControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.yearButton {
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  
+
+  //TODO: Bulma 적용 후 삭제 예정
+  &:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+  
+  //TODO: Bulma 적용 후 삭제 예정
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.yearText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 60px;
+  text-align: center;
+}
+
+.peakLabel {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #A8D8EA;
+}
+
+// ========== 도넛차트 공통 스타일 (키워드, 만족도) ==========
+// AdminDataTable과 동일한 날짜 설정 스타일
+.date-search-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .date-picker {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+
+    &:focus {
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+  }
+
+}
+
+// 기존 스타일들 (호환성을 위해 유지)
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+//TODO: AdminDataTable 스타일 적용 완료 - 조민성님 코드 참조하여 수정 완료
+.dateInput {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  
+  &:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    outline: none;
+  }
+}
+
+.dateSeparator {
+  color: #666;
+  font-weight: 500;
+}
+
+.centerLabel {
+  text {
+    fill: #333;
+  }
+}
+
+// ========== 막대차트 전용 스타일 ==========
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legendText {
+  font-size: 0.9rem;
+  color: #666;
+}
