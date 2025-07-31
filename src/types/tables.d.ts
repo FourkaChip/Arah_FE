@@ -19,7 +19,7 @@ export type FeedbackRowData = {
     feedback: string;
 };
 
-// AdminDataTable용 타입 추가
+// AdminDataTable용 타입
 export type AdminDataTableRowData = {
     id: number;
     no: number;
@@ -35,3 +35,14 @@ export type AdminDataTableSubRowData = {
     name: string;
     version: string;
 };
+
+// 관리자 관리용 타입
+export interface AdminListResponseDto {
+    userId: number;
+    email: string;
+    name: string;
+    position: string;
+    companyName: string | null;
+    departmentName: string | null;
+    createdAt: string;
+}

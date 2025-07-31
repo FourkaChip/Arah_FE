@@ -26,13 +26,15 @@ export interface ModalWindowProps {
     type: ModalButtonType;
     label: string;
     onClose: () => void;
+    onSubmit?: () => void;
 }
 
 // ModalConfirmButtonProps는 모달에서 확인 버튼에 사용되는 속성 타입입니다.
 export interface ModalConfirmButtonProps {
     type: ModalButtonType;
     label: string;
-    onClick: () => void;
+    onClick?: () => void;
+    onSubmit?: () => void;
 }
 
 // ModalInputProps는 모달 입력창에서 사용되는 속성 타입입니다.

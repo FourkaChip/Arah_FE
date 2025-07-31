@@ -8,12 +8,12 @@ import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/Modal/ModalInput/ModalInput";
 import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
-import { masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode } from '@/api/auth/master';
-import { adminLogin } from '@/api/auth/admin';
-import { useAuthStore} from "@/store/auth.store";
-import { saveRefreshToken} from "@/utils/tokenStorage";
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import {masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode} from '@/api/auth/master';
+import {adminLogin} from '@/api/auth/admin';
+import {useAuthStore} from "@/store/auth.store";
+import {saveAccessToken, saveRefreshToken} from "@/utils/tokenStorage";
+import {useMutation} from '@tanstack/react-query';
+import {useRouter} from 'next/navigation';
 
 export default function LoginForm() {
     const pathname = usePathname();
@@ -54,56 +54,56 @@ export default function LoginForm() {
 
     // 마스터 로그인 뮤테이션
     const masterLoginMutation = useMutation({
-      mutationFn: () => masterLogin(email, password),
-      onSuccess: async ({ verifyToken }) => {
-        setPasswordError(false);
-        setVerifyToken(verifyToken);
-        try {
-          await sendMasterVerifyCode(verifyToken);
-          setShowModal(true);
-        } catch {
-          alert('인증번호 전송 실패');
-        }
-      },
-      onError: () => {
-        setPasswordError(true);
-      },
+        mutationFn: () => masterLogin(email, password),
+        onSuccess: async ({verifyToken}) => {
+            setPasswordError(false);
+            setVerifyToken(verifyToken);
+            try {
+                await sendMasterVerifyCode(verifyToken);
+                setShowModal(true);
+            } catch {
+                alert('인증번호 전송 실패');
+            }
+        },
+        onError: () => {
+            setPasswordError(true);
+        },
     });
 
     // 어드민 로그인 뮤테이션
     const adminLoginMutation = useMutation({
-      mutationFn: () => adminLogin(email, password),
-      onSuccess: ({ accessToken, refreshToken }) => {
-        setPasswordError(false);
-        useAuthStore.getState().setAccessToken(accessToken);
-        saveRefreshToken(refreshToken);
-        router.push('/admin/manage');
-      },
-      onError: () => {
-        setPasswordError(true);
-      },
+        mutationFn: () => adminLogin(email, password),
+        onSuccess: ({accessToken, refreshToken}) => {
+            setPasswordError(false);
+            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
+            saveRefreshToken(refreshToken); // localStorage 저장
+            router.push('/admin/manage');
+        },
+        onError: () => {
+            setPasswordError(true);
+        },
     });
 
     // 로그인 버튼 핸들러
     const handleLogin = () => {
-      if (pathname === '/master/login') {
-        masterLoginMutation.mutate();
-      } else if (pathname === '/admin/login') {
-        adminLoginMutation.mutate();
-      }
+        if (pathname === '/master/login') {
+            masterLoginMutation.mutate();
+        } else if (pathname === '/admin/login') {
+            adminLoginMutation.mutate();
+        }
     };
 
     const verifyMutation = useMutation({
-      mutationFn: (code: string) =>
-        confirmMasterVerifyCode({ verifyToken, code }),
-      onSuccess: ({ accessToken, refreshToken }) => {
-        useAuthStore.getState().setAccessToken(accessToken);
-        saveRefreshToken(refreshToken);
-        router.push('/master/manage');
-      },
-      onError: () => {
-        // 인증 실패 시 처리 로직 (필요하면 상태값으로 에러 메시지 표시)
-      },
+        mutationFn: (code: string) =>
+            confirmMasterVerifyCode({verifyToken, code}),
+        onSuccess: ({accessToken, refreshToken}) => {
+            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
+            saveRefreshToken(refreshToken); // localStorage 저장
+            router.push('/master/manage');
+        },
+        onError: () => {
+            // 인증 실패 시 처리 로직 (필요하면 상태값으로 에러 메시지 표시)
+        },
     });
 
 
@@ -161,11 +161,11 @@ export default function LoginForm() {
                         value={password}
                         className={`login-form-input ${passwordError ? 'is-error' : ''}`}
                         onChange={(e) => {
-                          setPassword(e.target.value);
-                          setPasswordError(false);
+                            setPassword(e.target.value);
+                            setPasswordError(false);
                         }}/>
                     {passwordError && (
-                      <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
+                        <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
                     )}
                 </label>
                 <p className="login-form-missing">
@@ -204,11 +204,11 @@ export default function LoginForm() {
                     onClose={() => setShowModal(false)}
                     onSubmit={(code: string) => verifyMutation.mutate(code)}
                     onResendCode={() => {
-                      if (verifyToken) {
-                        sendMasterVerifyCode(verifyToken)
-                          .then(() => alert('인증 코드가 재전송되었습니다.'))
-                          .catch(() => alert('인증 코드 전송에 실패했습니다.'));
-                      }
+                        if (verifyToken) {
+                            sendMasterVerifyCode(verifyToken)
+                                .then(() => alert('인증 코드가 재전송되었습니다.'))
+                                .catch(() => alert('인증 코드 전송에 실패했습니다.'));
+                        }
                     }}
                 />
             )}

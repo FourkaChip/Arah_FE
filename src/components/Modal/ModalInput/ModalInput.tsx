@@ -1,10 +1,11 @@
+"use client";
 import {useState} from 'react';
 import './ModalInput.scss';
 import '@/components/Modal/ModalLayout.scss';
 import ModalLayout from "@/components/Modal/ModalLayout";
 import {ModalLayoutProps} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
-import {router} from "next/client";
+import {useRouter} from "next/navigation";
 
 export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
 
@@ -15,12 +16,13 @@ interface ModalInputProps extends ModalLayoutProps {
 }
 
 export default function ModalInput({modalType, onClose, onSubmit, onResendCode}: ModalInputProps) {
+    const router = useRouter();
     const getModalConfig = () => {
         // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
         switch (modalType) {
             case 'token':
                 return {
-                    title: '토��� 등록',
+                    title: '토큰 등록',
                     description: '카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다.',
                     placeholder: '토큰 입력',
                     subText: '토큰을 분실하셨나요? ',

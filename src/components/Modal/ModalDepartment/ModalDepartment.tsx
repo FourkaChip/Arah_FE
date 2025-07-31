@@ -1,12 +1,13 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import './ModalDepartment.scss';
 import { userRows} from "@/constants/dummydata/DummyMasterFile";
-import { allDepartments} from "@/constants/dummydata/DummyMasterFile";
 import { ModalDepartmentProps} from "@/types/modals";
+import { fetchUserInfoByEmail, fetchDepartmentList, assignAdminRole } from "@/api/auth/master";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ModalDepartment({
   defaultStep = 'list',
@@ -17,10 +18,16 @@ export default function ModalDepartment({
   const [step, setStep] = useState<'list' | 'select'>(defaultStep);
   const [selectedUser, setSelectedUser] = useState<any>(defaultUser);
   const [checked, setChecked] = useState<string[]>(defaultChecked);
+  const [emailInput, setEmailInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [users, setUsers] = useState<any[]>(userRows);
+  const [departmentList, setDepartmentList] = useState<{ departmentId: number; name: string }[]>([]);
+  const queryClient = useQueryClient();
 
   const handleDepartmentClick = (user: any) => {
     setSelectedUser(user);
-    setChecked([]); // Reset selected departments
+    setChecked(user.departments ? user.departments.split(',') : []);
     setStep('select');
   };
 
@@ -30,9 +37,83 @@ export default function ModalDepartment({
     );
   };
 
+  // 이메일로 사용자 정보 조회 후 목록에 추가합니다.
+  const fetchUserInfo = async (email: string) => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const result = await fetchUserInfoByEmail(email);
+      // role이 "USER"인 경우에만 사용자가 추가됩니다.
+      if (result.role !== 'USER') {
+        setErrorMsg('이미 관리자이거나 마스터인 사용자는 추가할 수 없습니다.');
+        setLoading(false);
+        return;
+      }
+      // 이미 목록에 있다면 추가하지 않고 에러 메시지를 띄웁니다.
+      if (users.some(u => u.email === email)) {
+        setErrorMsg('이미 목록에 있는 사용자입니다.');
+      } else {
+        setUsers([
+          ...users,
+          {
+            id: email,
+            name: result.name,
+            departments: (result.amdinDepartments || []).join(','),
+            email: email,
+            userId: result.userId,
+          }
+        ]);
+        setEmailInput('');
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || '등록된 사용자가 없습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (step === 'select') {
+      fetchDepartmentList()
+        .then(setDepartmentList)
+        .catch(() => setDepartmentList([]));
+    }
+  }, [step]);
+
+  const handleConfirmDepartment = () => {
+    if (!selectedUser) return;
+    const selectedDeptNames = departmentList
+      .filter(dept => checked.includes(dept.name))
+      .map(dept => dept.name);
+
+    setUsers(users =>
+      users.map(u =>
+        u.email === selectedUser.email
+          ? { ...u, departments: selectedDeptNames.join(','), selectedDepartments: [...checked] }
+          : u
+      )
+    );
+
+    setStep('list');
+    setSelectedUser(null);
+    setChecked([]);
+  };
+
   const columns: GridColDef[] = [
     { field: 'name', headerName: '이름', flex: 1, resizable: false },
-    { field: 'departments', headerName: '선택된 부서', flex: 2, resizable: false },
+    {
+      field: 'departments',
+      headerName: '선택된 부서',
+      flex: 2,
+      resizable: false,
+      renderCell: (params) => (
+        <span>
+          {params.row.selectedDepartments && params.row.selectedDepartments.length > 0
+            ? params.row.selectedDepartments.join(', ')
+            : params.row.departments}
+        </span>
+      )
+    },
     {
       field: 'action',
       headerName: '',
@@ -57,12 +138,26 @@ export default function ModalDepartment({
                 <h2 className="modal-title-dept">관리자 부서 등록</h2>
                 <p className="modal-description-dept">관리자가 관리할 부서를 선택해 주세요.</p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                  <input className="admin-search-input" placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요." style={{ flex: 1 }} />
-                  <button className="button is-dark">추가</button>
+                  <input
+                    className="admin-search-input"
+                    placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요."
+                    style={{ flex: 1 }}
+                    value={emailInput}
+                    onChange={e => setEmailInput(e.target.value)}
+                    disabled={loading}
+                  />
+                  <button
+                    className="button is-dark"
+                    onClick={() => fetchUserInfo(emailInput)}
+                    disabled={loading || !emailInput}
+                  >
+                    {loading ? '조회 중...' : '추가'}
+                  </button>
                 </div>
+                {errorMsg && <div style={{ color: 'red', marginBottom: 8 }}>{errorMsg}</div>}
                 <div style={{ height: 320 }}>
                   <DataGrid
-                    rows={userRows}
+                    rows={users}
                     columns={columns}
                     hideFooter
                     disableColumnMenu
@@ -74,16 +169,34 @@ export default function ModalDepartment({
                     type="cancel"
                     label="취소"
                     onClick={() => {
-                      if (defaultStep === 'select') {
-                        onClose?.();
+                      if (onClose) onClose();
+                    }}
+                  />
+                  <ModalButton
+                    type="default"
+                    label="확인"
+                    onClick={async () => {
+                      const payload = users
+                        .filter(u => u.selectedDepartments && u.selectedDepartments.length > 0)
+                        .map(u => ({
+                          departmentIds: departmentList
+                            .filter(dept => u.selectedDepartments.includes(dept.name))
+                            .map(dept => dept.departmentId),
+                          userId: u.userId,
+                        }));
+                      if (payload.length > 0) {
+                        try {
+                          await assignAdminRole(payload);
+                          queryClient.invalidateQueries({ queryKey: ['adminList'] });
+                          if (onClose) onClose();
+                        } catch (e) {
+                          // TODO: 에러 처리 필요시 추가
+                        }
                       } else {
-                        setStep('list');
+                        if (onClose) onClose();
                       }
                     }}
                   />
-                  <ModalButton type="default" label="확인" onClick={function (): void {
-                    throw new Error('Function not implemented.');
-                  }} />
                 </div>
               </>
             ) : (
@@ -91,7 +204,7 @@ export default function ModalDepartment({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h2 className="modal-title-dept">관리자 부서 등록</h2>
                   <span className="modal-description-dept" style={{ fontWeight: 600 }}>
-                    관리자: {selectedUser.name}({selectedUser.departments.split(',')[0]})
+                    관리자: {selectedUser.name}
                   </span>
                 </div>
                 <p className="modal-description-dept">
@@ -99,7 +212,7 @@ export default function ModalDepartment({
                 </p>
                 <div style={{ flex: 1, marginTop: 16, height: 320 }}>
                   <DataGrid
-                    rows={allDepartments.map((dept) => ({ id: dept, name: dept }))}
+                    rows={departmentList.map((dept) => ({ id: dept.departmentId, name: dept.name }))}
                     columns={[
                       {
                         field: 'name',
@@ -114,10 +227,10 @@ export default function ModalDepartment({
                             type="checkbox"
                             className="department-checkbox-input"
                             style={{ width: 20, height: 20, accentColor: '#232D64', cursor: 'pointer' }}
-                            checked={checked.length === allDepartments.length}
+                            checked={checked.length === departmentList.length}
                             onChange={(e) => {
                               const isChecked = e.target.checked;
-                              setChecked(isChecked ? [...allDepartments] : []);
+                              setChecked(isChecked ? departmentList.map(d => d.name) : []);
                             }}
                           />
                         ),
@@ -145,16 +258,16 @@ export default function ModalDepartment({
                     type="cancel"
                     label="취소"
                     onClick={() => {
-                      if (defaultStep === 'select') {
-                        onClose?.();
-                      } else {
-                        setStep('list');
-                      }
+                      setStep('list');
+                      setSelectedUser(null);
+                      setChecked([]);
                     }}
                   />
-                  <ModalButton type="default" label="확인" onClick={function (): void {
-                    throw new Error('Function not implemented.');
-                  }} />
+                  <ModalButton
+                    type="default"
+                    label="확인"
+                    onClick={handleConfirmDepartment}
+                  />
                 </div>
               </>
             )}

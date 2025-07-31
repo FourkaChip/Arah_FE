@@ -1,5 +1,6 @@
 // src/utils/token-storage.ts
 const REFRESH_TOKEN_KEY = 'refresh_token';
+export const ACCESS_TOKEN_KEY = 'access_token';
 
 export const saveRefreshToken = (token: string) => {
     if (typeof window !== "undefined") {
@@ -18,4 +19,18 @@ export const removeRefreshToken = () => {
     if (typeof window !== "undefined") {
         localStorage.removeItem(REFRESH_TOKEN_KEY);
     }
+};
+
+// accessToken은 메모리(상태)에서만 관리
+export const saveAccessToken = (token: string) => {
+    // no-op
+};
+
+export const getAccessToken = () => {
+    // no-op
+    return null;
+};
+
+export const removeAccessToken = () => {
+    // no-op
 };

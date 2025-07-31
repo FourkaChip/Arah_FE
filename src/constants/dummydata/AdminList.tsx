@@ -1,83 +1,83 @@
 export const rows = [
     {
-        id: 1,
-        department: "인사담당부",
-        joinDate: "21-03-2022",
-        position: "대리",
-        userId: "1596",
+        userId: 1596,
+        email: "cho010105@naver.com",
         name: "조민성",
-        email: "cho010105@naver.com"
+        position: "대리",
+        companyName: "포카회사",
+        departmentName: "인사담당부",
+        createdAt: "2022-03-21T00:00:00"
     },
     {
-        id: 2,
-        department: "재정기획부",
-        joinDate: "21-03-2022",
-        position: "과장",
-        userId: "1595",
+        userId: 1595,
+        email: "cho010105@naver.com",
         name: "김송희",
-        email: "cho010105@naver.com"
+        position: "과장",
+        companyName: "포카회사",
+        departmentName: "재정기획부",
+        createdAt: "2022-03-21T00:00:00"
     },
     {
-        id: 3,
-        department: "행정안전부",
-        joinDate: "21-03-2022",
-        position: "차장",
-        userId: "1594",
+        userId: 1594,
+        email: "cho010105@naver.com",
         name: "김범진",
-        email: "cho010105@naver.com"
+        position: "차장",
+        companyName: "포카회사",
+        departmentName: "행정안전부",
+        createdAt: "2022-03-21T00:00:00"
     },
     {
-        id: 4,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "팀장",
-        userId: "1593",
+        userId: 1593,
+        email: "cho010105@naver.com",
         name: "문승주",
-        email: "cho010105@naver.com"
+        position: "팀장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
     },
     {
-        id: 5,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "사장",
-        userId: "1592",
+        userId: 1592,
+        email: "cho010105@naver.com",
         name: "김동윤",
-        email: "cho010105@naver.com"
+        position: "사장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
     },
     {
-        id: 6,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "팀장",
-        userId: "1593",
+        userId: 1593,
+        email: "cho010105@naver.com",
         name: "문승주",
-        email: "cho010105@naver.com"
+        position: "팀장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
     },
     {
-        id: 7,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "팀장",
-        userId: "1593",
+        userId: 1593,
+        email: "cho010105@naver.com",
         name: "문승주",
-        email: "cho010105@naver.com"
+        position: "팀장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
     },
     {
-        id: 8,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "팀장",
-        userId: "1593",
+        userId: 1593,
+        email: "cho010105@naver.com",
         name: "문승주",
-        email: "cho010105@naver.com"
+        position: "팀장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
     },
     {
-        id: 9,
-        department: "사업기획부",
-        joinDate: "08-03-2022",
-        position: "팀장",
-        userId: "1593",
+        userId: 1593,
+        email: "cho010105@naver.com",
         name: "문승주",
-        email: "cho010105@naver.com"
-    },
+        position: "팀장",
+        companyName: "포카회사",
+        departmentName: "사업기획부",
+        createdAt: "2022-03-08T00:00:00"
+    }
 ];

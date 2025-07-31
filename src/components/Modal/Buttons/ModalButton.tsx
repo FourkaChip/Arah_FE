@@ -4,7 +4,11 @@ import { ModalConfirmButtonProps} from "@/types/modals";
 
 export default function ModalButton({ type, label, onClick }: ModalConfirmButtonProps) {
     return (
-        <button className={`common-button ${type}`} onClick={onClick}>
+        <button
+            className={`common-button ${type}`}
+            onClick={onClick ? onClick : undefined}
+            type="button"
+        >
             {label}
         </button>
     );

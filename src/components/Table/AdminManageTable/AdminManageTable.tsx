@@ -1,12 +1,15 @@
+// 관리자 관리 및 기업 설정 테이블 컴포넌트입니다.
 "use client";
-import React, {useState, useEffect, useMemo, useRef} from "react";
+import React, {useState, useMemo} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import ModalDepartment from "@/components/Modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
-import {rows} from "@/constants/dummydata/AdminList";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {fetchAdminList, removeAdminRole} from "@/api/auth/master";
+import {AdminListResponseDto} from "@/types/tables";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
 import {usePathname} from "next/navigation";
@@ -21,40 +24,46 @@ import {
     ColumnDef
 } from "@tanstack/react-table";
 
-type RowType = typeof rows[number];
+type RowType = AdminListResponseDto;
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
     const [selectedDept, setSelectedDept] = useState('all');
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
+    const [openEditModal] = useState(false);
     const [openTokenModal, setOpenTokenModal] = useState(false);
 
     const [searchValue, setSearchValue] = useState("");
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const pathName = usePathname();
+    const queryClient = useQueryClient();
+    const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
 
-    // 필터링
+    const {data: adminRows = [], isLoading, error} = useQuery<AdminListResponseDto[]>({
+        queryKey: ['adminList'],
+        queryFn: fetchAdminList,
+    });
+
     const filteredRows = useMemo(() => {
         if (pathName === '/master/manage') {
-            return rows.filter(row => {
+            return adminRows.filter(row => {
                 const isDeptAll = selectedDept === 'all';
                 const isSearchEmpty = !searchValue;
                 if (isDeptAll && isSearchEmpty) return true;
-                if (!isDeptAll && isSearchEmpty) return row.department === selectedDept;
+                if (!isDeptAll && isSearchEmpty) return (row.departmentName ?? '') === selectedDept;
                 if (isDeptAll && !isSearchEmpty) return row.name.toLowerCase().includes(searchValue.toLowerCase());
-                return row.department === selectedDept && row.name.toLowerCase().includes(searchValue.toLowerCase());
+                return (row.departmentName ?? '') === selectedDept && row.name.toLowerCase().includes(searchValue.toLowerCase());
             });
         } else if (pathName === '/master/dept') {
-            return rows.filter(row => {
+            return adminRows.filter(row => {
                 const isSearchEmpty = !searchValue;
                 if (isSearchEmpty) return true;
-                return row.department.toLowerCase().includes(searchValue.toLowerCase());
+                return (row.departmentName ?? '').toLowerCase().includes(searchValue.toLowerCase());
             });
         }
-        return rows;
-    }, [selectedDept, searchValue, pathName]);
+        return adminRows;
+    }, [selectedDept, searchValue, pathName, adminRows]);
 
     const paginatedData = useMemo(
         () => filteredRows.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
@@ -66,12 +75,21 @@ export default function MasterAdminTable() {
         if (pathName === '/master/manage') {
             return [
                 {
-                    accessorKey: "department",
+                    accessorKey: "departmentName",
                     header: "부서",
                 },
                 {
-                    accessorKey: "joinDate",
+                    accessorKey: "createdAt",
                     header: "가입일",
+                    cell: ({ getValue }) => {
+                        const raw = getValue() as string;
+                        const date = new Date(raw);
+                        return date.toLocaleDateString("ko-KR", {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    }
                 },
                 {
                     accessorKey: "position",
@@ -93,18 +111,20 @@ export default function MasterAdminTable() {
                     id: "departmentSetting",
                     header: "부서 설정",
                     cell: () => (
-                        <button className="text-blue-600 underline" onClick={() => setOpenDeptModal(true)}>부서 설정</button>
+                        <button className="text-blue-600 underline" onClick={() => setOpenDeptModal(true)}>부서
+                            설정</button>
                     ),
                 },
                 {
                     id: "delete",
                     header: "삭제",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <img
                             src="/delete.svg"
                             alt="삭제"
                             className="icon-delete-button"
-                            onClick={() => setOpenDeleteModal(true)}
+                            style={{ opacity: deletingEmail === row.original.email ? 0.5 : 1, cursor: 'pointer' }}
+                            onClick={() => handleOpenDeleteModal(row.original.email)}
                         />
                     ),
                 }
@@ -112,22 +132,22 @@ export default function MasterAdminTable() {
         } else {
             return [
                 {
-                    accessorKey: "department",
+                    accessorKey: "departmentName",
                     header: "부서명",
                 },
                 {
                     id: "edit",
                     header: "편집",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <FontAwesomeIcon icon={faTrash}
-                                         onClick={() => setOpenDeleteModal(true)}
-                                         style={{color: 'red', cursor: 'pointer'}}
+                            onClick={() => handleOpenDeleteModal(row.original.email)}
+                            style={{color: 'red', cursor: 'pointer'}}
                         />
                     ),
                 }
             ];
         }
-    }, [pathName]);
+    }, [pathName, deletingEmail]);
 
     const table = useReactTable({
         data: paginatedData,
@@ -136,6 +156,28 @@ export default function MasterAdminTable() {
     });
 
     const pageCount = Math.ceil(filteredRows.length / pageSize);
+
+    // 삭제 로직 핸들러입니다.
+    const handleDelete = async (email: string) => {
+        setDeletingEmail(email);
+        try {
+            await removeAdminRole(email);
+            await queryClient.invalidateQueries({queryKey: ['adminList']});
+        } catch (e) {
+            // TODO: 에러 처리 필요시 추가
+        } finally {
+            setDeletingEmail(null);
+            setOpenDeleteModal(false);
+        }
+    };
+
+    const handleOpenDeleteModal = (email: string) => {
+        setDeletingEmail(email);
+        setOpenDeleteModal(true);
+    };
+
+    if (isLoading) return <div>로딩 중...</div>;
+    if (error) return <div>에러 발생: {error.message}</div>;
 
     return (
         <>
@@ -189,7 +231,7 @@ export default function MasterAdminTable() {
                     )}
                     </tbody>
                 </table>
-                <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination
                         currentPage={currentPage + 1}
                         totalPages={pageCount}
@@ -198,7 +240,12 @@ export default function MasterAdminTable() {
                 </div>
                 {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
                 {openDeleteModal &&
-                    <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+                    <ModalDefault
+                        type="delete-data"
+                        label="삭제하시겠습니까?"
+                        onClose={() => setOpenDeleteModal(false)}
+                        onSubmit={() => deletingEmail && handleDelete(deletingEmail)}
+                    />}
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openTokenModal &&
