@@ -1,12 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import './Header.scss';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { removeRefreshToken } from '@/utils/tokenStorage';
 import { useAuthStore } from '@/store/auth.store';
 
 const Header = () => {
     const router = useRouter();
+    const pathname = usePathname();
     const { clearAccessToken } = useAuthStore();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -50,15 +51,27 @@ const Header = () => {
                 <div className="navbar-end">
                     <div className="navbar-item">
                         <div className="buttons">
-                            <a className="button is-white has-text-grey-light"><i className="fa-solid fa-bell"></i></a>
-                            <a className="button is-white has-text-link">봇테스트</a>
-                            <a
-                                className="button is-white has-text-grey-light"
-                                onClick={isLoggingOut ? undefined : handleLogout}
-                                style={{ cursor: isLoggingOut ? 'wait' : 'pointer' }}
-                            >
-                                로그아웃
-                            </a>
+                            {pathname.startsWith('/master') ? (
+                                <a
+                                    className="button is-white has-text-grey-light"
+                                    onClick={isLoggingOut ? undefined : handleLogout}
+                                    style={{ cursor: isLoggingOut ? 'wait' : 'pointer' }}
+                                >
+                                    로그아웃
+                                </a>
+                            ) : (
+                                <>
+                                    <a className="button is-white has-text-grey-light"><i className="fa-solid fa-bell"></i></a>
+                                    <a className="button is-white has-text-link">봇테스트</a>
+                                    <a
+                                        className="button is-white has-text-grey-light"
+                                        onClick={isLoggingOut ? undefined : handleLogout}
+                                        style={{ cursor: isLoggingOut ? 'wait' : 'pointer' }}
+                                    >
+                                        로그아웃
+                                    </a>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
