@@ -3,8 +3,7 @@ import {
   NotificationItem, 
   NotificationFilters, 
   NotificationTab, 
-  CategoryFilter,
-  NOTIFICATION_TABS 
+  CategoryFilter
 } from '@/types/notification';
 
 interface UseNotificationsProps {
@@ -24,7 +23,7 @@ interface UseNotificationsReturn {
   
   // 액션
   handleTabChange: (tab: NotificationTab) => void;
-  handleCategoryChange: (category: CategoryFilter) => void;
+  handleCategoryChange: (category: string) => void;
   handlePageChange: (page: number) => void;
   handleItemClick: (id: string) => void;
   handleMarkAllAsRead: () => void;
@@ -106,8 +105,10 @@ export function useNotifications({
     setFilters(prev => ({ ...prev, tab }));
   }, []);
 
-  const handleCategoryChange = useCallback((category: CategoryFilter) => {
-    setFilters(prev => ({ ...prev, category }));
+  const handleCategoryChange = useCallback((category: string) => {
+    // 타입 안전성을 위해 검증
+    const validCategory = (category === 'QnA' || category === 'Feedback') ? category : '전체';
+    setFilters(prev => ({ ...prev, category: validCategory as CategoryFilter }));
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
