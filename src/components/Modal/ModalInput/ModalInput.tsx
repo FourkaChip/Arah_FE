@@ -111,7 +111,6 @@ export default function ModalInput({
                         setError(true);
                     }
                 } catch (e: any) {
-                    console.error("부서 등록 실패:", e);
                     setError(true);
                     setErrorMsg(e.message || '부서 등록에 실패했습니다.');
                 } finally {

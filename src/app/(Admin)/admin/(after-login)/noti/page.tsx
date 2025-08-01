@@ -21,7 +21,6 @@ export default function AdminNotiPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    console.log(`페이지 ${page}로 이동`); // 디버깅용 로그
     // 여기에 실제 데이터 로딩 로직 추가 예정
   };
 

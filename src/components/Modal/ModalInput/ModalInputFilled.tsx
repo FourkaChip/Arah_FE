@@ -15,7 +15,6 @@ const ModalInputFilled = ({type, onClose}: ModalInputFilledProps) => {
             await navigator.clipboard.writeText(value);
             alert('복사되었습니다.');
         } catch (err) {
-            console.error('복사 실패:', err);
         }
     };
 

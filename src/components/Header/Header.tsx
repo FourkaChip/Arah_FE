@@ -19,7 +19,6 @@ const Header = () => {
 
             router.push('/');
         } catch (error) {
-            console.error('로그아웃 중 오류 발생:', error);
             alert('로그아웃 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
 
             if (confirm('계속해서 로그아웃하시겠습니까?')) {
