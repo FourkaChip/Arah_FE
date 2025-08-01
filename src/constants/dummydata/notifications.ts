@@ -5,7 +5,7 @@ export const dummyNotifications: NotificationItem[] = [
     id: '1',
     category: 'QnA',
     message: '[QnA] 출장비 정산 양식은 어디에 있나요?',
-    isRead: false,
+    isRead: true,
     timestamp: '27분 전',
     createdAt: new Date(Date.now() - 27 * 60 * 1000), // 27분 전
   },
@@ -53,7 +53,7 @@ export const dummyNotifications: NotificationItem[] = [
     id: '7',
     category: 'Feedback',
     message: '[FeedBack] 검색 기능이 개선되었으면 좋겠습니다.',
-    isRead: false,
+    isRead: true,
     timestamp: '3일 전',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3일 전
   },
@@ -70,7 +70,8 @@ export const dummyNotifications: NotificationItem[] = [
     const id = idx + 9; // 9 ~ 60
     const isOdd = id % 2 === 1;
     const category = isOdd ? 'QnA' : 'Feedback';
-    const isRead = id % 3 === 0; // 임의 규칙: 3의 배수이면 읽음 처리
+    // QnA와 Feedback 모두에 안읽음이 고르게 분포되도록 수정
+    const isRead = !([9, 11, 14, 16, 19, 21, 24, 26, 29, 31, 34, 36, 39, 41, 44, 46, 49, 51, 54, 56].includes(id));
 
     // 시간을 순차적으로 생성 (최신부터 과거 순으로)
     const minutesAgo = id * 15 + Math.floor(Math.random() * 10); // 15분씩 간격으로 + 랜덤 10분

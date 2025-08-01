@@ -5,19 +5,18 @@ import CustomDropDownForNoti from "@/components/CustomDropdown/CustomDropDownFor
 import NotiTabs from "@/components/Tabs/NotiTabs";
 import Pagination from "@/components/CustomPagination/Pagination";
 import NotificationList from './NotificationList';
+import MarkAllReadButton from './MarkAllReadButton';
 import { dummyNotifications } from '@/constants/dummydata/notifications';
 import { NotificationItem } from '@/types/notification';
 import './Notification.scss';
 
 interface NotificationProps {
   itemsPerPage?: number;
-  showTitle?: boolean;
   className?: string;
 }
 
 export default function Notification({ 
   itemsPerPage = 5, 
-  showTitle = false,
   className = ""
 }: NotificationProps) {
   // 알림을 시간순으로 정렬 (최신순)
@@ -77,6 +76,16 @@ export default function Notification({
     setCurrentPage(page);
   };
 
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, isRead: true }));
+      // 읽음 처리 후에도 시간순 정렬 유지
+      return updated.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    });
+  };
+
   // 페이지네이션을 위한 현재 페이지의 알림 목록 계산
   const paginatedNotifications = filteredNotifications.slice(
     (currentPage - 1) * itemsPerPage,
@@ -93,18 +102,27 @@ export default function Notification({
   }, [filteredNotifications.length, paginatedNotifications.length, currentPage, totalPages]);
 
   const tabs = ['전체', '읽음', '안읽음'];
+  
+  // 안읽음 개수 계산
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <div className={`notification-container ${className}`}>
       
       <div className="noti-filter-section">
         <div className="filter-controls">
-          <CustomDropDownForNoti onChange={handleCategoryChange} />
-          <NotiTabs
-            tabs={tabs}
-            defaultActiveTab="전체"
-            onTabChange={handleTabChange}
-          />
+          <div className="filter-left">
+            <CustomDropDownForNoti onChange={handleCategoryChange} />
+            <NotiTabs
+              tabs={tabs}
+              defaultActiveTab="전체"
+              onTabChange={handleTabChange}
+              unreadCount={unreadCount}
+            />
+          </div>
+          <div className="filter-right">
+            <MarkAllReadButton onClick={handleMarkAllAsRead} />
+          </div>
         </div>
       </div>
       
