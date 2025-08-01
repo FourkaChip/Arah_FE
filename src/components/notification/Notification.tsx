@@ -6,9 +6,8 @@ import NotiTabs from "@/components/Tabs/NotiTabs";
 import Pagination from "@/components/CustomPagination/Pagination";
 import NotificationList from './NotificationList';
 import MarkAllReadButton from './MarkAllReadButton';
-import { useNotifications } from '@/hooks/useNotifications';
-import { dummyNotifications } from '@/constants/dummydata/notifications';
-import { NOTIFICATION_TABS } from '@/types/notification';
+import { useNotificationContext } from '@/contexts/NotificationContext';
+import { NOTIFICATION_TABS } from '@/types/notification.d';
 import './Notification.scss';
 
 interface NotificationProps {
@@ -32,10 +31,7 @@ export default function Notification({
     handlePageChange,
     handleItemClick,
     handleMarkAllAsRead,
-  } = useNotifications({
-    initialData: dummyNotifications,
-    itemsPerPage
-  });
+  } = useNotificationContext();
 
   return (
     <div className={`notification-container ${className}`}>

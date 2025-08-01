@@ -5,6 +5,7 @@ import "./layout.scss";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import Header from "@/components/Header/Header";
 import ClientProviders from '@/utils/QueryClientProvider';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 // ===== 메타데이터 설정 =====
 export const metadata: Metadata = {
@@ -20,17 +21,19 @@ export default function RootLayout({
 }) {
   return (
     <ClientProviders>
-      <div className="header-wrapper">
-        <Header/>
-      </div>
-      <div className="layout-container">
-        <div className="sidebar-wrapper">
-          <Sidebar />
+      <NotificationProvider>
+        <div className="header-wrapper">
+          <Header/>
         </div>
-        <div className="main-content">
-          {children}
+        <div className="layout-container">
+          <div className="sidebar-wrapper">
+            <Sidebar />
+          </div>
+          <div className="main-content">
+            {children}
+          </div>
         </div>
-      </div>
+      </NotificationProvider>
     </ClientProviders>
   );
 }
