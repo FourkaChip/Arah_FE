@@ -14,7 +14,7 @@ interface Props {
 
 export default function CustomDropDownForNoti({onChange}: Props) {
     const options: OptionType[] = [
-        {value: '카테고리', label: '전체'},
+        {value: '전체', label: '전체'},
         {value: 'QnA', label: 'QnA'},
         {value: 'Feedback', label: 'Feedback'}
     ];
@@ -29,7 +29,7 @@ export default function CustomDropDownForNoti({onChange}: Props) {
                 options={options}
                 placeholder="카테고리"
                 isSearchable={true}
-                onChange={(option) => onChange(option?.value ?? 'all')}
+                onChange={(option) => onChange(option?.value ?? '전체')}
             />
         </div>
     );
