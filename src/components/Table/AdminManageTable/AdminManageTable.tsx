@@ -247,7 +247,7 @@ export default function MasterAdminTable() {
             setCompanyToken(token);
             setOpenTokenModal(true);
         } catch (e) {
-            alert("토큰을 불러오지 못했습니다.");
+            alert("토큰이 존재하지 않습니다.");
         }
     };
 
