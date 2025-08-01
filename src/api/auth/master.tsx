@@ -3,45 +3,45 @@
 // 마스터 로그인 함수입니다.
 import {useAuthStore} from "@/store/auth.store";
 import {getRefreshToken} from "@/utils/tokenStorage";
-import { CombinedAdminInfo } from "@/types/tables";
+import {CombinedAdminInfo} from "@/types/tables";
 
 // 모든 API Fetching 함수에서 공통으로 사용될 JWT 인증 함수입니다.
 const authorizedFetch = async (
-  input: RequestInfo,
-  init: RequestInit = {},
+    input: RequestInfo,
+    init: RequestInit = {},
 ): Promise<Response> => {
-  let token = useAuthStore.getState().accessToken;
-  if (!token) {
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const newToken = data.accessToken || (data.result && data.result.accessToken);
-        if (newToken) {
-          useAuthStore.getState().setAccessToken(newToken);
-          token = newToken;
-        } else {
-          throw new Error('accessToken 재발급 실패');
+    let token = useAuthStore.getState().accessToken;
+    if (!token) {
+        const refreshToken = getRefreshToken();
+        if (refreshToken) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({refreshToken}),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newToken = data.accessToken || (data.result && data.result.accessToken);
+                if (newToken) {
+                    useAuthStore.getState().setAccessToken(newToken);
+                    token = newToken;
+                } else {
+                    throw new Error('accessToken 재발급 실패');
+                }
+            } else {
+                throw new Error('accessToken 재발급 실패');
+            }
         }
-      } else {
-        throw new Error('accessToken 재발급 실패');
-      }
     }
-  }
 
-  return fetch(input, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(init.headers || {}),
-    },
-  });
+    return fetch(input, {
+        ...init,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? {Authorization: `Bearer ${token}`} : {}),
+            ...(init.headers || {}),
+        },
+    });
 };
 
 export const masterLogin = async (email: string, password: string) => {
@@ -135,13 +135,10 @@ export const fetchAdminList = async (): Promise<CombinedAdminInfo[]> => {
             return {
                 ...adminDetails,
                 ...companyAdmin,
-                // adminDepartments 정보는 company API에서 가져온 것을 우선 사용
                 adminDepartments: companyAdmin.adminDepartments || [],
             };
         }) as CombinedAdminInfo[];
     } catch (error) {
-        console.warn('회사별 관리자 목록 조회 실패, 전체 관리자 목록으로 대체:', error);
-        // 실패 시 기존 API로 fallback
         const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins`);
         if (!res.ok) throw new Error('관리자 목록 조회 실패');
         const json = await res.json();
@@ -174,14 +171,14 @@ export const removeAdminRole = async (email: string) => {
 
 // 현재 로그인한 사용자 정보 조회 함수입니다.
 export const fetchCurrentUserInfo = async () => {
-  const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
-    method: 'GET',
-  });
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
+        method: 'GET',
+    });
 
-  if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
-  const data = await res.json();
-  if (!data.result) throw new Error('사용자 정보가 없습니다.');
-  return data.result;
+    if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
+    const data = await res.json();
+    if (!data.result) throw new Error('사용자 정보가 없습니다.');
+    return data.result;
 };
 
 // 이메일 기반 사용자 정보 조회 함수입니다.
@@ -193,10 +190,9 @@ export const fetchUserInfoByEmail = async (email: string, currentCompanyId?: num
     const data = await res.json();
     if (!data.result) throw new Error('사용자 정보가 없습니다.');
 
-    // 회사 ID 비교 - 다른 회사의 사용자인 경우 에러 발생
     if (currentCompanyId !== undefined && data.result.companyId !== undefined) {
         if (data.result.companyId !== currentCompanyId) {
-            throw new Error('다른 회사의 사용자입니다. 같은 회사 소속 사용자만 추가할 수 있습니다.');
+            throw new Error('등록되지 않은 사용자입니다.');
         }
     }
 
@@ -215,9 +211,8 @@ export const fetchDepartmentList = async () => {
     return data.result;
 };
 
-// 부서 생성 함수입니다. - 하드코딩된 companyId 제거
+// 부서 생성 함수입니다.
 export const createDepartment = async (name: string, companyId: number) => {
-    console.log(`부서 생성 요청: 이름=${name}, 회사ID=${companyId}`);
 
     if (!name) {
         throw new Error('부서명은 필수 입력값입니다.');
@@ -229,13 +224,12 @@ export const createDepartment = async (name: string, companyId: number) => {
 
     const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments`, {
         method: 'POST',
-        body: JSON.stringify({ name, companyId }),
+        body: JSON.stringify({name, companyId}),
     });
 
     if (!res.ok) {
         try {
             const errorData = await res.json();
-            console.error('부서 생성 에러 응답:', errorData);
             throw new Error(errorData.message || '부서 생성 실패');
         } catch (e) {
             throw new Error('부서 생성 실패');
@@ -243,6 +237,5 @@ export const createDepartment = async (name: string, companyId: number) => {
     }
 
     const responseData = await res.json();
-    console.log('부서 생성 성공:', responseData);
     return responseData.result;
 }

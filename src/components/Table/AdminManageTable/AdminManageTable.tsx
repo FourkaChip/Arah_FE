@@ -1,6 +1,6 @@
 // 관리자 관리 및 기업 설정 테이블 컴포넌트입니다.
 "use client";
-import React, {useState, useMemo, useCallback} from "react";
+import React, {useState, useMemo, useCallback, useEffect} from "react";
 import CustomSearch from "@/components/CustomSearch/CustomSearch";
 import ModalDepartment from "@/components/Modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
@@ -42,16 +42,17 @@ export default function MasterAdminTable() {
     const queryClient = useQueryClient();
     const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
 
-    // useQuery의 onSuccess 콜백에서 페이지 초기화
+    // onSuccess 콜백을 사용하지 않고 기본 useQuery 사용
     const { data: adminRows = [], isLoading, error } = useQuery<AdminRowType[]>({
         queryKey: ['adminList'],
-        queryFn: fetchAdminList,
-        onSuccess: () => {
-            // 데이터가 변경되었을 때 현재 페이지를 0으로 리셋
-            // 이렇게 하면 데이터가 변경될 때마다 자동으로 첫 페이지로 이동
-            setCurrentPage(0);
-        }
+        queryFn: fetchAdminList
     });
+
+    // 데이터가 변경될 때 페이지 리셋을 useEffect로 처리
+    useEffect(() => {
+        // adminRows가 변경될 때마다 현재 페이지를 0으로 리셋
+        setCurrentPage(0);
+    }, [adminRows]);
 
     const {data: deptRows = [], isLoading: deptLoading, error: deptError} = useQuery<any[]>({
         queryKey: ['departmentList'],
@@ -216,7 +217,7 @@ export default function MasterAdminTable() {
     // 삭제 로직 핸들러입니다.
     const handleDelete = async (email: string) => {
         if (!email) {
-            console.error('이메일이 없어 삭제할 수 없습니다.');
+            alert("이메일이 유효하지 않습니다.");
             setOpenDeleteModal(false);
             return;
         }
@@ -226,7 +227,7 @@ export default function MasterAdminTable() {
             await removeAdminRole(email);
             await queryClient.invalidateQueries({ queryKey: ['adminList'] });
         } catch (e) {
-            console.error('관리자 삭제 실패:', e);
+            alert("삭제에 실패했습니다. 다시 시도해주세요.");
         } finally {
             setDeletingEmail(null);
             setOpenDeleteModal(false);

@@ -4,8 +4,8 @@
 import {useState, useEffect} from 'react';
 import './ModalDeptTrigger.scss';
 import ModalInput from '@/components/Modal/ModalInput/ModalInput';
-import { createDepartment, fetchCurrentUserInfo } from '@/api/auth/master';
-import { useQueryClient } from '@tanstack/react-query';
+import {createDepartment, fetchCurrentUserInfo} from '@/api/auth/master';
+import {useQueryClient} from '@tanstack/react-query';
 
 export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }) {
     const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
         try {
             // 로그인한 사용자의 companyId를 사용합니다.
             await createDepartment(deptName, companyId);
-            await queryClient.invalidateQueries({ queryKey: ['departmentList'] });
+            await queryClient.invalidateQueries({queryKey: ['departmentList']});
             setOpen(false);
             return true;
         } catch (e: any) {
@@ -63,10 +63,13 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
         <>
             <button
                 className="button is-link"
-                onClick={() => setOpen(true)}
+                onClick={() => {
+                    setError(null);
+                    setOpen(true)
+                }}
                 disabled={isLoading}
             >
-                <img src="/AddAdmin.svg" alt="icon" className="icon-left" />
+                <img src="/AddAdmin.svg" alt="icon" className="icon-left"/>
                 {buttonText}
             </button>
             {open && (
