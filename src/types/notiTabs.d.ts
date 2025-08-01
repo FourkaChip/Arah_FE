@@ -1,7 +1,9 @@
+import { NotificationTab } from './notification';
+
 export interface NotiTabsProps {
-    tabs: string[];
-    defaultActiveTab?: string;
-    onTabChange?: (activeTab: string) => void;
+    tabs: readonly NotificationTab[];
+    defaultActiveTab?: NotificationTab;
+    onTabChange?: (activeTab: NotificationTab) => void;
     className?: string;
     unreadCount?: number;
 }

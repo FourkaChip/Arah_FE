@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NotiTabsProps } from '@/types/notiTabs';
+import { NotificationTab } from '@/types/notification';
 import './NotiTabs.scss';
 
 export default function NotiTabs({ 
@@ -11,14 +12,21 @@ export default function NotiTabs({
     className = '',
     unreadCount = 0
 }: NotiTabsProps) {
-    const [activeTab, setActiveTab] = useState(defaultActiveTab || tabs[0]);
+    const [activeTab, setActiveTab] = useState<NotificationTab>(defaultActiveTab || tabs[0]);
 
-    const handleTabClick = (tab: string) => {
+    const handleTabClick = useCallback((tab: NotificationTab) => {
         setActiveTab(tab);
-        if (onTabChange) {
-            onTabChange(tab);
-        }
-    };
+        onTabChange?.(tab);
+    }, [onTabChange]);
+
+    const renderTabContent = useCallback((tab: NotificationTab) => (
+        <>
+            {tab}
+            {tab === '안읽음' && unreadCount > 0 && (
+                <span className="unread-badge">{unreadCount}</span>
+            )}
+        </>
+    ), [unreadCount]);
 
     return (
         <div className={`tabs is-medium ${className}`}>
@@ -29,10 +37,7 @@ export default function NotiTabs({
                         className={activeTab === tab ? 'is-active' : ''}
                     >
                         <a onClick={() => handleTabClick(tab)}>
-                            {tab}
-                            {tab === '안읽음' && unreadCount > 0 && (
-                                <span className="unread-badge">{unreadCount}</span>
-                            )}
+                            {renderTabContent(tab)}
                         </a>
                     </li>
                 ))}
