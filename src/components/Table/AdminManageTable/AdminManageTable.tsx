@@ -30,6 +30,7 @@ type AdminRowType = CombinedAdminInfo;
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
+    const [selectedAdmin, setSelectedAdmin] = useState<AdminRowType | null>(null); // 추가
     const [selectedDept, setSelectedDept] = useState('all');
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openEditModal] = useState(false);
@@ -182,8 +183,8 @@ export default function MasterAdminTable() {
                     cell: ({ row }) => (
                         <button className="text-blue-600 underline"
                             onClick={() => {
+                                setSelectedAdmin(row.original); // 선택된 사용자 정보 저장
                                 setOpenDeptModal(true);
-                                // TODO: 선택된 관리자 정보를 상태로 저장
                             }}>부서 설정</button>
                     ),
                 },
@@ -304,7 +305,16 @@ export default function MasterAdminTable() {
                         onPageChange={handlePageChange}
                     />
                 </div>
-                {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
+                {openDeptModal && selectedAdmin &&
+                    <ModalDepartment
+                        onClose={() => {
+                            setOpenDeptModal(false);
+                            setSelectedAdmin(null);
+                        }}
+                        defaultStep="select"
+                        defaultUser={selectedAdmin}
+                    />
+                }
                 {openDeleteModal &&
                     <ModalDefault
                         type="delete-data"
