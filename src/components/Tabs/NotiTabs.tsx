@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { NotiTabsProps } from '@/types/notiTabs';
+import './NotiTabs.scss';
 
 export default function NotiTabs({ 
     tabs, 
     defaultActiveTab, 
     onTabChange,
-    className = '' 
+    className = '',
+    unreadCount = 0
 }: NotiTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultActiveTab || tabs[0]);
 
@@ -28,6 +30,9 @@ export default function NotiTabs({
                     >
                         <a onClick={() => handleTabClick(tab)}>
                             {tab}
+                            {tab === '안읽음' && unreadCount > 0 && (
+                                <span className="unread-badge">{unreadCount}</span>
+                            )}
                         </a>
                     </li>
                 ))}

@@ -3,4 +3,5 @@ export interface NotiTabsProps {
     defaultActiveTab?: string;
     onTabChange?: (activeTab: string) => void;
     className?: string;
+    unreadCount?: number;
 }
