@@ -5,14 +5,15 @@ import ModalButton from "@/components/Modal/Buttons/ModalButton";
 interface ModalInputFilledProps {
     type: 'password-lost' | 'token-check';
     onClose: () => void;
+    value?: string;
 }
 
-const ModalInputFilled = ({type, onClose}: ModalInputFilledProps) => {
-    const {title, description, value, buttonLabel} = modalInputFilledConfig[type];
+const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
+    const {title, description, value: defaultValue, buttonLabel} = modalInputFilledConfig[type];
 
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(value);
+            await navigator.clipboard.writeText(value ?? defaultValue);
             alert('복사되었습니다.');
         } catch (err) {
         }
@@ -28,7 +29,7 @@ const ModalInputFilled = ({type, onClose}: ModalInputFilledProps) => {
                         <p className="modal-description-filled">{description}</p>
 
                         <div className="filled-input-wrapper">
-                            <input className="filled-input" value={value} readOnly/>
+                            <input className="filled-input" value={value ?? defaultValue} readOnly/>
                             <button className="copy-button" onClick={handleCopy} aria-label="복사">
                                 📋
                             </button>

@@ -8,7 +8,7 @@ import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchAdminList, fetchDepartmentList, removeAdminRole} from "@/api/auth/master";
+import {fetchAdminList, fetchDepartmentList, removeAdminRole, fetchCompanyToken} from "@/api/auth/master";
 import {AdminListResponseDto, CompanyAdminListResponse, CombinedAdminInfo} from "@/types/tables";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
@@ -35,6 +35,7 @@ export default function MasterAdminTable() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openEditModal] = useState(false);
     const [openTokenModal, setOpenTokenModal] = useState(false);
+    const [companyToken, setCompanyToken] = useState<string>(''); // 추가
 
     const [searchValue, setSearchValue] = useState("");
     const [currentPage, setCurrentPage] = useState(0);
@@ -240,6 +241,16 @@ export default function MasterAdminTable() {
         setOpenDeleteModal(true);
     };
 
+    const handleOpenTokenModal = async () => {
+        try {
+            const token = await fetchCompanyToken();
+            setCompanyToken(token);
+            setOpenTokenModal(true);
+        } catch (e) {
+            alert("토큰을 불러오지 못했습니다.");
+        }
+    };
+
     if (pathName === '/master/dept' && deptLoading) return <div>로딩 중...</div>;
     if (pathName === '/master/dept' && deptError) return <div>에러 발생: {deptError.message}</div>;
 
@@ -325,12 +336,15 @@ export default function MasterAdminTable() {
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openTokenModal &&
-                    <ModalInputFilled type={"token-check"} onClose={() => setOpenTokenModal(false)}/>}
-
+                    <ModalInputFilled
+                        type="token-check"
+                        value={companyToken}
+                        onClose={() => setOpenTokenModal(false)}
+                    />}
             </div>
             {pathName === '/master/dept' && (
                 <div className="corp-token-section">
-                    <p className="title is-3" onClick={() => setOpenTokenModal(true)}>기업 토큰 조회</p>
+                    <p className="title is-3" onClick={handleOpenTokenModal} style={{cursor: 'pointer'}}>기업 토큰 조회</p>
                     <p className="subtitle is-7">카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 확인합니다.</p>
                 </div>
             )}

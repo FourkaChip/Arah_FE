@@ -106,10 +106,14 @@ export default function LoginForm() {
         },
     });
 
+    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        handleLogin();
+    };
 
     return (
         <>
-            <form className="login-form">
+            <form className="login-form" onSubmit={handleFormSubmit}>
                 {pathname === '/master/login' && (
                     <label className="login-form-label">
                         <p className="login-form-description">기업명</p>
