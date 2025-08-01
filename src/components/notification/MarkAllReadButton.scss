@@ -1,0 +1,30 @@
+.mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #2E70E8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f0f8ff;
+    color: #2E70E8;
+  }
+
+  &:active {
+    background-color: #e6f3ff;
+  }
+
+  &:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    
+    &:hover {
+      background-color: transparent;
+      color: #ccc;
+    }
+  }
+}
