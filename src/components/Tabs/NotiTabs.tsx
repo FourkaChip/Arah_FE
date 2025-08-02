@@ -22,7 +22,7 @@ export default function NotiTabs({
     const renderTabContent = useCallback((tab: NotificationTab) => (
         <>
             {tab}
-            {tab === '안읽음' && unreadCount > 0 && (
+            {tab === '읽지 않음' && unreadCount > 0 && (
                 <span className="unread-badge">{unreadCount}</span>
             )}
         </>

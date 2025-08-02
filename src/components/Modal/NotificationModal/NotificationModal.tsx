@@ -6,13 +6,9 @@ import { useNotificationContext } from '@/contexts/NotificationContext';
 import NotificationItem from '@/components/notification/NotificationItem';
 import MarkAllReadButton from '@/components/notification/MarkAllReadButton';
 import './NotificationModal.scss';
+import { NotificationModalProps } from '@/types/notificationModal';
 
-interface NotificationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  maxItems?: number;
-  buttonRef: React.RefObject<HTMLButtonElement | null>;
-}
+
 
 const NotificationModal = memo<NotificationModalProps>(({ 
   isOpen, 
