@@ -1,7 +1,11 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    sassOptions: {},
+    sassOptions: {
+        includePaths: [path.join(process.cwd(), 'node_modules')],
+    },
     async redirects() {
         return [
             {
@@ -13,4 +17,4 @@ const nextConfig = {
     },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
