@@ -52,7 +52,7 @@ export default function LoginForm() {
     }
 
     const masterLoginMutation = useMutation({
-        mutationFn: () => masterLogin(email, password),
+        mutationFn: () => masterLogin(email, password, companyName), // companyName 추가
         onSuccess: async ({verifyToken}) => {
             setPasswordError(false);
             setVerifyToken(verifyToken);

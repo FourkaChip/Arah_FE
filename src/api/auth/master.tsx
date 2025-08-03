@@ -44,11 +44,11 @@ const authorizedFetch = async (
     });
 };
 
-export const masterLogin = async (email: string, password: string) => {
+export const masterLogin = async (email: string, password: string, companyName: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password}),
+        body: JSON.stringify({email, password, companyName}),
     });
     if (!res.ok) throw new Error('로그인 실패');
     return (await res.json()).result;
