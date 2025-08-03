@@ -1,0 +1,54 @@
+.tabs {
+  ul {
+    display: flex;
+    justify-content: center;
+    
+    li {
+      a {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 0.75em 0;
+        color: #999;
+        border-bottom: 3px solid transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100px;
+        
+        &:hover {
+          color: #333;
+        }
+        
+        .unread-badge {
+          background: #e5e5e5;
+          color: #666;
+          font-size: 12px;
+          font-weight: 500;
+          margin-left: 0.25rem;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+      }
+      
+      &.is-active {
+        a {
+          color: #333;
+          border-bottom-color: #2E70E8;
+          font-weight: 600;
+          
+          .unread-badge {
+            background: #d1d1d1;
+            color: #333;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+}

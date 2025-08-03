@@ -1,0 +1,184 @@
+.notification-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent; 
+  z-index: 1000;
+}
+
+.notification-dropdown {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  width: 380px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dropdownSlideDown 0.2s ease-out;
+  border: 1px solid #e1e8ed;
+
+  @keyframes dropdownSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #e9ecef;
+
+  .dropdown-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  .dropdown-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa;
+      color: #495057;
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+.dropdown-content {
+  padding: 0;
+  overflow-y: hidden; // 스크롤 제거
+  height: 360px; // 정확히 5개 아이템 높이 (약 72px * 5)
+
+  .notification-list {
+    .notification-item {
+      border: none;
+      border-bottom: 1px solid #f1f3f4;
+      border-radius: 0;
+      margin: 0;
+      padding: 14px 20px;
+      height: 72px; // 고정 높이로 일관성 확보
+      display: flex;
+      align-items: center;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      .notification-content {
+        .message {
+          font-size: 13px;
+          line-height: 1.4;
+        }
+      }
+
+      .timestamp {
+        font-size: 11px;
+        color: #6c757d;
+      }
+    }
+  }
+
+  .empty-notification-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 360px; // 알림 리스트와 동일한 높이
+    color: #6c757d;
+    font-size: 13px;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.dropdown-footer {
+  padding: 0;
+  border-top: 1px solid #e9ecef;
+  background-color: white; // 배경색을 흰색으로 변경
+
+  .view-all-button {
+    width: 100%;
+    background: none;
+    color: #2E70E8;
+    border: none;
+    padding: 16px 20px;
+    border-radius: 0 0 12px 12px; // 모달 하단 모서리와 맞춤
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #e6f3ff;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.notification-dropdown .mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #2E70E8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f0f8ff;
+    color: #2E70E8;
+  }
+
+  &:active {
+    background-color: #e6f3ff;
+  }
+
+  &:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    
+    &:hover {
+      background-color: transparent;
+      color: #ccc;
+    }
+  }
+}

@@ -1,51 +1,28 @@
-'use client';
-
+import React from 'react';
 import './Noti.scss';
-import { useState } from 'react';
-import CustomDropDownForNoti from "@/components/CustomDropdown/CustomDropDownForNoti";
-import NotiTabs from "@/components/Tabs/NotiTabs";
-import Pagination from "@/components/CustomPagination/Pagination";
+import Notification from '@/components/notification/Notification';
+
+
+/** 페이지의 제목, 설명, 아이템 개수 등을 상수 객체 `PAGE_CONFIG`로 관리하도록 리팩토링 하였습니다. 
+추후 다른 페이지에서도 수정 예정입니다. */
+
+const PAGE_CONFIG = {
+  ITEMS_PER_PAGE: 5,
+  TITLE: '알림',
+  DESCRIPTION: '사용자 피드백에 대한 수신 알림을 제공합니다.'
+} as const;
 
 export default function AdminNotiPage() {
-  const [selectedNoti, setSelectedNoti] = useState('');
-  const [currentTab, setCurrentTab] = useState('전체');
-  const [currentPage, setCurrentPage] = useState(1); // 페이지 상태 추가
-  const totalPages = 15; // 전체 페이지 수 (실제로는 API에서 받아올 값)
-
-  const tabs = ['전체', '읽음', '안읽음'];
-
-  const handleTabChange = (activeTab: string) => {
-    setCurrentTab(activeTab);
-    setCurrentPage(1); // 탭 변경 시 첫 페이지로 리셋
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // 여기에 실제 데이터 로딩 로직 추가 예정
-  };
-
   return (
-    <div id="admin-main-page" className="admin-login-page">
-      {/* 알림 필터 영역 (드롭다운 + 탭) */}
-      <div className="noti-filter-section">
-        <div className="filter-controls">
-          <CustomDropDownForNoti onChange={setSelectedNoti} />
-          <NotiTabs
-            tabs={tabs}
-            defaultActiveTab="전체"
-            onTabChange={handleTabChange}
-          />
+    <div id="admin-main-page">
+      <div className="page-header">
+        <div className="admin-noti-page-wrapper">
+          <h1 className="noti-title">{PAGE_CONFIG.TITLE}</h1>
+          <p className="noti-description">{PAGE_CONFIG.DESCRIPTION}</p>
         </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-
-        {/* 여기에 필터된 알림 리스트 렌더링할 예정 */}
-        {/* <NotificationList tab={currentTab} category={selectedNoti} /> */}
-      
       </div>
+      
+      <Notification itemsPerPage={PAGE_CONFIG.ITEMS_PER_PAGE} />
     </div>
   );
 }
