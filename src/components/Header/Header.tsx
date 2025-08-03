@@ -17,10 +17,6 @@ const Header = () => {
 
   const { unreadCount } = useNotificationContext();
 
-  const router = useRouter();
-  const { clearAccessToken } = useAuthStore();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
   const handleNotificationClick = () => {
     setIsNotificationModalOpen(true);
   };
@@ -122,7 +118,7 @@ const Header = () => {
                     </div>
                 </div>
             </div>
-        </nav>
+
     );
       <NotificationModal
         isOpen={isNotificationModalOpen}
