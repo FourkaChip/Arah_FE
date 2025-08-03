@@ -251,11 +251,11 @@ export const fetchCompanyToken = async (): Promise<string> => {
     return data.result;
 };
 
-// 기업 토큰 등록 함수
+// 기업 토큰 등록 함수입니다.
 export const registerCompanyToken = async (token: string) => {
     const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/companies/token`, {
         method: 'POST',
-        body: JSON.stringify({ companyToken: token }),
+        body: JSON.stringify({companyToken: token}),
     });
     if (!res.ok) throw new Error('회사 토큰 등록 실패');
     return res.json();

@@ -44,15 +44,12 @@ export default function MasterAdminTable() {
     const queryClient = useQueryClient();
     const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
 
-    // onSuccess 콜백을 사용하지 않고 기본 useQuery 사용
-    const { data: adminRows = [], isLoading, error } = useQuery<AdminRowType[]>({
+    const {data: adminRows = [], isLoading, error} = useQuery<AdminRowType[]>({
         queryKey: ['adminList'],
         queryFn: fetchAdminList
     });
 
-    // 데이터가 변경될 때 페이지 리셋을 useEffect로 처리
     useEffect(() => {
-        // adminRows가 변경될 때마다 현재 페이지를 0으로 리셋
         setCurrentPage(0);
     }, [adminRows]);
 
@@ -62,7 +59,6 @@ export default function MasterAdminTable() {
         enabled: pathName === '/master/dept',
     });
 
-    // memoize된 필터링 로직과 페이지네이션 데이터
     const filteredRows = useMemo(() => {
         if (pathName === '/master/dept') {
             return deptRows.filter(row => {
@@ -97,19 +93,15 @@ export default function MasterAdminTable() {
         return adminRows;
     }, [selectedDept, searchValue, pathName, adminRows, deptRows]);
 
-    // pageSize나 필터링된 데이터가 변경될 때만 계산
     const paginatedData = useMemo(() => {
         const startIndex = currentPage * pageSize;
         const endIndex = startIndex + pageSize;
         return filteredRows.slice(startIndex, endIndex);
     }, [filteredRows, currentPage, pageSize]);
 
-    // 페이지 수 계산도 memoize
     const pageCount = useMemo(() => Math.ceil(filteredRows.length / pageSize), [filteredRows, pageSize]);
 
-    // 페이지네이션 변경 핸들러
     const handlePageChange = useCallback((page: number) => {
-        // 1부터 시작하는 페이지 번호를 0부터 시작하는 인덱스로 변환
         setCurrentPage(page - 1);
     }, []);
 
@@ -124,7 +116,7 @@ export default function MasterAdminTable() {
                 {
                     id: "edit",
                     header: "편집",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <FontAwesomeIcon
                             icon={faTrash}
                             onClick={() => handleOpenDeleteModal(row.original.departmentId as unknown as string)}
@@ -139,7 +131,7 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "adminDepartments",
                     header: "담당 부서",
-                    cell: ({ row }) => {
+                    cell: ({row}) => {
                         const depts = row.original.adminDepartments;
                         if (Array.isArray(depts)) {
                             return depts.join(', ');
@@ -150,7 +142,7 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "createdAt",
                     header: "가입일",
-                    cell: ({ getValue }) => {
+                    cell: ({getValue}) => {
                         const raw = getValue() as string;
                         if (!raw) return '';
                         const date = new Date(raw);
@@ -176,28 +168,28 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "email",
                     header: "이메일",
-                    cell: ({ row }) => row.original.email || '',
+                    cell: ({row}) => row.original.email || '',
                 },
                 {
                     id: "departmentSetting",
                     header: "부서 설정",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <button className="text-blue-600 underline"
-                            onClick={() => {
-                                setSelectedAdmin(row.original); // 선택된 사용자 정보 저장
-                                setOpenDeptModal(true);
-                            }}>부서 설정</button>
+                                onClick={() => {
+                                    setSelectedAdmin(row.original); // 선택된 사용자 정보 저장
+                                    setOpenDeptModal(true);
+                                }}>부서 설정</button>
                     ),
                 },
                 {
                     id: "delete",
                     header: "삭제",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <img
                             src="/delete.svg"
                             alt="삭제"
                             className="icon-delete-button"
-                            style={{ opacity: deletingEmail === (row.original.email || '') ? 0.5 : 1, cursor: 'pointer' }}
+                            style={{opacity: deletingEmail === (row.original.email || '') ? 0.5 : 1, cursor: 'pointer'}}
                             onClick={() => handleOpenDeleteModal(row.original.email || '')}
                         />
                     ),
@@ -213,7 +205,6 @@ export default function MasterAdminTable() {
         data: paginatedData as AdminRowType[],
         columns,
         getCoreRowModel: getCoreRowModel(),
-        // 페이지네이션 관련 코드를 제거하고 자체적으로 처리
     });
 
     // 삭제 로직 핸들러입니다.
@@ -227,7 +218,7 @@ export default function MasterAdminTable() {
         setDeletingEmail(email);
         try {
             await removeAdminRole(email);
-            await queryClient.invalidateQueries({ queryKey: ['adminList'] });
+            await queryClient.invalidateQueries({queryKey: ['adminList']});
         } catch (e) {
             alert("삭제에 실패했습니다. 다시 시도해주세요.");
         } finally {

@@ -52,7 +52,7 @@ export default function LoginForm() {
     }
 
     const masterLoginMutation = useMutation({
-        mutationFn: () => masterLogin(email, password, companyName), // companyName 추가
+        mutationFn: () => masterLogin(email, password, companyName),
         onSuccess: async ({verifyToken}) => {
             setPasswordError(false);
             setVerifyToken(verifyToken);
@@ -95,25 +95,22 @@ export default function LoginForm() {
         onSuccess: async ({accessToken, refreshToken}) => {
             useAuthStore.getState().setAccessToken(accessToken);
             saveRefreshToken(refreshToken);
-            setShowModal(false); // 2차 인증 모달 먼저 닫기
-            // 2차 인증 성공 후 회사 토큰 조회
+            setShowModal(false);
             try {
                 const token = await fetchCompanyToken();
                 if (!token) {
-                    setTimeout(() => setShowTokenModal(true), 200); // 토큰 없으면 약간의 딜레이 후 토큰 등록 모달 오픈
+                    setTimeout(() => setShowTokenModal(true), 200);
                 } else {
                     router.push('/master/manage');
                 }
             } catch {
-                setTimeout(() => setShowTokenModal(true), 200); // 조회 실패(토큰 없음) 시 등록 모달 오픈
+                setTimeout(() => setShowTokenModal(true), 200);
             }
         },
         onError: () => {
-            // 인증 실패 시 처리 로직 (필요하면 상태값으로 에러 메시지 표시)
         },
     });
 
-    // 토큰 등록 핸들러
     const handleRegisterToken = async (inputToken: string) => {
         try {
             await registerCompanyToken(inputToken);

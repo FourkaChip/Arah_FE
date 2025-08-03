@@ -1,10 +1,10 @@
-import { registerCompanyToken } from '@/api/auth/master';
-import { useAuthStore } from '@/store/auth.store';
+import {registerCompanyToken} from '@/api/auth/master';
+import {useAuthStore} from '@/store/auth.store';
 import {modalInputFilledConfig} from '@/constants/modalConfig';
 import '@/../src/components/Modal/ModalInput/ModalInputFilled.scss';
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 
 interface ModalInputFilledProps {
     type: 'password-lost' | 'token-check';
@@ -15,11 +15,8 @@ interface ModalInputFilledProps {
 const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
     const {title, description, value: defaultValue, buttonLabel} = modalInputFilledConfig[type];
 
-    // 기존 토큰 값
     const [inputValue, setInputValue] = useState('');
-    // 재등록 모드 여부
     const [editMode, setEditMode] = useState(false);
-    // 등록 처리 중 여부
     const [loading, setLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // 추가
 
@@ -31,7 +28,8 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
         try {
             await navigator.clipboard.writeText(inputValue);
             alert('복사되었습니다.');
-        } catch (err) {}
+        } catch (err) {
+        }
     };
 
     const handleSubmit = async () => {
@@ -42,7 +40,6 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
 
         if (type === 'token-check') {
             if (!editMode) {
-                // 재등록 버튼 클릭 시 input 활성화
                 setEditMode(true);
                 setInputValue('');
                 return;
@@ -60,7 +57,7 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
                 await registerCompanyToken(tokenToRegister);
                 setEditMode(false);
                 setInputValue(tokenToRegister);
-                setShowSuccessModal(true); // 성공 모달 띄우기
+                setShowSuccessModal(true);
             } catch (e: any) {
                 alert(e.message || "토큰 재등록 실패");
             } finally {
