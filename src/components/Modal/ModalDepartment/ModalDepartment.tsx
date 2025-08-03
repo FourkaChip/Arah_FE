@@ -31,25 +31,36 @@ export default function ModalDepartment({
         setErrorMsg(message);
     };
 
+    // defaultUser가 있으면 바로 부서 선택 단계로 진입하도록 구현했습니다.
     useEffect(() => {
-        const loadCurrentUserInfo = async () => {
-            setInitialLoading(true);
-            try {
-                const userInfo = await fetchCurrentUserInfo();
-                if (userInfo && userInfo.companyId !== undefined) {
-                    setCurrentUserCompanyId(userInfo.companyId);
-                } else {
-                    handleErrorMessage('현재 로그인한 사용자의 회사 정보를 가져올 수 없습니다.');
+        if (defaultUser) {
+            setSelectedUser(defaultUser);
+            setChecked(
+                Array.isArray(defaultUser.adminDepartments)
+                    ? defaultUser.adminDepartments
+                    : []
+            );
+            setStep('select');
+            setInitialLoading(false);
+        } else {
+            const loadCurrentUserInfo = async () => {
+                setInitialLoading(true);
+                try {
+                    const userInfo = await fetchCurrentUserInfo();
+                    if (userInfo && userInfo.companyId !== undefined) {
+                        setCurrentUserCompanyId(userInfo.companyId);
+                    } else {
+                        handleErrorMessage('현재 로그인한 사용자의 회사 정보를 가져올 수 없습니다.');
+                    }
+                } catch (error) {
+                    handleErrorMessage('사용자 정보를 불러오는데 실패했습니다.', error);
+                } finally {
+                    setInitialLoading(false);
                 }
-            } catch (error) {
-                handleErrorMessage('사용자 정보를 불러오는데 실패했습니다.', error);
-            } finally {
-                setInitialLoading(false);
-            }
-        };
-
-        loadCurrentUserInfo();
-    }, []);
+            };
+            loadCurrentUserInfo();
+        }
+    }, [defaultUser]);
 
     const handleDepartmentClick = (user: any) => {
         setSelectedUser(user);
@@ -120,11 +131,30 @@ export default function ModalDepartment({
         }
     }, [step]);
 
-    const handleConfirmDepartment = () => {
+    const handleConfirmDepartment = async () => {
         if (!selectedUser) return;
         const selectedDeptNames = departmentList
             .filter(dept => checked.includes(dept.name))
             .map(dept => dept.name);
+
+        if (defaultUser) {
+            try {
+                const payload = [
+                    {
+                        departmentIds: departmentList
+                            .filter(dept => checked.includes(dept.name))
+                            .map(dept => dept.departmentId),
+                        userId: selectedUser.userId,
+                    }
+                ];
+                await assignAdminRole(payload);
+                queryClient.invalidateQueries({queryKey: ['adminList']});
+                if (onClose) onClose();
+            } catch (e) {
+                alert("관리자 부서 등록에 실패했습니다. 다시 시도해 주세요.");
+            }
+            return;
+        }
 
         setUsers(users =>
             users.map(u =>
@@ -250,8 +280,8 @@ export default function ModalDepartment({
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                 <h2 className="modal-title-dept">관리자 부서 등록</h2>
                                 <span className="modal-description-dept" style={{fontWeight: 600}}>
-                    관리자: {selectedUser.name}
-                  </span>
+                                    관리자: {selectedUser?.name}
+                                </span>
                             </div>
                             <p className="modal-description-dept">
                                 관리자가 관리할 부서를 선택해 주세요.

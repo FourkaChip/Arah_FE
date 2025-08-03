@@ -8,7 +8,7 @@ export const modalInputFilledConfig = {
     'token-check': {
         title: '기업 토큰 조회',
         description: '카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 확인합니다.',
-        value: 'kakao_seodaemunKimchiJJimJonmatTaeng',
+        value: '',
         buttonLabel: '재등록',
     },
 } as const;

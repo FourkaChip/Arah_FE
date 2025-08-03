@@ -43,6 +43,7 @@ export interface ModalConfirmButtonProps {
 export interface ModalInputProps {
     modalType: ModalInputType;
     title?: string;
+    description?: string;
     onClose: () => void;
     onSubmit?: (code: string) => Promise<boolean | void> | boolean | void;
     onResendCode?: () => void;

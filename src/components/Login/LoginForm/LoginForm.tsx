@@ -8,7 +8,7 @@ import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/Modal/ModalInput/ModalInput";
 import ModalInputFilled from "@/components/Modal/ModalInput/ModalInputFilled";
-import {masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode} from '@/api/auth/master';
+import {masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode, fetchCompanyToken, registerCompanyToken} from '@/api/auth/master';
 import {adminLogin} from '@/api/auth/admin';
 import {useAuthStore} from "@/store/auth.store";
 import {saveAccessToken, saveRefreshToken} from "@/utils/tokenStorage";
@@ -25,12 +25,11 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [verifyToken, setVerifyToken] = useState('');
     const [passwordError, setPasswordError] = useState(false);
+    const [showTokenModal, setShowTokenModal] = useState(false); // 추가
 
-    // dummydata 기반 임시 기업명 검색용 변수
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    //
     const handleCompanyInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
         setCompanyName(input);
@@ -52,9 +51,8 @@ export default function LoginForm() {
         setShowSuggestions(false);
     }
 
-    // 마스터 로그인 뮤테이션
     const masterLoginMutation = useMutation({
-        mutationFn: () => masterLogin(email, password),
+        mutationFn: () => masterLogin(email, password, companyName),
         onSuccess: async ({verifyToken}) => {
             setPasswordError(false);
             setVerifyToken(verifyToken);
@@ -70,13 +68,12 @@ export default function LoginForm() {
         },
     });
 
-    // 어드민 로그인 뮤테이션
     const adminLoginMutation = useMutation({
         mutationFn: () => adminLogin(email, password),
         onSuccess: ({accessToken, refreshToken}) => {
             setPasswordError(false);
-            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
-            saveRefreshToken(refreshToken); // localStorage 저장
+            useAuthStore.getState().setAccessToken(accessToken);
+            saveRefreshToken(refreshToken);
             router.push('/admin/manage');
         },
         onError: () => {
@@ -84,7 +81,6 @@ export default function LoginForm() {
         },
     });
 
-    // 로그인 버튼 핸들러
     const handleLogin = () => {
         if (pathname === '/master/login') {
             masterLoginMutation.mutate();
@@ -96,20 +92,45 @@ export default function LoginForm() {
     const verifyMutation = useMutation({
         mutationFn: (code: string) =>
             confirmMasterVerifyCode({verifyToken, code}),
-        onSuccess: ({accessToken, refreshToken}) => {
-            useAuthStore.getState().setAccessToken(accessToken); // 메모리 저장
-            saveRefreshToken(refreshToken); // localStorage 저장
-            router.push('/master/manage');
+        onSuccess: async ({accessToken, refreshToken}) => {
+            useAuthStore.getState().setAccessToken(accessToken);
+            saveRefreshToken(refreshToken);
+            setShowModal(false);
+            try {
+                const token = await fetchCompanyToken();
+                if (!token) {
+                    setTimeout(() => setShowTokenModal(true), 200);
+                } else {
+                    router.push('/master/manage');
+                }
+            } catch {
+                setTimeout(() => setShowTokenModal(true), 200);
+            }
         },
         onError: () => {
-            // 인증 실패 시 처리 로직 (필요하면 상태값으로 에러 메시지 표시)
         },
     });
 
+    const handleRegisterToken = async (inputToken: string) => {
+        try {
+            await registerCompanyToken(inputToken);
+            setShowTokenModal(false);
+            router.push('/master/manage');
+            return true;
+        } catch (e: any) {
+            alert(e.message || '토큰 등록에 실패했습니다.');
+            return false;
+        }
+    };
+
+    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        handleLogin();
+    };
 
     return (
         <>
-            <form className="login-form">
+            <form className="login-form" onSubmit={handleFormSubmit}>
                 {pathname === '/master/login' && (
                     <label className="login-form-label">
                         <p className="login-form-description">기업명</p>
@@ -216,6 +237,15 @@ export default function LoginForm() {
                 <ModalInputFilled
                     type="password-lost"
                     onClose={() => setShowPassword(false)}
+                />
+            )}
+            {showTokenModal && (
+                <ModalInput
+                    modalType="token"
+                    title="토큰 등록"
+                    description="카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다."
+                    onClose={() => setShowTokenModal(false)}
+                    onSubmit={handleRegisterToken}
                 />
             )}
         </>

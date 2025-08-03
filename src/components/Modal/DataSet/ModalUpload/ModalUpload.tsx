@@ -24,12 +24,10 @@ export default function ModalUpload({
 
     const handleDownloadTemplate = () => {
         // TODO: template download API
-        console.log('Download template triggered');
     };
 
     const handleSubmit = () => {
         if (uploadedFile) {
-            console.log('Uploading', uploadedFile, comment);
         }
     };
 

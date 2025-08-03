@@ -11,7 +11,9 @@ export default function ModalDefault({ type, label, onClose, onSubmit }: ModalWi
 
     switch (type) {
         case 'default':
-            description = '답변이 전송되었습니다.';
+            description = label === '토큰 재등록'
+                ? '토큰 재등록이 완료되었습니다.'
+                : '답변이 전송되었습니다.';
             buttonLabel = '확인';
             break;
         case 'cancel':

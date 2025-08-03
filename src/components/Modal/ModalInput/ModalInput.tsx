@@ -111,7 +111,6 @@ export default function ModalInput({
                         setError(true);
                     }
                 } catch (e: any) {
-                    console.error("부서 등록 실패:", e);
                     setError(true);
                     setErrorMsg(e.message || '부서 등록에 실패했습니다.');
                 } finally {
@@ -122,14 +121,29 @@ export default function ModalInput({
         }
 
         if (modalType === 'token') {
-            if (inputValue === 'valid-token') {
-                setSuccessModal(true);
-            } else {
-                setError(true);
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        setSuccessModal(true);
+                        setInputValue('');
+                        setError(false);
+                        setErrorMsg(undefined);
+                    } else {
+                        setError(true);
+                    }
+                } catch (e: any) {
+                    setError(true);
+                    setErrorMsg(e.message || '유효한 토큰을 입력해 주세요');
+                } finally {
+                    setLoading(false);
+                }
             }
-        } else {
-            onClose();
+            return;
         }
+
+        onClose();
     };
 
     return (

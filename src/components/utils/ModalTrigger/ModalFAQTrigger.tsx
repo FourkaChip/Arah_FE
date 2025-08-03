@@ -21,7 +21,6 @@ export default function ModalFAQTrigger() {
             {isOpen && <ModalFAQ
                 onClose={() => handleClose()}
                 onSubmit={(data) => {
-                    console.log("등록된 FAQ 데이터:", data);
                 }}
             />}
         </>

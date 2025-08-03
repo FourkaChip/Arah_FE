@@ -8,7 +8,7 @@ import Pagination from "@/components/CustomPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchAdminList, fetchDepartmentList, removeAdminRole} from "@/api/auth/master";
+import {fetchAdminList, fetchDepartmentList, removeAdminRole, fetchCompanyToken} from "@/api/auth/master";
 import {AdminListResponseDto, CompanyAdminListResponse, CombinedAdminInfo} from "@/types/tables";
 import CustomDropDownForDept from "@/components/CustomDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
@@ -30,10 +30,12 @@ type AdminRowType = CombinedAdminInfo;
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
+    const [selectedAdmin, setSelectedAdmin] = useState<AdminRowType | null>(null); // 추가
     const [selectedDept, setSelectedDept] = useState('all');
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openEditModal] = useState(false);
     const [openTokenModal, setOpenTokenModal] = useState(false);
+    const [companyToken, setCompanyToken] = useState<string>(''); // 추가
 
     const [searchValue, setSearchValue] = useState("");
     const [currentPage, setCurrentPage] = useState(0);
@@ -42,15 +44,12 @@ export default function MasterAdminTable() {
     const queryClient = useQueryClient();
     const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
 
-    // onSuccess 콜백을 사용하지 않고 기본 useQuery 사용
-    const { data: adminRows = [], isLoading, error } = useQuery<AdminRowType[]>({
+    const {data: adminRows = [], isLoading, error} = useQuery<AdminRowType[]>({
         queryKey: ['adminList'],
         queryFn: fetchAdminList
     });
 
-    // 데이터가 변경될 때 페이지 리셋을 useEffect로 처리
     useEffect(() => {
-        // adminRows가 변경될 때마다 현재 페이지를 0으로 리셋
         setCurrentPage(0);
     }, [adminRows]);
 
@@ -60,7 +59,6 @@ export default function MasterAdminTable() {
         enabled: pathName === '/master/dept',
     });
 
-    // memoize된 필터링 로직과 페이지네이션 데이터
     const filteredRows = useMemo(() => {
         if (pathName === '/master/dept') {
             return deptRows.filter(row => {
@@ -95,19 +93,15 @@ export default function MasterAdminTable() {
         return adminRows;
     }, [selectedDept, searchValue, pathName, adminRows, deptRows]);
 
-    // pageSize나 필터링된 데이터가 변경될 때만 계산
     const paginatedData = useMemo(() => {
         const startIndex = currentPage * pageSize;
         const endIndex = startIndex + pageSize;
         return filteredRows.slice(startIndex, endIndex);
     }, [filteredRows, currentPage, pageSize]);
 
-    // 페이지 수 계산도 memoize
     const pageCount = useMemo(() => Math.ceil(filteredRows.length / pageSize), [filteredRows, pageSize]);
 
-    // 페이지네이션 변경 핸들러
     const handlePageChange = useCallback((page: number) => {
-        // 1부터 시작하는 페이지 번호를 0부터 시작하는 인덱스로 변환
         setCurrentPage(page - 1);
     }, []);
 
@@ -122,7 +116,7 @@ export default function MasterAdminTable() {
                 {
                     id: "edit",
                     header: "편집",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <FontAwesomeIcon
                             icon={faTrash}
                             onClick={() => handleOpenDeleteModal(row.original.departmentId as unknown as string)}
@@ -137,7 +131,7 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "adminDepartments",
                     header: "담당 부서",
-                    cell: ({ row }) => {
+                    cell: ({row}) => {
                         const depts = row.original.adminDepartments;
                         if (Array.isArray(depts)) {
                             return depts.join(', ');
@@ -148,7 +142,7 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "createdAt",
                     header: "가입일",
-                    cell: ({ getValue }) => {
+                    cell: ({getValue}) => {
                         const raw = getValue() as string;
                         if (!raw) return '';
                         const date = new Date(raw);
@@ -174,28 +168,28 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "email",
                     header: "이메일",
-                    cell: ({ row }) => row.original.email || '',
+                    cell: ({row}) => row.original.email || '',
                 },
                 {
                     id: "departmentSetting",
                     header: "부서 설정",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <button className="text-blue-600 underline"
-                            onClick={() => {
-                                setOpenDeptModal(true);
-                                // TODO: 선택된 관리자 정보를 상태로 저장
-                            }}>부서 설정</button>
+                                onClick={() => {
+                                    setSelectedAdmin(row.original); // 선택된 사용자 정보 저장
+                                    setOpenDeptModal(true);
+                                }}>부서 설정</button>
                     ),
                 },
                 {
                     id: "delete",
                     header: "삭제",
-                    cell: ({ row }) => (
+                    cell: ({row}) => (
                         <img
                             src="/delete.svg"
                             alt="삭제"
                             className="icon-delete-button"
-                            style={{ opacity: deletingEmail === (row.original.email || '') ? 0.5 : 1, cursor: 'pointer' }}
+                            style={{opacity: deletingEmail === (row.original.email || '') ? 0.5 : 1, cursor: 'pointer'}}
                             onClick={() => handleOpenDeleteModal(row.original.email || '')}
                         />
                     ),
@@ -211,7 +205,6 @@ export default function MasterAdminTable() {
         data: paginatedData as AdminRowType[],
         columns,
         getCoreRowModel: getCoreRowModel(),
-        // 페이지네이션 관련 코드를 제거하고 자체적으로 처리
     });
 
     // 삭제 로직 핸들러입니다.
@@ -225,7 +218,7 @@ export default function MasterAdminTable() {
         setDeletingEmail(email);
         try {
             await removeAdminRole(email);
-            await queryClient.invalidateQueries({ queryKey: ['adminList'] });
+            await queryClient.invalidateQueries({queryKey: ['adminList']});
         } catch (e) {
             alert("삭제에 실패했습니다. 다시 시도해주세요.");
         } finally {
@@ -237,6 +230,16 @@ export default function MasterAdminTable() {
     const handleOpenDeleteModal = (email: string | number) => {
         setDeletingEmail(typeof email === 'string' ? email : String(email));
         setOpenDeleteModal(true);
+    };
+
+    const handleOpenTokenModal = async () => {
+        try {
+            const token = await fetchCompanyToken();
+            setCompanyToken(token);
+            setOpenTokenModal(true);
+        } catch (e) {
+            alert("토큰이 존재하지 않습니다.");
+        }
     };
 
     if (pathName === '/master/dept' && deptLoading) return <div>로딩 중...</div>;
@@ -304,7 +307,16 @@ export default function MasterAdminTable() {
                         onPageChange={handlePageChange}
                     />
                 </div>
-                {openDeptModal && <ModalDepartment onClose={() => setOpenDeptModal(false)}/>}
+                {openDeptModal && selectedAdmin &&
+                    <ModalDepartment
+                        onClose={() => {
+                            setOpenDeptModal(false);
+                            setSelectedAdmin(null);
+                        }}
+                        defaultStep="select"
+                        defaultUser={selectedAdmin}
+                    />
+                }
                 {openDeleteModal &&
                     <ModalDefault
                         type="delete-data"
@@ -315,12 +327,15 @@ export default function MasterAdminTable() {
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
                 {openTokenModal &&
-                    <ModalInputFilled type={"token-check"} onClose={() => setOpenTokenModal(false)}/>}
-
+                    <ModalInputFilled
+                        type="token-check"
+                        value={companyToken}
+                        onClose={() => setOpenTokenModal(false)}
+                    />}
             </div>
             {pathName === '/master/dept' && (
                 <div className="corp-token-section">
-                    <p className="title is-3" onClick={() => setOpenTokenModal(true)}>기업 토큰 조회</p>
+                    <p className="title is-3" onClick={handleOpenTokenModal} style={{cursor: 'pointer'}}>기업 토큰 조회</p>
                     <p className="subtitle is-7">카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 확인합니다.</p>
                 </div>
             )}

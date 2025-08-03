@@ -3,11 +3,15 @@ import React, { useState, useRef } from 'react';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import NotificationModal from '@/components/Modal/NotificationModal/NotificationModal';
 import './Header.scss';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { removeRefreshToken } from '@/utils/tokenStorage';
 import { useAuthStore } from '@/store/auth.store';
 
 const Header = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const { clearAccessToken } = useAuthStore();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -32,7 +36,6 @@ const Header = () => {
       clearAccessToken();
       router.push('/');
     } catch (error) {
-      console.error('로그아웃 중 오류 발생:', error);
       alert('로그아웃 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
 
       if (confirm('계속해서 로그아웃하시겠습니까?')) {
@@ -90,6 +93,37 @@ const Header = () => {
         </div>
       </nav>
 
+            <div id="mainNavbar" className="navbar-menu">
+                <div className="navbar-end">
+                    <div className="navbar-item">
+                        <div className="buttons">
+                            {pathname.startsWith('/master') ? (
+                                <a
+                                    className="button is-white has-text-grey-light"
+                                    onClick={isLoggingOut ? undefined : handleLogout}
+                                    style={{ cursor: isLoggingOut ? 'wait' : 'pointer' }}
+                                >
+                                    로그아웃
+                                </a>
+                            ) : (
+                                <>
+                                    <a className="button is-white has-text-grey-light"><i className="fa-solid fa-bell"></i></a>
+                                    <a className="button is-white has-text-link">봇테스트</a>
+                                    <a
+                                        className="button is-white has-text-grey-light"
+                                        onClick={isLoggingOut ? undefined : handleLogout}
+                                        style={{ cursor: isLoggingOut ? 'wait' : 'pointer' }}
+                                    >
+                                        로그아웃
+                                    </a>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    );
       <NotificationModal
         isOpen={isNotificationModalOpen}
         onClose={handleCloseModal}

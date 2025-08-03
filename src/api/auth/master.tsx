@@ -44,11 +44,11 @@ const authorizedFetch = async (
     });
 };
 
-export const masterLogin = async (email: string, password: string) => {
+export const masterLogin = async (email: string, password: string, companyName: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password}),
+        body: JSON.stringify({email, password, companyName}),
     });
     if (!res.ok) throw new Error('로그인 실패');
     return (await res.json()).result;
@@ -238,4 +238,25 @@ export const createDepartment = async (name: string, companyId: number) => {
 
     const responseData = await res.json();
     return responseData.result;
-}
+};
+
+// 기업 토큰 조회 함수입니다.
+export const fetchCompanyToken = async (): Promise<string> => {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/companies/token`, {
+        method: 'GET',
+    });
+    if (!res.ok) throw new Error('회사 토큰 조회 실패');
+    const data = await res.json();
+    if (!data.result) throw new Error('회사 토큰이 없습니다.');
+    return data.result;
+};
+
+// 기업 토큰 등록 함수입니다.
+export const registerCompanyToken = async (token: string) => {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/companies/token`, {
+        method: 'POST',
+        body: JSON.stringify({companyToken: token}),
+    });
+    if (!res.ok) throw new Error('회사 토큰 등록 실패');
+    return res.json();
+};

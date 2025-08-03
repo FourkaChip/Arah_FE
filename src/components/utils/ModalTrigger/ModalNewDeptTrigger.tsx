@@ -28,7 +28,6 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
                         setError('회사 정보를 가져올 수 없습니다.');
                     }
                 } catch (e) {
-                    console.error('사용자 정보 조회 실패:', e);
                     setError('사용자 정보를 불러오는데 실패했습니다.');
                 } finally {
                     setIsLoading(false);
@@ -53,7 +52,6 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
             setOpen(false);
             return true;
         } catch (e: any) {
-            console.error('부서 생성 실패:', e);
             setError(e.message || '부서 생성에 실패했습니다.');
             return false;
         }
