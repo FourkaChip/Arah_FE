@@ -14,7 +14,7 @@ export type ModalType =
     | 'department-register'
     | 'delete-password-check';
 
-export type ModalInputType = 'token' | 'auth' | 'department' | 'password';
+export type ModalInputType = 'token' | 'auth' | 'department' | 'password' | 'tag';
 
 // ModalButtonProps는 모달에서 버튼에 사용되는 속성 타입입니다.
 export interface ClientModalTriggerProps {

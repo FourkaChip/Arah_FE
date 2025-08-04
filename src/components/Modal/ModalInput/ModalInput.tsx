@@ -3,10 +3,9 @@ import {useState, useEffect} from 'react';
 import './ModalInput.scss';
 import '@/components/Modal/ModalLayout.scss';
 import ModalLayout from "@/components/Modal/ModalLayout";
-import {ModalInputProps, ModalInputType} from "@/types/modals";
+import {ModalInputProps} from "@/types/modals";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
-import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import {useQueryClient} from '@tanstack/react-query';
 
 export default function ModalInput({
@@ -59,6 +58,14 @@ export default function ModalInput({
                     title: '부서 등록',
                     description: '추가할 부서를 입력해주세요.',
                     placeholder: '부서명 (ex.인사담당부)',
+                    buttonType: 'default',
+                    buttonLabel: '등록',
+                };
+            case 'tag':
+                return {
+                    title: '태그 추가',
+                    description: '추가할 태그명을 입력해주세요.',
+                    placeholder: '태그명 (ex.복지제도)',
                     buttonType: 'default',
                     buttonLabel: '등록',
                 };
@@ -143,6 +150,29 @@ export default function ModalInput({
             return;
         }
 
+        if (modalType === 'tag') {
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        setSuccessModal(true);
+                        setInputValue('');
+                        setError(false);
+                        setErrorMsg(undefined);
+                    } else {
+                        setError(true);
+                    }
+                } catch (e: any) {
+                    setError(true);
+                    setErrorMsg(e.message || '태그 등록에 실패했습니다.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+            return;
+        }
+
         onClose();
     };
 
@@ -161,7 +191,7 @@ export default function ModalInput({
                 }
                 onClose={onClose}
             >
-                <label className="modal-input-label">
+                <div className="modal-input-container">
                     <h2 className="modal-input-title">{config.title}</h2>
                     <input
                         className={`input ${error ? 'is-error' : ''}`}
@@ -174,12 +204,13 @@ export default function ModalInput({
                         }}
                         onKeyDown={handleKeyDown}
                     />
-                </label>
+                </div>
                 <div className="modal-input-row">
                     <span className="modal-error-message">
                         {error && modalType === 'auth' && !errorMsg ? '인증코드를 다시 확인해 주세요' : ''}
                         {error && modalType === 'token' && !errorMsg ? '유효한 토큰을 입력해 주세요' : ''}
                         {error && modalType === 'department' && !errorMsg ? '부서 등록에 실패했습니다' : ''}
+                        {error && modalType === 'tag' && !errorMsg ? '태그 등록에 실패했습니다' : ''}
                         {errorMsg || ''}
                     </span>
                     {config.subText && (
@@ -208,7 +239,9 @@ export default function ModalInput({
                                 ? '토큰 등록 완료'
                                 : modalType === 'department'
                                     ? '부서 등록 완료'
-                                    : ''
+                                    : modalType === 'tag'
+                                        ? '태그 등록 완료'
+                                        : ''
                     }
                     description={
                         modalType === 'auth'
@@ -217,7 +250,9 @@ export default function ModalInput({
                                 ? '토큰이 등록되었습니다.'
                                 : modalType === 'department'
                                     ? '부서가 등록되었습니다.'
-                                    : ''
+                                    : modalType === 'tag'
+                                        ? '태그가 등록되었습니다.'
+                                        : ''
                     }
                     footer={
                         <ModalButton
@@ -227,7 +262,7 @@ export default function ModalInput({
                                 setSuccessModal(false);
                                 onClose();
                                 // 2차인증 & 부서 등록 분기 설정하였습니다.
-                                if (modalType !== 'department') {
+                                if (modalType !== 'department' && modalType !== 'tag') {
                                     router.push('/master/manage');
                                 }
                             }}

@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
 import {fetchAdminFaqTagList, fetchAddAdminFaqTag} from "@/api/admin/faq/faqFetch";
+import ModalInput from "@/components/Modal/ModalInput/ModalInput";
 
 export default function CustomDropDown({
     value,
@@ -12,6 +13,7 @@ export default function CustomDropDown({
     companyId,
 }: CustomDropDownProps & { companyId: number }) {
     const [options, setOptions] = useState<string[]>(_options);
+    const [showInputModal, setShowInputModal] = useState(false);
 
     useEffect(() => {
         fetchAdminFaqTagList(companyId)
@@ -28,22 +30,25 @@ export default function CustomDropDown({
 
     const selectedOption = value ? {value, label: value} : null;
 
-    const handleCategoryChange = async (selected: SingleValue<{ value: string; label: string }>) => {
+    const handleCategoryChange = (selected: SingleValue<{ value: string; label: string }>) => {
         if (selected?.value === "add") {
-            const newCategory = prompt("새로운 태그를 입력하세요.");
-            if (newCategory) {
-                try {
-                    await fetchAddAdminFaqTag(companyId, newCategory);
-                    const tags = await fetchAdminFaqTagList(companyId);
-                    const tagNames = tags.map((tag: any) => tag.name);
-                    setOptions(tagNames);
-                    onChange(newCategory);
-                } catch {
-                    alert("태그 추가에 실패했습니다.");
-                }
-            }
+            setShowInputModal(true);
         } else {
             onChange(selected?.value ?? "");
+        }
+    };
+
+    const handleAddTag = async (tagName: string) => {
+        try {
+            await fetchAddAdminFaqTag(companyId, tagName);
+            const tags = await fetchAdminFaqTagList(companyId);
+            const tagNames = tags.map((tag: any) => tag.name);
+            setOptions(tagNames);
+            onChange(tagName);
+        } catch {
+            alert("태그 등록에 실패했습니다.");
+        } finally {
+            setShowInputModal(false);
         }
     };
 
@@ -70,6 +75,15 @@ export default function CustomDropDown({
                     })
                 }}
             />
+            {showInputModal && (
+                <ModalInput
+                    modalType="tag"
+                    title="태그 추가"
+                    description="새로운 태그 이름을 입력해 주세요."
+                    onClose={() => setShowInputModal(false)}
+                    onSubmit={handleAddTag}
+                />
+            )}
         </div>
     );
 }

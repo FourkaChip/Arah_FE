@@ -49,7 +49,7 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
                     <h2 className="modal-title faq-modal">FAQ 등록</h2>
                     <p className="modal-subtitle faq-modal">신규 FAQ를 등록합니다.</p>
 
-                    <div className="form-section">
+                    <div className="form-section faq-modal">
                         <label className="faq-field-label">
                             <span>사용자 질문</span>
                             <CustomDropDown
