@@ -16,17 +16,3 @@ export const adminLogin = async (email: string, password: string) => {
     const json = await res.json();
     return json.result;
 };
-
-// FAQ 목록 조회용 함수입니다.
-export const fetchAdminFaqList = async (companyId: number, accessToken?: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/faq/${companyId}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-        },
-        cache: 'no-store',
-    });
-    if (!res.ok) throw new Error('FAQ 목록 조회 실패');
-    const data = await res.json();
-    return data.result;
-};
