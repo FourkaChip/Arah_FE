@@ -17,35 +17,72 @@ import ModalFAQTrigger from "@/components/utils/ModalTrigger/ModalFAQTrigger";
 import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
 import CustomDropDownForTag from "@/components/CustomDropdown/CustomDropDownForTag";
 import {RowData} from "@/types/tables";
-import {defaultData} from "@/constants/dummydata/DummyFaq";
 import Pagination from "@/components/CustomPagination/Pagination";
+import {
+    fetchAdminFaqList,
+    fetchDeleteAdminFaq,
+    fetchUpdateAdminFaq,
+    fetchAdminFaqTagList
+} from "@/api/admin/faq/faqFetch";
+import {fetchCurrentUserInfo} from "@/api/auth/master";
 
 export default function FaqAdminTable() {
-
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openFaqModal, setOpenFaqModal] = useState(false);
     const [editRow, setEditRow] = useState<RowData | null>(null);
+    const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
-    const [data] = useState(() => defaultData);
+    const [faqData, setFaqData] = useState<RowData[]>([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
 
+    const [companyId, setCompanyId] = useState<number>(1);
+
+    useEffect(() => {
+        const getCompanyId = async () => {
+            try {
+                const userInfo = await fetchCurrentUserInfo();
+                if (userInfo.companyId || userInfo.company_id) {
+                    setCompanyId(userInfo.companyId ?? userInfo.company_id);
+                }
+            } catch {
+                setCompanyId(1);
+            }
+        };
+        getCompanyId();
+    }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchAdminFaqList(companyId)
+            .then((data) => {
+                setFaqData(data.map((faq: any, idx: number) => ({
+                    id: faq.faq_id,
+                    no: idx + 1,
+                    tag: faq.tag_name || "",
+                    registeredAt: faq.created_at?.slice(0, 10) || "",
+                    question: faq.question,
+                    answer: faq.answer,
+                })));
+            })
+            .finally(() => setLoading(false));
+    }, [companyId]);
+
     const handleSearch = (search: string) => {
         setSearchValue(search);
     };
+
     const filteredData = useMemo(() => {
-        return data.filter(row => {
-            // 태그 필터 추가
+        return faqData.filter(row => {
             const isTagAll = selectedTag === 'all';
             const tagMatch = isTagAll || row.tag === selectedTag;
-
-            // 검색어는 질문/답변에만 적용
             const matches =
                 searchValue === "" ||
                 row.question.includes(searchValue) ||
@@ -55,10 +92,9 @@ export default function FaqAdminTable() {
             const afterStart = !startDate || registered >= startDate;
             const beforeEnd = !endDate || registered <= endDate;
 
-            // 태그, 검색어, 날짜 모두 만족해야 함
             return tagMatch && matches && afterStart && beforeEnd;
         });
-    }, [data, selectedTag, searchValue, startDate, endDate]);
+    }, [faqData, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
         () => filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
@@ -68,39 +104,39 @@ export default function FaqAdminTable() {
     const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
 
     const columns = useMemo<ColumnDef<RowData>[]>(() => [
-        {
-            id: "select",
-            header: () => (
-                <input
-                    type="checkbox"
-                    ref={checkboxRef}
-                    onChange={(e) => {
-                        const checked = e.target.checked;
-                        const newSelections: Record<number, boolean> = {};
-                        paginatedData.forEach((row) => {
-                            newSelections[row.id] = checked;
-                        });
-                        setSelectedRowIds(newSelections);
-                    }}
-                    checked={
-                        paginatedData.length > 0 &&
-                        paginatedData.every((row) => selectedRowIds[row.id])
-                    }
-                />
-            ),
-            cell: ({row}) => (
-                <input
-                    type="checkbox"
-                    checked={selectedRowIds[row.original.id]}
-                    onChange={(e) =>
-                        setSelectedRowIds((prev) => ({
-                            ...prev,
-                            [row.original.id]: e.target.checked,
-                        }))
-                    }
-                />
-            ),
-        },
+        // {
+        //     id: "select",
+        //     header: () => (
+        //         <input
+        //             type="checkbox"
+        //             ref={checkboxRef}
+        //             onChange={(e) => {
+        //                 const checked = e.target.checked;
+        //                 const newSelections: Record<number, boolean> = {};
+        //                 paginatedData.forEach((row) => {
+        //                     newSelections[row.id] = checked;
+        //                 });
+        //                 setSelectedRowIds(newSelections);
+        //             }}
+        //             checked={
+        //                 paginatedData.length > 0 &&
+        //                 paginatedData.every((row) => selectedRowIds[row.id])
+        //             }
+        //         />
+        //     ),
+        //     cell: ({row}) => (
+        //         <input
+        //             type="checkbox"
+        //             checked={selectedRowIds[row.original.id]}
+        //             onChange={(e) =>
+        //                 setSelectedRowIds((prev) => ({
+        //                     ...prev,
+        //                     [row.original.id]: e.target.checked,
+        //                 }))
+        //             }
+        //         />
+        //     ),
+        // },
         {
             accessorKey: "no",
             header: "No.",
@@ -135,26 +171,29 @@ export default function FaqAdminTable() {
             cell: ({row}) => (
                 <button className="edit-icon">
                     <FontAwesomeIcon icon={faPen}
-                        onClick={() => {
-                            setEditRow(row.original);
-                            setOpenFaqModal(true);
-                        }}
-                        style={{
-                            color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
-                            cursor: 'pointer',
-                            width: '16px',
-                            height: '16px'
-                        }}/>
+                                     onClick={() => {
+                                         setEditRow(row.original);
+                                         setOpenFaqModal(true);
+                                     }}
+                                     style={{
+                                         color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
+                                         cursor: 'pointer',
+                                         width: '16px',
+                                         height: '16px'
+                                     }}/>
                 </button>
             ),
         },
         {
             id: "delete",
             header: "삭제",
-            cell: () => (
+            cell: ({row}) => (
                 <button className="delete-icon">
                     <FontAwesomeIcon icon={faTrash}
-                                     onClick={() => setOpenDeleteModal(true)}
+                                     onClick={() => {
+                                         setDeleteTargetId(row.original.id);
+                                         setOpenDeleteModal(true);
+                                     }}
                                      style={{
                                          color: 'red',
                                          cursor: 'pointer',
@@ -194,78 +233,143 @@ export default function FaqAdminTable() {
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
+    const handleDeleteFaq = async () => {
+        if (deleteTargetId == null) return;
+        setLoading(true);
+        try {
+            await fetchDeleteAdminFaq(deleteTargetId);
+            const data = await fetchAdminFaqList(companyId);
+            setFaqData(data.map((faq: any, idx: number) => ({
+                id: faq.faq_id,
+                no: idx + 1,
+                tag: faq.tag_name || "",
+                registeredAt: faq.created_at?.slice(0, 10) || "",
+                question: faq.question,
+                answer: faq.answer,
+            })));
+        } catch (e) {
+            alert("FAQ 삭제에 실패했습니다.");
+        } finally {
+            setLoading(false);
+            setOpenDeleteModal(false);
+            setDeleteTargetId(null);
+        }
+    };
+
+    const handleUpdateFaq = async (data: { category: string; question: string; answer: string }) => {
+        if (!editRow) return;
+        setLoading(true);
+        try {
+            const tags = await fetchAdminFaqTagList(companyId);
+            const tagObj = tags.find((tag: any) => tag.name === data.category);
+            const tag_id = tagObj ? tagObj.tag_id : null;
+            if (!tag_id) {
+                alert("선택한 태그가 존재하지 않습니다.");
+                return;
+            }
+            // fetchUpdateAdminFaq가 body로 데이터를 보내므로 FastAPI에서 DTO를 Body로 받아야 함!
+            await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
+            const faqList = await fetchAdminFaqList(companyId);
+            setFaqData(faqList.map((faq: any, idx: number) => ({
+                id: faq.faq_id,
+                no: idx + 1,
+                tag: faq.tag_name || "",
+                registeredAt: faq.created_at?.slice(0, 10) || "",
+                question: faq.question,
+                answer: faq.answer,
+            })));
+        } catch (e) {
+            alert("FAQ 수정에 실패했습니다.");
+        } finally {
+            setLoading(false);
+            setOpenFaqModal(false);
+            setEditRow(null);
+        }
+    };
+
+    const handleFaqAdded = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchAdminFaqList(companyId);
+            setFaqData(data.map((faq: any, idx: number) => ({
+                id: faq.faq_id,
+                no: idx + 1,
+                tag: faq.tag_name || "",
+                registeredAt: faq.created_at?.slice(0, 10) || "",
+                question: faq.question,
+                answer: faq.answer,
+            })));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
                 <div className="tag-search-section">
-                    {/*<input type="date" className="date-picker" value={startDate}*/}
-                    {/*       onChange={e => setStartDate(e.target.value)}/>*/}
-                    {/*<span>~</span>*/}
-                    {/*<input type="date" className="date-picker" value={endDate}*/}
-                    {/*       onChange={e => setEndDate(e.target.value)}/>*/}
-                    <CustomDropDownForTag onChange={setSelectedTag}/>
+                    <CustomDropDownForTag onChange={setSelectedTag} companyId={companyId}/>
                     <CustomSearch
                         onSearch={handleSearch}
                     />
                 </div>
                 <div className="action-buttons">
-                    <ModalFAQTrigger/>
-                    {/*<button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>*/}
-                    {/*    <span>삭제</span>*/}
-                    {/*    <span className="icon is-small">*/}
-                    {/*    <i className="fas fa-times"></i>*/}
-                    {/*    </span>*/}
-                    {/*</button>*/}
+                    <ModalFAQTrigger onAdded={handleFaqAdded}/>
                 </div>
             </div>
             <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
-                <table className="tanstack-table">
-                    <thead>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <th key={header.id}>
-                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                    </thead>
-                    <tbody>
-                    {table.getRowModel().rows.length === 0 ? (
-                        <tr>
-                            <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
-                                검색 결과가 없습니다
-                            </td>
-                        </tr>
-                    ) : (
-                        table.getRowModel().rows.map(row => (
-                            <React.Fragment key={row.id}>
-                                <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                                <tr className="faq-expanded-row">
-                                    <td colSpan={table.getAllLeafColumns().length}>
-                                        <div
-                                            className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
-                                        >
-                                            <div className="faq-detail-view">
-                                                <p className="faq-detail-view question"><strong>Q.</strong> {row.original.question}</p>
-                                                <p className="faq-detail-view answer"><strong>A.</strong> {row.original.answer}</p>
+                {loading ? (
+                    <div style={{textAlign: "center", padding: "40px"}}>FAQ 데이터를 불러오는 중...</div>
+                ) : (
+                    <table className="tanstack-table">
+                        <thead>
+                        {table.getHeaderGroups().map(headerGroup => (
+                            <tr key={headerGroup.id}>
+                                {headerGroup.headers.map(header => (
+                                    <th key={header.id}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </th>
+                                ))}
+                            </tr>
+                        ))}
+                        </thead>
+                        <tbody>
+                        {table.getRowModel().rows.length === 0 ? (
+                            <tr>
+                                <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
+                                    검색 결과가 없습니다
+                                </td>
+                            </tr>
+                        ) : (
+                            table.getRowModel().rows.map(row => (
+                                <React.Fragment key={row.id}>
+                                    <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
+                                        {row.getVisibleCells().map(cell => (
+                                            <td key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                    <tr className="faq-expanded-row">
+                                        <td colSpan={table.getAllLeafColumns().length}>
+                                            <div
+                                                className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
+                                            >
+                                                <div className="faq-detail-view">
+                                                    <p className="faq-detail-view question">
+                                                        <strong>Q.</strong> {row.original.question}</p>
+                                                    <p className="faq-detail-view answer">
+                                                        <strong>A.</strong> {row.original.answer}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </React.Fragment>
-                        )))}
-                    </tbody>
-                </table>
-                {/* pagination-footer 제거, Pagination 중앙 배치 */}
-                <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                                        </td>
+                                    </tr>
+                                </React.Fragment>
+                            )))}
+                        </tbody>
+                    </table>
+                )}
+                <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination
                         currentPage={currentPage + 1}
                         totalPages={pageCount}
@@ -274,18 +378,27 @@ export default function FaqAdminTable() {
                 </div>
             </div>
             {openDeleteModal &&
-                <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+                <ModalDefault
+                    type="delete-data"
+                    label="삭제하시겠습니까?"
+                    onClose={() => {
+                        setOpenDeleteModal(false);
+                        setDeleteTargetId(null);
+                    }}
+                    onSubmit={handleDeleteFaq}
+                />
+            }
             {openFaqModal &&
                 <ModalFAQ
                     onClose={() => {
                         setOpenFaqModal(false);
                         setEditRow(null);
                     }}
-                    onSubmit={(data: { category: string; question: string; answer: string }) => {
-                    }}
+                    onSubmit={handleUpdateFaq}
                     category={editRow?.tag}
                     question={editRow?.question}
                     answer={editRow?.answer}
+                    companyId={companyId}
                 />}
         </>
     );

@@ -45,7 +45,7 @@
 .form-section {
   margin-bottom: 20px;
 
-  label {
+  label.faq-field-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -54,7 +54,7 @@
     font-size: 14px;
     font-weight: 600;
     border-radius: 8px;
-    color: #232D64;
+    color: #232d64;
     height: 54px;
 
     select {
@@ -64,7 +64,7 @@
       padding: 6px 10px;
       background-color: #fff;
       margin-left: 12px;
-      color: #232D64;
+      color: #232d64;
     }
   }
 
@@ -73,14 +73,14 @@
     width: 100%;
     border: 1px solid #c2c2f3;
     background-color: #fff;
-    color: #232D64;
+    color: #232d64;
     border-radius: 8px;
     padding: 12px;
     font-size: 14px;
     margin-top: 8px;
 
     &::placeholder {
-      color: #232D64;
+      color: #232d64;
       opacity: 0.4;
     }
   }
@@ -98,7 +98,7 @@
     margin-top: 8px;
 
     &::placeholder {
-      color: #232D64;
+      color: #232d64;
       opacity: 0.4;
     }
   }
