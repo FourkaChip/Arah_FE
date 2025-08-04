@@ -69,11 +69,24 @@ const useSidebarMenu = (menuItems: MenuItem[]) => {
   }, [menuItems, activeMenuItem]);
 
   const handleMenuItemClick = useCallback((menuId: string, event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    setActiveMenuItem(menuId);
-    const route = MENU_ROUTES[menuId as keyof typeof MENU_ROUTES];
+  event.preventDefault();
+
+  const menu = menuItems.find(item => item.id === menuId);
+
+  // 서브메뉴가 있다면 첫 번째 서브메뉴로 리다이렉트
+  if (menu?.subItems && menu.subItems.length > 0) {
+    const firstSubItemId = menu.subItems[0].id;
+    setActiveMenuItem(firstSubItemId);
+    const route = MENU_ROUTES[firstSubItemId as keyof typeof MENU_ROUTES];
     if (route) router.push(route);
-  }, [router]);
+    return;
+  }
+
+  // 서브메뉴가 없을 경우 본 메뉴로 이동
+  setActiveMenuItem(menuId);
+  const route = MENU_ROUTES[menuId as keyof typeof MENU_ROUTES];
+  if (route) router.push(route);
+}, [menuItems, router]);
 
   return {
     activeMenuItem,
