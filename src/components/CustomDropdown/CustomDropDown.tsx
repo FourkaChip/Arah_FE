@@ -1,29 +1,47 @@
 "use client";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
-
-interface OptionType {
-    value: string;
-    label: string;
-}
+import {fetchAdminFaqTagList, fetchAddAdminFaqTag} from "@/api/admin/faq/faqFetch";
 
 export default function CustomDropDown({
     value,
-    options,
+    options: _options,
     onChange,
     onAddOption,
-}: CustomDropDownProps) {
-    const categoryOptions: OptionType[] = [
+    companyId,
+}: CustomDropDownProps & { companyId: number }) {
+    const [options, setOptions] = useState<string[]>(_options);
+
+    useEffect(() => {
+        fetchAdminFaqTagList(companyId)
+            .then((tags) => {
+                const tagNames = tags.map((tag: any) => tag.name);
+                setOptions(tagNames);
+            });
+    }, [companyId]);
+
+    const categoryOptions = [
         ...options.map((cat) => ({value: cat, label: cat})),
         {value: "add", label: "➕ 태그 추가"}
     ];
 
     const selectedOption = value ? {value, label: value} : null;
 
-    const handleCategoryChange = (selected: SingleValue<OptionType>) => {
+    const handleCategoryChange = async (selected: SingleValue<{ value: string; label: string }>) => {
         if (selected?.value === "add") {
-            onAddOption?.();
+            const newCategory = prompt("새로운 태그를 입력하세요.");
+            if (newCategory) {
+                try {
+                    await fetchAddAdminFaqTag(companyId, newCategory);
+                    const tags = await fetchAdminFaqTagList(companyId);
+                    const tagNames = tags.map((tag: any) => tag.name);
+                    setOptions(tagNames);
+                    onChange(newCategory);
+                } catch {
+                    alert("태그 추가에 실패했습니다.");
+                }
+            }
         } else {
             onChange(selected?.value ?? "");
         }

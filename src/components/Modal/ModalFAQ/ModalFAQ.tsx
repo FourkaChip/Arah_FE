@@ -3,31 +3,36 @@ import ModalButton from "@/components/Modal/Buttons/ModalButton";
 import "./ModalFAQ.scss";
 import CustomDropDown from "@/components/CustomDropdown/CustomDropDown";
 import {ModalFAQProps} from "@/types/modals";
+import {fetchAdminFaqTagList} from "@/api/admin/faq/faqFetch";
 
-export default function ModalFAQ({onClose, onSubmit, category, question: initQuestion, answer: initAnswer}: ModalFAQProps) {
+export default function ModalFAQ({onClose, onSubmit, category, question: initQuestion, answer: initAnswer, companyId}: ModalFAQProps & { companyId: number }) {
     const [question, setQuestion] = useState(initQuestion ?? "");
     const [answer, setAnswer] = useState(initAnswer ?? "");
-    const [categories, setCategories] = useState(["회사 비전", "사업 정책", "인센티브", "복지제도"]);
+    const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState(category ?? "");
 
-    // props가 바뀔 때마다 값 동기화
     useEffect(() => {
         setQuestion(initQuestion ?? "");
         setAnswer(initAnswer ?? "");
         setSelectedCategory(category ?? "");
     }, [initQuestion, initAnswer, category]);
 
-    const handleAddCategory = () => {
-        const newCategory = prompt("새로운 태그를 입력하세요.");
-        if (newCategory) setCategories([...categories, newCategory]);
-    };
+    useEffect(() => {
+        fetchAdminFaqTagList(companyId)
+            .then((tags) => {
+                const tagNames = tags.map((tag: any) => tag.name);
+                setCategories(tagNames);
+                if (!selectedCategory && tagNames.length > 0) {
+                    setSelectedCategory(tagNames[0]);
+                }
+            });
+    }, [companyId]);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!selectedCategory || !question || !answer) {
             alert("모든 필드를 입력해 주세요.");
             return;
         }
-
         onSubmit({
             category: selectedCategory,
             question,
@@ -51,7 +56,7 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
                                 value={selectedCategory}
                                 options={categories}
                                 onChange={setSelectedCategory}
-                                onAddOption={handleAddCategory}
+                                companyId={companyId}
                             />
                         </label>
                         <input

@@ -233,13 +233,11 @@ export default function FaqAdminTable() {
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
-    // FAQ 삭제 핸들러
     const handleDeleteFaq = async () => {
         if (deleteTargetId == null) return;
         setLoading(true);
         try {
             await fetchDeleteAdminFaq(deleteTargetId);
-            // 삭제 후 목록 새로고침
             const data = await fetchAdminFaqList(companyId);
             setFaqData(data.map((faq: any, idx: number) => ({
                 id: faq.faq_id,
@@ -258,7 +256,6 @@ export default function FaqAdminTable() {
         }
     };
 
-    // FAQ 수정 핸들러
     const handleUpdateFaq = async (data: { category: string; question: string; answer: string }) => {
         if (!editRow) return;
         setLoading(true);
@@ -290,6 +287,23 @@ export default function FaqAdminTable() {
         }
     };
 
+    const handleFaqAdded = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchAdminFaqList(companyId);
+            setFaqData(data.map((faq: any, idx: number) => ({
+                id: faq.faq_id,
+                no: idx + 1,
+                tag: faq.tag_name || "",
+                registeredAt: faq.created_at?.slice(0, 10) || "",
+                question: faq.question,
+                answer: faq.answer,
+            })));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -300,7 +314,7 @@ export default function FaqAdminTable() {
                     />
                 </div>
                 <div className="action-buttons">
-                    <ModalFAQTrigger/>
+                    <ModalFAQTrigger onAdded={handleFaqAdded}/>
                 </div>
             </div>
             <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
@@ -384,6 +398,7 @@ export default function FaqAdminTable() {
                     category={editRow?.tag}
                     question={editRow?.question}
                     answer={editRow?.answer}
+                    companyId={companyId}
                 />}
         </>
     );
