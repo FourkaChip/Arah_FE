@@ -10,7 +10,17 @@ export const masterLogin = async (email: string, password: string, companyName: 
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({email, password, companyName}),
     });
-    if (!res.ok) throw new Error('로그인 실패');
+
+    if (!res.ok) {
+        if (res.status === 400) {
+            const errorData = await res.json();
+            const error = new Error('로그인 실패');
+            (error as any).response = { data: errorData };
+            throw error;
+        }
+        throw new Error('로그인 실패');
+    }
+
     return (await res.json()).result;
 };
 
@@ -78,7 +88,7 @@ export const fetchAdminList = async (): Promise<CombinedAdminInfo[]> => {
             return [];
         }
 
-        // 2. 전체 관리자 상세 정보를 가져옵니다.
+        // 2. 전체 관리자 상세 정보를 가져��니다.
         const allAdmins = await fetchAllAdmins();
 
         // 3. 회사별 관리자의 userIds를 추출합니다.
@@ -129,7 +139,7 @@ export const removeAdminRole = async (email: string) => {
     return res.json();
 };
 
-// 현재 로그인한 사용자 정보 조회 함수입니다.
+// 현재 로그인한 사용자 정보 조회 함수입니��.
 export const fetchCurrentUserInfo = async () => {
     const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
         method: 'GET',

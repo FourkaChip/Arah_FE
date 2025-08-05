@@ -8,10 +8,17 @@ import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import ModalInputFilled from "@/components/modal/ModalInput/ModalInputFilled";
-import {masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode, fetchCompanyToken, registerCompanyToken} from '@/api/auth/master';
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
+import {
+    masterLogin,
+    confirmMasterVerifyCode,
+    sendMasterVerifyCode,
+    fetchCompanyToken,
+    registerCompanyToken
+} from '@/api/auth/master';
 import {adminLogin} from '@/api/auth/admin';
 import {useAuthStore} from "@/store/auth.store";
-import {saveAccessToken, saveRefreshToken} from "@/utils/tokenStorage";
+import {saveRefreshToken} from "@/utils/tokenStorage";
 import {useMutation} from '@tanstack/react-query';
 import {useRouter} from 'next/navigation';
 
@@ -25,10 +32,13 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [verifyToken, setVerifyToken] = useState('');
     const [passwordError, setPasswordError] = useState(false);
-    const [showTokenModal, setShowTokenModal] = useState(false); // 추가
+    const [showTokenModal, setShowTokenModal] = useState(false);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorType, setErrorType] = useState<'email' | 'password' | 'verify'>('password');
+    const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
     const handleCompanyInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
@@ -60,11 +70,13 @@ export default function LoginForm() {
                 await sendMasterVerifyCode(verifyToken);
                 setShowModal(true);
             } catch {
-                alert('인증번호 전송 실패');
+                setErrorMessages(['인증 처리 중 오류가 발생했습니다. 다시 시도해 주세요.']);
+                setShowErrorModal(true);
             }
         },
-        onError: () => {
+        onError: (error: any) => {
             setPasswordError(true);
+            handleLoginError(error);
         },
     });
 
@@ -76,17 +88,36 @@ export default function LoginForm() {
             saveRefreshToken(refreshToken);
             router.push('/admin/manage');
         },
-        onError: () => {
+        onError: (error: any) => {
             setPasswordError(true);
+            handleLoginError(error);
         },
     });
 
-    const handleLogin = () => {
-        if (pathname === '/master/login') {
-            masterLoginMutation.mutate();
-        } else if (pathname === '/admin/login') {
-            adminLoginMutation.mutate();
+    const handleLoginError = (error: any) => {
+        const messages: string[] = [];
+
+        if (error.response?.data?.error) {
+            const errorObj = error.response.data.error;
+
+            Object.values(errorObj).forEach((message: any) => {
+                if (typeof message === 'string') {
+                    messages.push(message);
+                }
+            });
         }
+        else if (error.response?.data?.message) {
+            messages.push(error.response.data.message);
+        }
+        else if (error instanceof Error) {
+            messages.push(error.message);
+        }
+        else {
+            messages.push('로그인 처리 중 오류가 발생했습니다.');
+        }
+
+        setErrorMessages(messages.length > 0 ? [messages[0]] : ['로그인 처리 중 오류가 발생했습니다.']);
+        setShowErrorModal(true);
     };
 
     const verifyMutation = useMutation({
@@ -118,8 +149,17 @@ export default function LoginForm() {
             router.push('/master/manage');
             return true;
         } catch (e: any) {
-            alert(e.message || '토큰 등록에 실패했습니다.');
+            setErrorMessages(['토큰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.']);
+            setShowErrorModal(true);
             return false;
+        }
+    };
+
+    const handleLogin = () => {
+        if (pathname === '/master/login') {
+            masterLoginMutation.mutate();
+        } else {
+            adminLoginMutation.mutate();
         }
     };
 
@@ -173,7 +213,6 @@ export default function LoginForm() {
 
                 <label className="login-form-label">
                     <p className="login-form-description">비밀번호</p>
-                    {/*비밀번호*/}
                     <input
                         id="password"
                         name="password"
@@ -227,8 +266,14 @@ export default function LoginForm() {
                     onResendCode={() => {
                         if (verifyToken) {
                             sendMasterVerifyCode(verifyToken)
-                                .then(() => alert('인증 코드가 재전송되었습니다.'))
-                                .catch(() => alert('인증 코드 전송에 실패했습니다.'));
+                                .then(() => {
+                                    setErrorType('verify');
+                                    setShowErrorModal(true);
+                                })
+                                .catch(() => {
+                                    setErrorType('verify');
+                                    setShowErrorModal(true);
+                                });
                         }
                     }}
                 />
@@ -246,6 +291,14 @@ export default function LoginForm() {
                     description="카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다."
                     onClose={() => setShowTokenModal(false)}
                     onSubmit={handleRegisterToken}
+                />
+            )}
+            {showErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label="로그인 오류"
+                    onClose={() => setShowErrorModal(false)}
+                    errorMessages={errorMessages}
                 />
             )}
         </>

@@ -4,16 +4,20 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import ModalLayout from "@/components/modal/ModalLayout";
 import { ModalWindowProps } from "@/types/modals";
 
-export default function ModalDefault({ type, label, onClose, onSubmit }: ModalWindowProps) {
+export default function ModalDefault({ type, label, onClose, onSubmit, errorMessages }: ModalWindowProps) {
     let description = '';
     let buttonLabel = '';
     const buttonType = type;
 
     switch (type) {
         case 'default':
-            description = label === '토큰 재등록'
-                ? '토큰 재등록이 완료되었습니다.'
-                : '답변이 전송되었습니다.';
+            if (errorMessages && errorMessages.length > 0) {
+                description = errorMessages.join('\n');
+            } else if (label === '토큰 재등록') {
+                description = '토큰 재등록이 완료되었습니다.';
+            } else {
+                description = '답변이 전송되었습니다.';
+            }
             buttonLabel = '확인';
             break;
         case 'cancel':
@@ -28,7 +32,17 @@ export default function ModalDefault({ type, label, onClose, onSubmit }: ModalWi
 
     return (
         <ModalLayout title={label} onClose={onClose}>
-            <p className="modal-description">{description}</p>
+            <div className="modal-description">
+                {errorMessages && errorMessages.length > 1 ? (
+                    <div style={{textAlign: 'left'}}>
+                        {errorMessages.map((message, index) => (
+                            <p key={index} style={{margin: '8px 0', color: '#333'}}>{message}</p>
+                        ))}
+                    </div>
+                ) : (
+                    <p>{description}</p>
+                )}
+            </div>
             <div className="modal-buttons">
                 {type === 'delete-data' ? (
                     <ModalButton

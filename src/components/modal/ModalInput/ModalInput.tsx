@@ -24,7 +24,6 @@ export default function ModalInput({
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // 외부에서 전달된 에러 메시지가 변경되면 state를 업데이트
     useEffect(() => {
         setErrorMsg(externalError);
         setError(!!externalError);
