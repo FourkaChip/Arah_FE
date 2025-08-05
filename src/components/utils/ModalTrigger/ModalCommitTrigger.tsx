@@ -2,10 +2,7 @@
 
 import {useState} from 'react';
 import ModalCommit from '@/components/Modal/DataSet/ModalCommit/ModalCommit';
-
-interface ModalCommitTriggerProps {
-    docId?: number;
-}
+import {ModalCommitTriggerProps} from "@/types/dataset";
 
 export default function ModalCommitTrigger({ docId }: ModalCommitTriggerProps) {
     const [isOpen, setIsOpen] = useState(false);
