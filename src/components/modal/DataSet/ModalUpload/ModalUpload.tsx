@@ -2,6 +2,7 @@ import {useState, useRef} from 'react';
 import './ModalUpload.scss';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {ModalUploadProps} from "@/types/modals";
+import Image from "next/image";
 
 export default function ModalUpload({
                                         onClose
@@ -68,7 +69,7 @@ export default function ModalUpload({
                     </>
                 ) : (
                     <div className="drag-drop-box" onClick={() => fileInputRef.current?.click()}>
-                        <img src="/upload-icon.svg" alt="upload"/>
+                        <Image src="/upload-icon.svg" alt="upload"/>
                         <p>파일을 업로드하거나 여기로 끌어 놓으세요.</p>
                     </div>
                 )}

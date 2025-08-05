@@ -23,6 +23,7 @@ import {
     flexRender,
     ColumnDef
 } from "@tanstack/react-table";
+import Image from "next/image";
 
 type RowType = AdminListResponseDto | CompanyAdminListResponse;
 
@@ -185,7 +186,7 @@ export default function MasterAdminTable() {
                     id: "delete",
                     header: "삭제",
                     cell: ({row}) => (
-                        <img
+                        <Image
                             src="/delete.svg"
                             alt="삭제"
                             className="icon-delete-button"
