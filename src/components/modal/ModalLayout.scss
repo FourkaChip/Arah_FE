@@ -18,7 +18,7 @@ $primary: #232D64;
   align-items: center;
   gap: 36px;
   isolation: isolate;
-
+  border-radius: 16px;
   position: absolute;
   width: 465px;
   height: 229px;
@@ -29,7 +29,6 @@ $primary: #232D64;
   background: #FFFFFF;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
 
   &.tall-modal {
     width: 640px;

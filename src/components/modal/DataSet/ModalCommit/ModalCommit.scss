@@ -6,16 +6,24 @@ $content-heading-color: #2E70E8;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 2000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  overflow: hidden;
+  border-radius: 0;
+  transform: none;
+  isolation: auto;
 }
 
 .modal-dialog.commit-modal {
-  width: 563px;
-  height: 559px;
+  width: 1400px;
+  height: 789px;
+  max-width: 90vw;
+  max-height: 90vh;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -23,6 +31,7 @@ $content-heading-color: #2E70E8;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 
 .modal-close {
@@ -52,10 +61,10 @@ $content-heading-color: #2E70E8;
 .commit-message {
   background: #f2f2f2;
   padding: 6px;
-  border-radius: 8px;
-  margin-top: 4px;
+  border-radius: 8px 8px 0 0;
+  margin-top: 14px;
   font-weight: 500;
-  color: #232D64;
+  color: #232d64;
 }
 
 .commit-message strong {
@@ -73,10 +82,10 @@ $content-heading-color: #2E70E8;
 }
 
 .commit-content {
-  margin: 8px 5px;
+  height: 100px;
   font-size: 15px;
   background: #f8f8f8;
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
   padding: 8px;
   overflow-y: scroll;
   word-break: break-all;
@@ -92,48 +101,119 @@ $content-heading-color: #2E70E8;
   border-radius: 4px;
 }
 
-.diff-title {
-  margin-top: 20px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.highlight {
-  color: #2DB400;
-}
-
-.diff-box {
+.diff-container {
   background: #f8f8f8;
+  border-radius: 0 0 8px 8px;
+  padding: 16px;
+  max-height: 350px;
+  overflow: hidden;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 60px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.diff-columns {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+}
+
+.diff-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   border-radius: 8px;
-  padding: 8px;
-  margin: 8px 5px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.diff-header {
+  padding: 12px 16px;
+  font-weight: bold;
   font-size: 14px;
-  font-weight: 500;
-  max-height: 270px;
-  overflow-y: scroll;
-  word-break: break-all;
-  white-space: pre-wrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.diff-box::-webkit-scrollbar {
-  width: 8px;
+.added-header {
+  background: #e8f5e8;
+  color: #2db400;
+  border-bottom: 2px solid #2db400;
 }
 
-.diff-box::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
+.removed-header {
+  background: #ffe8e8;
+  color: #ff4242;
+  border-bottom: 2px solid #ff4242;
+}
+
+.diff-icon {
+  font-weight: bold;
+  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: currentColor;
+  color: white;
+}
+
+.diff-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.added-content::-webkit-scrollbar,
+.removed-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.added-content::-webkit-scrollbar-thumb {
+  background: #2db400;
+  border-radius: 3px;
+}
+
+.removed-content::-webkit-scrollbar-thumb {
+  background: #ff4242;
+  border-radius: 3px;
+}
+
+.diff-line {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  padding: 8px 12px;
   border-radius: 4px;
+  font-size: 14px;
+  word-break: break-all;
 }
 
-.diff-line.added {
-  color: #2DB400;
-  margin-bottom: 4px;
-  line-height: 1.6;
+.added-content .diff-line {
+  background: #f0f9f0;
+  border-left: 3px solid #2db400;
+  color: #1a5d1a;
 }
 
-.diff-line.removed {
-  color: #FF4242;
-  margin-bottom: 4px;
-  line-height: 1.6;
+.removed-content .diff-line {
+  background: #fff0f0;
+  border-left: 3px solid #ff4242;
+  color: #751a1a;
+}
+
+.empty-message {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 40px 20px;
 }
 
 .modal-footer {

@@ -18,7 +18,7 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
     }, [initQuestion, initAnswer, category]);
 
     useEffect(() => {
-        fetchAdminFaqTagList(companyId)
+        fetchAdminFaqTagList()
             .then((tags) => {
                 const tagNames = tags.map((tag: any) => tag.name);
                 setCategories(tagNames);

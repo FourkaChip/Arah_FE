@@ -3,9 +3,9 @@
 import {authorizedFetch} from "@/api/auth/authorizedFetch";
 
 // faq 목록 조회용 함수입니다.
-export const fetchAdminFaqList = async (companyId: number) => {
+export const fetchAdminFaqList = async () => {
     const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/faq/${companyId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/faq`,
         {
             method: 'GET',
             cache: 'no-store',
@@ -62,9 +62,9 @@ export const fetchDeleteAdminFaq = async (faq_id: number) => {
 }
 
 // FAQ 태그 목록 조회용 함수입니다.
-export const fetchAdminFaqTagList = async (companyId: number) => {
+export const fetchAdminFaqTagList = async () => {
     const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/faq-tag/${companyId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/faq-tag`,
         {
             method: 'GET',
             cache: 'no-store',
