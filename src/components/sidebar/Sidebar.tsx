@@ -4,7 +4,7 @@ import {useState, useEffect, useCallback, useMemo} from 'react';
 import {usePathname, useRouter} from "next/navigation";
 import './Sidebar.scss';
 import {MenuItem, SubMenuItem, SidebarProps} from '@/types/sidebar';
-import {ADMIN_MENU_ITEMS, MASTER_MENU_ITEMS, MENU_ROUTES} from "@/constants/sidebarData";
+import {ADMIN_MENU_ITEMS, MASTER_MENU_ITEMS, MENU_ROUTES} from '@/constants/sidebarConfig';
 
 const ROUTE_TO_MENU_ID: Record<string, string> = Object.entries(MENU_ROUTES).reduce((acc, [key, value]) => {
     acc[value] = key;

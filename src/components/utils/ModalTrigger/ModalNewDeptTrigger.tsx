@@ -68,7 +68,7 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
                 }}
                 disabled={isLoading}
             >
-                <Image src="/AddAdmin.svg" alt="icon" className="icon-left"/>
+                <Image src="/AddAdmin.svg" alt="icon" className="icon-left" width={50} height={50} />
                 {buttonText}
             </button>
             {open && (

@@ -192,6 +192,8 @@ export default function MasterAdminTable() {
                             className="icon-delete-button"
                             style={{opacity: deletingEmail === (row.original.email || '') ? 0.5 : 1, cursor: 'pointer'}}
                             onClick={() => handleOpenDeleteModal(row.original.email || '')}
+                            width={36}
+                            height={36}
                         />
                     ),
                 }

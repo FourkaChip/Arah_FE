@@ -17,7 +17,7 @@ export default function ModalDeptTrigger({buttonText}: { buttonText: string }) {
     return (
         <>
             <button className="button is-link" onClick={handleOpen}>
-                <Image src="/AddAdmin.svg" alt="icon" className="icon-left" />
+                <Image src="/AddAdmin.svg" alt="icon" className="icon-left" width={50} height={50} />
                 {buttonText}
             </button>
             {open && (

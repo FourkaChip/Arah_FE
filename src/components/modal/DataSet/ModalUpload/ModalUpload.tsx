@@ -163,7 +163,7 @@ export default function ModalUpload({
                     </>
                 ) : (
                     <div className="drag-drop-box" onClick={() => fileInputRef.current?.click()}>
-                        <Image src="/upload-icon.svg" alt="upload"/>
+                        <Image src="/upload-icon.svg" alt="upload" width={50} height={50} />
                         <p>파일을 업로드하거나 여기로 끌어 놓으세요.</p>
                         <p>(하나의 pdf 파일만 업로드 가능합니다.)</p>
                     </div>
