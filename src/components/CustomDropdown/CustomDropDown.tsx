@@ -16,7 +16,7 @@ export default function CustomDropDown({
     const [showInputModal, setShowInputModal] = useState(false);
 
     useEffect(() => {
-        fetchAdminFaqTagList(companyId)
+        fetchAdminFaqTagList()
             .then((tags) => {
                 const tagNames = tags.map((tag: any) => tag.name);
                 setOptions(tagNames);
@@ -41,7 +41,7 @@ export default function CustomDropDown({
     const handleAddTag = async (tagName: string) => {
         try {
             await fetchAddAdminFaqTag(companyId, tagName);
-            const tags = await fetchAdminFaqTagList(companyId);
+            const tags = await fetchAdminFaqTagList();
             const tagNames = tags.map((tag: any) => tag.name);
             setOptions(tagNames);
             onChange(tagName);

@@ -28,7 +28,7 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
 
     const handleSubmit = async (data: { category: string; question: string; answer: string }) => {
         try {
-            const tags = await fetchAdminFaqTagList(companyId);
+            const tags = await fetchAdminFaqTagList();
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {

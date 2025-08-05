@@ -31,7 +31,7 @@ export default function ModalInput({
     }, [externalError]);
 
     const getModalConfig = () => {
-        // 레이아웃에 맞춰 4가지 모달 타입으로 분기하였습니다.
+        // 레이아웃에 맞춰 5가지 모달 타입으로 분기하였습니다.
         switch (modalType) {
             case 'token':
                 return {
@@ -76,6 +76,14 @@ export default function ModalInput({
                     placeholder: '비밀번호 입력',
                     buttonType: 'delete-data',
                     buttonLabel: '삭제',
+                };
+            case 'folder':
+                return {
+                    title: '폴더 생성',
+                    description: '생성할 폴더명을 입력해주세요.',
+                    placeholder: '폴더명 (ex.회사규정)',
+                    buttonType: 'default',
+                    buttonLabel: '생성',
                 };
             default:
                 throw new Error(`Unknown modalType: ${modalType}`);
@@ -173,6 +181,29 @@ export default function ModalInput({
             return;
         }
 
+        if (modalType === 'folder') {
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        setSuccessModal(true);
+                        setInputValue('');
+                        setError(false);
+                        setErrorMsg(undefined);
+                    } else {
+                        setError(true);
+                    }
+                } catch (e: any) {
+                    setError(true);
+                    setErrorMsg(e.message || '폴더 생성에 실패했습니다.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+            return;
+        }
+
         onClose();
     };
 
@@ -211,6 +242,7 @@ export default function ModalInput({
                         {error && modalType === 'token' && !errorMsg ? '유효한 토큰을 입력해 주세요' : ''}
                         {error && modalType === 'department' && !errorMsg ? '부서 등록에 실패했습니다' : ''}
                         {error && modalType === 'tag' && !errorMsg ? '태그 등록에 실패했습니다' : ''}
+                        {error && modalType === 'folder' && !errorMsg ? '폴더 생성에 실패했습니다' : ''}
                         {errorMsg || ''}
                     </span>
                     {config.subText && (
@@ -241,7 +273,9 @@ export default function ModalInput({
                                     ? '부서 등록 완료'
                                     : modalType === 'tag'
                                         ? '태그 등록 완료'
-                                        : ''
+                                        : modalType === 'folder'
+                                            ? '폴더 생성 완료'
+                                            : ''
                     }
                     description={
                         modalType === 'auth'
@@ -252,7 +286,9 @@ export default function ModalInput({
                                     ? '부서가 등록되었습니다.'
                                     : modalType === 'tag'
                                         ? '태그가 등록되었습니다.'
-                                        : ''
+                                        : modalType === 'folder'
+                                            ? '폴더가 생성되었습니다.'
+                                            : ''
                     }
                     footer={
                         <ModalButton
@@ -261,8 +297,8 @@ export default function ModalInput({
                             onClick={() => {
                                 setSuccessModal(false);
                                 onClose();
-                                // 2차인증 & 부서 등록 분기 설정하였습니다.
-                                if (modalType !== 'department' && modalType !== 'tag') {
+                                // 2차인증 & 부서 등록 & 폴더 생성 분기 설정하였습니다.
+                                if (modalType !== 'department' && modalType !== 'tag' && modalType !== 'folder') {
                                     router.push('/master/manage');
                                 }
                             }}
