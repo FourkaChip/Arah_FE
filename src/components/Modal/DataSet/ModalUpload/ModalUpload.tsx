@@ -60,7 +60,7 @@ export default function ModalUpload({
                         </div>
                         <textarea
                             className="textarea"
-                            placeholder="커밋 내용을 입력해 주세요."
+                            placeholder="변경사항을 입력해 주세요."
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             style={{marginTop: 12, height: 120}}

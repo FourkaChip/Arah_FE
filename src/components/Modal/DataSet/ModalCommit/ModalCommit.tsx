@@ -56,7 +56,7 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
                 <p className="modal-subtitle commit-modal">데이터셋의 변경사항을 확인할 수 있습니다.</p>
 
                 <div className="commit-message">
-                    <span>직전 버전 기준 커밋 메시지</span>
+                    <span>직전 버전 기준 변경사항</span>
                 </div>
                 <div className="commit-content">{commitMessage}</div>
 
