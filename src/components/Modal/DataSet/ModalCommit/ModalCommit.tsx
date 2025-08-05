@@ -1,12 +1,37 @@
+import {useState, useEffect} from "react";
 import "./ModalCommit.scss";
 import ModalButton from "@/components/Modal/Buttons/ModalButton";
+import {fetchModifiedPart} from "@/api/admin/feedback/datasetFetch";
 
 interface ModalCommitProps {
     onClose: () => void;
+    docId?: number;
 }
 
-export default function ModalCommit({ onClose }: ModalCommitProps) {
-    const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정. sakfjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkjdsakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfjdskafjkdsajfksdajfksjfkjsakjfksajfkjsdakfd";
+export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
+    const [modifiedContent, setModifiedContent] = useState<string>("");
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (docId) {
+            const loadModifiedPart = async () => {
+                setLoading(true);
+                try {
+                    const content = await fetchModifiedPart(docId);
+                    setModifiedContent(content || "변경사항이 없습니다.");
+                } catch (error) {
+                    console.error('변경사항 로딩 실패:', error);
+                    setModifiedContent("변경사항을 불러오는데 실패했습니다.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            loadModifiedPart();
+        }
+    }, [docId]);
+
+    // 더미 데이터 (docId가 없는 경우 사용)
+    const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정.";
 
     const addedLines = [
         "외부 저장매체 사용 시 사전 승인을 받아야 한다.",
@@ -40,12 +65,24 @@ export default function ModalCommit({ onClose }: ModalCommitProps) {
                 </div>
 
                 <div className="diff-box">
-                    {addedLines.map((line, idx) => (
-                        <div className="diff-line added" key={`add-${idx}`}>+ {line}</div>
-                    ))}
-                    {removedLines.map((line, idx) => (
-                        <div className="diff-line removed" key={`remove-${idx}`}>- {line}</div>
-                    ))}
+                    {loading ? (
+                        <div style={{textAlign: "center", padding: "20px"}}>
+                            변경사항을 불러오는 중...
+                        </div>
+                    ) : docId ? (
+                        <div className="diff-content">
+                            <pre>{modifiedContent}</pre>
+                        </div>
+                    ) : (
+                        <>
+                            {addedLines.map((line, idx) => (
+                                <div className="diff-line added" key={`add-${idx}`}>+ {line}</div>
+                            ))}
+                            {removedLines.map((line, idx) => (
+                                <div className="diff-line removed" key={`remove-${idx}`}>- {line}</div>
+                            ))}
+                        </>
+                    )}
                 </div>
 
                 <div className="modal-footer">

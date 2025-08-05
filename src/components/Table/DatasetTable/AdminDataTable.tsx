@@ -14,31 +14,15 @@ import React from "react";
 import ModalDataTrigger from "@/components/utils/ModalTrigger/ModalDataTrigger";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
-import {dummySubRows} from "@/constants/dummydata/DummySubRows";
 import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
 import ModalCommitTrigger from "@/components/utils/ModalTrigger/ModalCommitTrigger";
 import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
 import Pagination from "@/components/CustomPagination/Pagination";
 import {
     AdminDataTableRowData as RowData,
-    AdminDataTableSubRowData as SubRowData
 } from "@/types/tables";
-
-const defaultData: RowData[] = Array.from({length: 25}, (_, i) => ({
-    id: i + 1,
-    no: i + 1,
-    registeredAt: `2025/07/${(i % 30 + 1).toString().padStart(2, '0')}`,
-    updatedAt: `2025/07/${((i + 3) % 30 + 1).toString().padStart(2, '0')}`,
-    folderName: `폴더명 ${i + 1}`,
-    subRows: i % 2 === 0 ? [
-        {
-            versionId: 112 + i,
-            date: `2025/04/${(i % 30 + 1).toString().padStart(2, '0')}`,
-            name: `사용자명 정의방식 ${i + 1}`,
-            version: "1.0.2"
-        }
-    ] : undefined
-}));
+import {fetchFoldersByCompany, fetchVersionHistory} from "@/api/admin/feedback/datasetFetch";
+import {fetchCurrentUserInfo} from "@/api/auth/master";
 
 export default function AdminDataTable() {
 
@@ -49,11 +33,59 @@ export default function AdminDataTable() {
     const checkboxRef = useRef<HTMLInputElement>(null);
     const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-    // const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
 
-    const [data] = useState(() => defaultData);
+    const [data, setData] = useState<RowData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [companyId, setCompanyId] = useState<number>(1);
+
+    // 폴더별 문서 데이터를 저장하는 상태 추가
+    const [folderDocuments, setFolderDocuments] = useState<Record<number, any[]>>({});
+    const [loadingDocuments, setLoadingDocuments] = useState<Record<number, boolean>>({});
+
+    // 회사 ID 가져오기
+    useEffect(() => {
+        const getCompanyId = async () => {
+            try {
+                const userInfo = await fetchCurrentUserInfo();
+                if (userInfo.companyId || userInfo.company_id) {
+                    setCompanyId(userInfo.companyId ?? userInfo.company_id);
+                }
+            } catch {
+                setCompanyId(1);
+            }
+        };
+        getCompanyId();
+    }, []);
+
+    // 폴더 데이터 가져오기
+    useEffect(() => {
+        const loadFolders = async () => {
+            setLoading(true);
+            try {
+                const folders = await fetchFoldersByCompany();
+                console.log('받아온 폴더 데이터:', folders); // 디버깅용
+                setData(folders.map((folder: any, idx: number) => ({
+                    id: folder.folder_id.toString(), // string으로 변환
+                    no: idx + 1,
+                    registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                    updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                    folderName: folder.name,
+                    subRows: undefined
+                })));
+            } catch (error) {
+                console.error('폴더 데이터 로딩 실패:', error);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (companyId) {
+            loadFolders();
+        }
+    }, [companyId]);
 
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
@@ -145,18 +177,18 @@ export default function AdminDataTable() {
         {
             id: "expander",
             header: "상세보기",
-            cell: ({row}) =>
-                row.getCanExpand() ? (
+            cell: ({row}) => {
+                console.log('Expander cell, row.id:', row.id, 'row.original.id:', row.original.id); // 디버깅용
+                return (
                     <button
-                        onClick={() =>
-                            setExpandedRowId(expandedRowId === row.id ? null : row.id)
-                        }
+                        onClick={() => handleExpandFolder(row.original.id.toString())}
                     >
-                        {expandedRowId === row.id ? "▲" : "▼"}
+                        {expandedRowId === row.original.id.toString() ? "▲" : "▼"}
                     </button>
-                ) : null,
+                );
+            },
         },
-    ], [expandedRowId, paginatedData, selectedRowIds]);
+    ], [expandedRowId, paginatedData, selectedRowIds, folderDocuments, loadingDocuments]);
 
     const table = useReactTable({
         data: paginatedData,
@@ -177,6 +209,41 @@ export default function AdminDataTable() {
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
+    // 폴더 확장 시 문서 데이터 로드
+    const handleExpandFolder = async (folderId: string) => {
+        console.log('handleExpandFolder 호출됨, folderId:', folderId); // 디버깅용
+        const folderIdNum = Number(folderId);
+        console.log('변환된 folderIdNum:', folderIdNum); // 디버깅용
+
+        if (expandedRowId === folderId) {
+            setExpandedRowId(null);
+            return;
+        }
+
+        setExpandedRowId(folderId);
+
+        // 이미 로드된 데이터가 있으면 재로드하지 않음
+        if (folderDocuments[folderIdNum]) {
+            return;
+        }
+
+        setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: true }));
+
+        try {
+            console.log('fetchVersionHistory 호출, folder_id:', folderIdNum); // 디버깅용
+            const documents = await fetchVersionHistory(folderIdNum);
+            setFolderDocuments(prev => ({
+                ...prev,
+                [folderIdNum]: documents || []
+            }));
+        } catch (error) {
+            console.error(`폴더 ${folderIdNum} 문서 로딩 실패:`, error);
+            setFolderDocuments(prev => ({ ...prev, [folderIdNum]: [] }));
+        } finally {
+            setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: false }));
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -186,19 +253,9 @@ export default function AdminDataTable() {
                     <span>~</span>
                     <input type="date" className="date-picker" value={endDate}
                            onChange={e => setEndDate(e.target.value)}/>
-                    {/*<input type="text" className="search-input" placeholder="폴더 검색 input" />*/}
-                    {/*<CustomSearch*/}
-                    {/*    onSearch={setSearchValue}*/}
-                    {/*    // className={pathName === '/master/dept' ? 'wide-search' : ''}*/}
-                    {/*/>*/}
                     <CustomSearch
                         onSearch={handleSearch}
                     />
-                    {/*<button className="search-button">검색</button>*/}
-                    {/*<button className="button is-link" onClick={() => setOpen(true)}>*/}
-                    {/*    <img src="/AddAdmin.svg" alt="icon" className="icon-left" />*/}
-                    {/*    검색*/}
-                    {/*</button>*/}
                 </div>
                 <div className="action-buttons">
                     {/*<button className="create-folder">폴더 생성</button>*/}
@@ -213,108 +270,137 @@ export default function AdminDataTable() {
                 </div>
             </div>
             <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
-                <table className="tanstack-table">
-                    <thead>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <th key={header.id}>
-                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                    </thead>
-                    <tbody>
-                    {table.getRowModel().rows.length === 0 ? (
-                        <tr>
-                            <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
-                                검색 결과가 없습니다
-                            </td>
-                        </tr>
-                    ) : (
-                        table.getRowModel().rows.map(row => (
-                            <React.Fragment key={row.id}>
-                                <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                                <tr className="sub-table-row">
-                                    <td colSpan={table.getAllLeafColumns().length}>
-                                        <div
-                                            className={`sub-table-wrapper animated-wrapper ${expandedRowId === row.id ? 'open' : ''}`}
-                                            ref={(el) => {
-                                                subTableRefs.current[Number(row.id)] = el;
-                                            }}
-                                        >
-                                            <table className="sub-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>사용현황</th>
-                                                    <th>No.</th>
-                                                    <th>버전 등록일</th>
-                                                    <th>데이터셋명</th>
-                                                    <th>버전</th>
-                                                    <th>변경사항</th>
-                                                    <th>다운로드</th>
-                                                    <th>정보 수정</th>
-                                                    <th>삭제</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {dummySubRows.map((sub, idx) => (
-                                                    <tr key={sub.versionId}>
-                                                        <td><input type="radio" name={`use-${row.id}`}
-                                                                   defaultChecked={idx === 0}/></td>
-                                                        <td>{sub.versionId}</td>
-                                                        <td>{sub.date}</td>
-                                                        <td>{sub.name}</td>
-                                                        <td>{sub.version}</td>
-                                                        <td>
-                                                            {/*<button className="sub-btn">보기</button>*/}
-                                                            <ModalCommitTrigger/>
-                                                        </td>
-                                                        <td>
-                                                            <button className="sub-btn">다운로드</button>
-                                                        </td>
-                                                        <td>
-                                                            <button className="edit-icon">
-                                                                <FontAwesomeIcon icon={faPen}
-                                                                                 onClick={() => setOpenCommitModal(true)}
-                                                                                 style={{
-                                                                                     color: '#232D64',
-                                                                                     cursor: 'pointer',
-                                                                                     width: '14px',
-                                                                                     height: '14px'
-                                                                                 }}/>
-                                                            </button>
-                                                        </td>
-                                                        <td>
-                                                            <button className="delete-icon">
-                                                                <FontAwesomeIcon icon={faTrash}
-                                                                                 onClick={() => setOpenDeleteModal(true)}
-                                                                                 style={{
-                                                                                     color: 'red',
-                                                                                     cursor: 'pointer',
-                                                                                     width: '14px',
-                                                                                     height: '14px'
-                                                                                 }}/>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </React.Fragment>
-                        )))}
-                    </tbody>
-                </table>
+                {loading ? (
+                    <div style={{textAlign: "center", padding: "40px"}}>폴더 데이터를 불러오는 중...</div>
+                ) : (
+                    <table className="tanstack-table">
+                        <thead>
+                        {table.getHeaderGroups().map(headerGroup => (
+                            <tr key={headerGroup.id}>
+                                {headerGroup.headers.map(header => (
+                                    <th key={header.id}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </th>
+                                ))}
+                            </tr>
+                        ))}
+                        </thead>
+                        <tbody>
+                        {table.getRowModel().rows.length === 0 ? (
+                            <tr>
+                                <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
+                                    검색 결과가 없습니다
+                                </td>
+                            </tr>
+                        ) : (
+                            table.getRowModel().rows.map(row => {
+                                const folderId = Number(row.original.id);
+                                console.log('테이블 렌더링, row.original.id:', row.original.id, 'folderId:', folderId); // 디버깅용
+                                const documents = folderDocuments[folderId] || [];
+                                const isLoadingDocs = loadingDocuments[folderId];
+
+                                return (
+                                    <React.Fragment key={row.id}>
+                                        <tr className={expandedRowId === row.original.id.toString() ? "expanded active-row" : ""}>
+                                            {row.getVisibleCells().map(cell => (
+                                                <td key={cell.id}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="sub-table-row">
+                                            <td colSpan={table.getAllLeafColumns().length}>
+                                                <div
+                                                    className={`sub-table-wrapper animated-wrapper ${expandedRowId === row.original.id.toString() ? 'open' : ''}`}
+                                                    ref={(el) => {
+                                                        subTableRefs.current[folderId] = el;
+                                                    }}
+                                                >
+                                                    {isLoadingDocs ? (
+                                                        <div style={{textAlign: "center", padding: "20px"}}>
+                                                            문서 데이터를 불러오는 중...
+                                                        </div>
+                                                    ) : (
+                                                        <table className="sub-table">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>사용현황</th>
+                                                                <th>No.</th>
+                                                                <th>버전 등록일</th>
+                                                                <th>데이터셋명</th>
+                                                                <th>버전</th>
+                                                                <th>변경사항</th>
+                                                                <th>다운로드</th>
+                                                                <th>정보 수정</th>
+                                                                <th>삭제</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {documents.length === 0 ? (
+                                                                <tr>
+                                                                    <td colSpan={9} style={{textAlign: "center", padding: "20px"}}>
+                                                                        등록된 문서가 없습니다
+                                                                    </td>
+                                                                </tr>
+                                                            ) : (
+                                                                documents.map((doc, idx) => (
+                                                                    <tr key={doc.doc_id}>
+                                                                        <td>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`use-${row.id}`}
+                                                                                defaultChecked={doc.is_used || idx === 0}
+                                                                            />
+                                                                        </td>
+                                                                        <td>{idx + 1}</td>
+                                                                        <td>{doc.created_at?.slice(0, 10).replace(/-/g, '/') || ""}</td>
+                                                                        <td>{doc.title}</td>
+                                                                        <td>{doc.version}</td>
+                                                                        <td>
+                                                                            <ModalCommitTrigger docId={doc.doc_id} />
+                                                                        </td>
+                                                                        <td>
+                                                                            <button className="sub-btn">다운로드</button>
+                                                                        </td>
+                                                                        <td>
+                                                                            <button className="edit-icon">
+                                                                                <FontAwesomeIcon icon={faPen}
+                                                                                                 onClick={() => setOpenCommitModal(true)}
+                                                                                                 style={{
+                                                                                                     color: '#232D64',
+                                                                                                     cursor: 'pointer',
+                                                                                                     width: '14px',
+                                                                                                     height: '14px'
+                                                                                                 }}/>
+                                                                            </button>
+                                                                        </td>
+                                                                        <td>
+                                                                            <button className="delete-icon">
+                                                                                <FontAwesomeIcon icon={faTrash}
+                                                                                                 onClick={() => setOpenDeleteModal(true)}
+                                                                                                 style={{
+                                                                                                     color: 'red',
+                                                                                                     cursor: 'pointer',
+                                                                                                     width: '14px',
+                                                                                                     height: '14px'
+                                                                                                 }}/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            )}
+                                                            </tbody>
+                                                        </table>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </React.Fragment>
+                                );
+                            }))}
+                        </tbody>
+                    </table>
+                )}
                 {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination

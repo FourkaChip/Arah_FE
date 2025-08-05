@@ -61,7 +61,7 @@ export default function FaqAdminTable() {
 
     useEffect(() => {
         setLoading(true);
-        fetchAdminFaqList(companyId)
+        fetchAdminFaqList()
             .then((data) => {
                 setFaqData(data.map((faq: any, idx: number) => ({
                     id: faq.faq_id,
@@ -238,7 +238,7 @@ export default function FaqAdminTable() {
         setLoading(true);
         try {
             await fetchDeleteAdminFaq(deleteTargetId);
-            const data = await fetchAdminFaqList(companyId);
+            const data = await fetchAdminFaqList();
             setFaqData(data.map((faq: any, idx: number) => ({
                 id: faq.faq_id,
                 no: idx + 1,
@@ -260,7 +260,7 @@ export default function FaqAdminTable() {
         if (!editRow) return;
         setLoading(true);
         try {
-            const tags = await fetchAdminFaqTagList(companyId);
+            const tags = await fetchAdminFaqTagList();
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {
@@ -269,7 +269,7 @@ export default function FaqAdminTable() {
             }
             // fetchUpdateAdminFaq가 body로 데이터를 보내므로 FastAPI에서 DTO를 Body로 받아야 함!
             await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
-            const faqList = await fetchAdminFaqList(companyId);
+            const faqList = await fetchAdminFaqList();
             setFaqData(faqList.map((faq: any, idx: number) => ({
                 id: faq.faq_id,
                 no: idx + 1,
@@ -290,7 +290,7 @@ export default function FaqAdminTable() {
     const handleFaqAdded = async () => {
         setLoading(true);
         try {
-            const data = await fetchAdminFaqList(companyId);
+            const data = await fetchAdminFaqList();
             setFaqData(data.map((faq: any, idx: number) => ({
                 id: faq.faq_id,
                 no: idx + 1,

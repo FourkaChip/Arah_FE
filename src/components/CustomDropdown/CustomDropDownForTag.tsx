@@ -14,7 +14,7 @@ export default function CustomDropDownForTag({onChange, companyId}: Props) {
 
     useEffect(() => {
         setLoading(true);
-        fetchAdminFaqTagList(companyId)
+        fetchAdminFaqTagList()
             .then((tags) => {
                 const tagOptions = tags.map((tag: any) => ({
                     value: tag.name,
