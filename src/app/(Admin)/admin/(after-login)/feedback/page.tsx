@@ -1,5 +1,5 @@
 import './Feedback.scss';
-import FeedbackTable from "@/components/Table/FeedbackTable/FeedbackTable";
+import FeedbackTable from "@/components/table/feedbackTable/FeedbackTable";
 
 export default function FeedbackPage() {
     return (

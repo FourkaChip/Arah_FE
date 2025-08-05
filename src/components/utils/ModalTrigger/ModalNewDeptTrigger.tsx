@@ -3,7 +3,7 @@
 
 import {useState, useEffect} from 'react';
 import './ModalDeptTrigger.scss';
-import ModalInput from '@/components/Modal/ModalInput/ModalInput';
+import ModalInput from '@/components/modal/ModalInput/ModalInput';
 import {createDepartment, fetchCurrentUserInfo} from '@/api/auth/master';
 import {useQueryClient} from '@tanstack/react-query';
 

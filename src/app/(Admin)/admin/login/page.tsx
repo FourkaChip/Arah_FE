@@ -1,5 +1,5 @@
 import Image from "next/image";
-import LoginForm from "@/components/Login/LoginForm/LoginForm";
+import LoginForm from "@/components/login/LoginForm/LoginForm";
 import './LoginPage.scss';
 
 export default function AdminLoginPage() {

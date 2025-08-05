@@ -1,5 +1,5 @@
 import './Faq.scss';
-import FaqTable from "@/components/Table/FaqTable/FaqTable";
+import FaqTable from "@/components/table/faqTable/FaqTable";
 
 export default function FaqPage() {
     return (

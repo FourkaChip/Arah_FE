@@ -1,7 +1,7 @@
 'use client';
 
 import {useState} from 'react';
-import ModalFAQ from "@/components/Modal/ModalFAQ/ModalFAQ";
+import ModalFAQ from "@/components/modal/ModalFAQ/ModalFAQ";
 import './ModalFAQTrigger.scss';
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

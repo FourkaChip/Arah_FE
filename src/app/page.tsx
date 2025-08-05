@@ -1,5 +1,5 @@
 import styles from "./page.module.css";
-import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import ClientModalTrigger from "@/components/utils/ModalTrigger/ClientModalTrigger";
 
 export default function Home() {

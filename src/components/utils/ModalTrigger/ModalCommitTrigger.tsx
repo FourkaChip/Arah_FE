@@ -1,7 +1,7 @@
 'use client';
 
 import {useState} from 'react';
-import ModalCommit from '@/components/Modal/DataSet/ModalCommit/ModalCommit';
+import ModalCommit from '@/components/modal/DataSet/ModalCommit/ModalCommit';
 
 export default function ModalCommitTrigger() {
     const [isOpen, setIsOpen] = useState(false);

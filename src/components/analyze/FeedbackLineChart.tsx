@@ -22,7 +22,7 @@ import {
   generateWeeklyData,
   generateHourlyData
 } from '@/constants/dummydata/feedback';
-import CustomDropDownForPeriod from '@/components/CustomDropdown/CustomDropDownForPeriod';
+import CustomDropDownForPeriod from '@/components/customDropdown/CustomDropDownForPeriod';
 import './AnalyzeChart.scss';
 
 const FeedbackLineChart: React.FC = () => {

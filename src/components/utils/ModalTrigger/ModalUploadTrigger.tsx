@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
+import ModalUpload from "@/components/modal/DataSet/ModalUpload/ModalUpload";
 
 export default function ModalUploadTrigger({ buttonText, className }: { buttonText: string; className?: string }) {
     const [open, setOpen] = useState(false);

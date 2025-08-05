@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "@/styles/globals.scss";
-import "@/components/Modal/Buttons/ModalButton.scss";
+import "@/components/modal/Buttons/ModalButton.scss";
 import "./layout.scss";
-import Sidebar from "@/components/Sidebar/Sidebar";
-import Header from "@/components/Header/Header";
+import Sidebar from "@/components/sidebar/Sidebar";
+import Header from "@/components/header/Header";
 import ClientProviders from '@/utils/QueryClientProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 

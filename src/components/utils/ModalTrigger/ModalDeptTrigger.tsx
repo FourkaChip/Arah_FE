@@ -2,7 +2,7 @@
 "use client";
 
 import {useState, useCallback} from 'react';
-import ModalDepartment from '@/components/Modal/ModalDepartment/ModalDepartment';
+import ModalDepartment from '@/components/modal/ModalDepartment/ModalDepartment';
 import './ModalDeptTrigger.scss';
 
 export default function ModalDeptTrigger({buttonText}: { buttonText: string }) {

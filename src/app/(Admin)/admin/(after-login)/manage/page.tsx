@@ -1,5 +1,5 @@
 import './DataSetPage.scss';
-import AdminDataTable from "@/components/Table/DatasetTable/AdminDataTable";
+import AdminDataTable from "@/components/table/datasetTable/AdminDataTable";
 
 export default function AdminMainPage() {
     return (
