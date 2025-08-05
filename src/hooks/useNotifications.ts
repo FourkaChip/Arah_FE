@@ -56,7 +56,7 @@ export function useNotifications({
     // 탭 필터링
     if (filters.tab === '읽음') {
       result = result.filter(n => n.isRead);
-    } else if (filters.tab === '안읽음') {
+    } else if (filters.tab === '읽지 않음') {
       result = result.filter(n => !n.isRead);
     }
 
