@@ -12,6 +12,24 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
     const [modifiedContent, setModifiedContent] = useState<string>("");
     const [loading, setLoading] = useState(false);
 
+    // 모달 열릴 때 body 스크롤을 막기 위한 useEffect입니다. 차후 코드 리팩토링 시 컴포넌트 분리 예정
+    useEffect(() => {
+        const scrollY = window.scrollY;
+
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            window.scrollTo(0, scrollY);
+        };
+    }, []);
+
     useEffect(() => {
         if (docId) {
             const loadModifiedPart = async () => {

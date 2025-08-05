@@ -21,8 +21,17 @@ import Pagination from "@/components/CustomPagination/Pagination";
 import {
     AdminDataTableRowData as RowData,
 } from "@/types/tables";
-import {fetchFoldersByCompany, fetchVersionHistory} from "@/api/admin/feedback/datasetFetch";
+import {
+    fetchFoldersByCompany,
+    fetchVersionHistory,
+    fetchDeletePdf,
+    fetchCreateFolder,
+    fetchUploadPdf,
+    fetchDeleteFolder
+} from "@/api/admin/feedback/datasetFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
+import ModalInput from "@/components/Modal/ModalInput/ModalInput";
+import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 
 export default function AdminDataTable() {
 
@@ -40,11 +49,14 @@ export default function AdminDataTable() {
     const [loading, setLoading] = useState(true);
     const [companyId, setCompanyId] = useState<number>(1);
 
-    // 폴더별 문서 데이터를 저장하는 상태 추가
     const [folderDocuments, setFolderDocuments] = useState<Record<number, any[]>>({});
     const [loadingDocuments, setLoadingDocuments] = useState<Record<number, boolean>>({});
 
-    // 회사 ID 가져오기
+    const [deleteDocumentId, setDeleteDocumentId] = useState<number | null>(null);
+    const [openFolderModal, setOpenFolderModal] = useState(false);
+    const [openUploadModal, setOpenUploadModal] = useState(false);
+    const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+
     useEffect(() => {
         const getCompanyId = async () => {
             try {
@@ -59,15 +71,13 @@ export default function AdminDataTable() {
         getCompanyId();
     }, []);
 
-    // 폴더 데이터 가져오기
     useEffect(() => {
         const loadFolders = async () => {
             setLoading(true);
             try {
                 const folders = await fetchFoldersByCompany();
-                console.log('받아온 폴더 데이터:', folders); // 디버깅용
                 setData(folders.map((folder: any, idx: number) => ({
-                    id: folder.folder_id.toString(), // string으로 변환
+                    id: folder.folder_id.toString(),
                     no: idx + 1,
                     registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
                     updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
@@ -167,7 +177,10 @@ export default function AdminDataTable() {
             id: "add-dataset",
             header: "데이터셋 추가",
             cell: ({row}) => (
-                <button className={`button add-dataset-button ${expandedRowId === row.id ? "is-inverted" : ""}`}>
+                <button
+                    className={`button add-dataset-button ${expandedRowId === row.id ? "is-inverted" : ""}`}
+                    onClick={() => handleAddDatasetClick(Number(row.original.id))}
+                >
                     <span className="icon is-small">
                         <FontAwesomeIcon icon={faPlus}/>
                     </span>
@@ -178,7 +191,6 @@ export default function AdminDataTable() {
             id: "expander",
             header: "상세보기",
             cell: ({row}) => {
-                console.log('Expander cell, row.id:', row.id, 'row.original.id:', row.original.id); // 디버깅용
                 return (
                     <button
                         onClick={() => handleExpandFolder(row.original.id.toString())}
@@ -209,11 +221,8 @@ export default function AdminDataTable() {
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
-    // 폴더 확장 시 문서 데이터 로드
     const handleExpandFolder = async (folderId: string) => {
-        console.log('handleExpandFolder 호출됨, folderId:', folderId); // 디버깅용
         const folderIdNum = Number(folderId);
-        console.log('변환된 folderIdNum:', folderIdNum); // 디버깅용
 
         if (expandedRowId === folderId) {
             setExpandedRowId(null);
@@ -222,7 +231,6 @@ export default function AdminDataTable() {
 
         setExpandedRowId(folderId);
 
-        // 이미 로드된 데이터가 있으면 재로드하지 않음
         if (folderDocuments[folderIdNum]) {
             return;
         }
@@ -230,7 +238,6 @@ export default function AdminDataTable() {
         setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: true }));
 
         try {
-            console.log('fetchVersionHistory 호출, folder_id:', folderIdNum); // 디버깅용
             const documents = await fetchVersionHistory(folderIdNum);
             setFolderDocuments(prev => ({
                 ...prev,
@@ -241,6 +248,139 @@ export default function AdminDataTable() {
             setFolderDocuments(prev => ({ ...prev, [folderIdNum]: [] }));
         } finally {
             setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: false }));
+        }
+    };
+
+    const handleDeleteDocument = async () => {
+        if (deleteDocumentId === null) return;
+
+        setLoading(true);
+        try {
+            await fetchDeletePdf(deleteDocumentId);
+
+            const folderId = Object.keys(folderDocuments).find(id =>
+                folderDocuments[Number(id)].some(doc => doc.doc_id === deleteDocumentId)
+            );
+
+            if (folderId) {
+                const folderIdNum = Number(folderId);
+                const updatedDocuments = await fetchVersionHistory(folderIdNum);
+                setFolderDocuments(prev => ({
+                    ...prev,
+                    [folderIdNum]: updatedDocuments || []
+                }));
+            }
+
+            alert('문서가 성공적으로 삭제되었습니다.');
+        } catch (error) {
+            console.error('문서 삭제 실패:', error);
+            alert('문서 삭제에 실패했습니다.');
+        } finally {
+            setLoading(false);
+            setOpenDeleteModal(false);
+            setDeleteDocumentId(null);
+        }
+    };
+
+    const handleCreateFolder = async (folderName: string) => {
+        try {
+            await fetchCreateFolder(folderName, companyId);
+
+            const folders = await fetchFoldersByCompany();
+            setData(folders.map((folder: any, idx: number) => ({
+                id: folder.folder_id.toString(),
+                no: idx + 1,
+                registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                folderName: folder.name,
+                subRows: undefined
+            })));
+
+            return true;
+        } catch (error) {
+            console.error('폴더 생성 실패:', error);
+            throw error;
+        }
+    };
+
+    const handleUploadDataset = async (file: File, commitMessage: string) => {
+        if (!selectedFolderId) {
+            throw new Error('폴더가 선택되지 않았습니다.');
+        }
+
+        try {
+            const title = file.name.replace('.pdf', ''); // 파일명에서 확장자 제거
+            const version = '0.1.0';
+
+            const result = await fetchUploadPdf(
+                file,
+                title,
+                version,
+                selectedFolderId,
+                commitMessage
+            );
+
+            const updatedDocuments = await fetchVersionHistory(selectedFolderId);
+            setFolderDocuments(prev => ({
+                ...prev,
+                [selectedFolderId]: updatedDocuments || []
+            }));
+
+            return result;
+        } catch (error) {
+            console.error('데이터셋 업로드 실패:', error);
+            throw error;
+        }
+    };
+
+    const handleAddDatasetClick = (folderId: number) => {
+        setSelectedFolderId(folderId);
+        setOpenUploadModal(true);
+    };
+
+    const handleDeleteSelectedFolders = async () => {
+        const selectedFolderIds = Object.keys(selectedRowIds)
+            .filter(id => selectedRowIds[Number(id)])
+            .map(id => Number(id));
+
+        if (selectedFolderIds.length === 0) {
+            alert('삭제할 폴더를 선택해주세요.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await Promise.all(
+                selectedFolderIds.map(folderId => fetchDeleteFolder(folderId))
+            );
+
+            const folders = await fetchFoldersByCompany();
+            setData(folders.map((folder: any, idx: number) => ({
+                id: folder.folder_id.toString(),
+                no: idx + 1,
+                registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                folderName: folder.name,
+                subRows: undefined
+            })));
+
+            setSelectedRowIds({});
+
+            setFolderDocuments(prev => {
+                const newFolderDocuments = { ...prev };
+                selectedFolderIds.forEach(id => {
+                    delete newFolderDocuments[id];
+                });
+                return newFolderDocuments;
+            });
+
+            alert(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
+        } catch (error) {
+            console.error('폴더 삭제 실패:', error);
+            alert('폴더 삭제에 실패했습니다.');
+        } finally {
+            setLoading(false);
+            setOpenTopRowDeleteModal(false);
         }
     };
 
@@ -258,11 +398,12 @@ export default function AdminDataTable() {
                     />
                 </div>
                 <div className="action-buttons">
-                    {/*<button className="create-folder">폴더 생성</button>*/}
-                    <ModalDataTrigger buttonText="폴더 생성"/>
-                    {/*<button className="delete-folder">삭제</button>*/}
+                    <button className="create-folder" onClick={() => setOpenFolderModal(true)}>
+                        <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
+                        폴더 생성
+                    </button>
                     <button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>
-                        <span>삭제</span>
+                        <span>폴더 삭제</span>
                         <span className="icon is-small">
                         <i className="fas fa-times"></i>
                         </span>
@@ -295,7 +436,6 @@ export default function AdminDataTable() {
                         ) : (
                             table.getRowModel().rows.map(row => {
                                 const folderId = Number(row.original.id);
-                                console.log('테이블 렌더링, row.original.id:', row.original.id, 'folderId:', folderId); // 디버깅용
                                 const documents = folderDocuments[folderId] || [];
                                 const isLoadingDocs = loadingDocuments[folderId];
 
@@ -377,7 +517,10 @@ export default function AdminDataTable() {
                                                                         <td>
                                                                             <button className="delete-icon">
                                                                                 <FontAwesomeIcon icon={faTrash}
-                                                                                                 onClick={() => setOpenDeleteModal(true)}
+                                                                                                 onClick={() => {
+                                                                                                     setDeleteDocumentId(doc.doc_id);
+                                                                                                     setOpenDeleteModal(true);
+                                                                                                 }}
                                                                                                  style={{
                                                                                                      color: 'red',
                                                                                                      cursor: 'pointer',
@@ -411,13 +554,42 @@ export default function AdminDataTable() {
                 </div>
             </div>
             {openDeleteModal &&
-                <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+                <ModalDefault
+                    type="delete-data"
+                    label="선택한 문서를 삭제하시겠습니까?"
+                    onClose={() => {
+                        setOpenDeleteModal(false);
+                        setDeleteDocumentId(null);
+                    }}
+                    onSubmit={handleDeleteDocument}
+                />}
             {openTopRowDeleteModal &&
-                <ModalDefault type="delete-data" label="선택한 폴더를 삭제하시겠습니까?"
-                              onClose={() => setOpenTopRowDeleteModal(false)}/>}
+                <ModalDefault
+                    type="delete-data"
+                    label="선택한 폴더를 삭제하시겠습니까?"
+                    onClose={() => setOpenTopRowDeleteModal(false)}
+                    onSubmit={handleDeleteSelectedFolders}
+                />}
             {/* 현재는 따로 파일 props를 받는 로직이 없기 때문에, 차후 API 연결 후 DB 조회가 성립되면 ModalUpload와 연계하여 커밋 수정을 구현할 예정입니다. */}
             {openCommitModal &&
                 <ModalUpload onClose={() => setOpenCommitModal(false)}/>}
+            {openFolderModal && (
+                <ModalInput
+                    modalType="folder"
+                    onClose={() => setOpenFolderModal(false)}
+                    onSubmit={handleCreateFolder}
+                />
+            )}
+            {openUploadModal && (
+                <ModalUpload
+                    onClose={() => {
+                        setOpenUploadModal(false);
+                        setSelectedFolderId(null);
+                    }}
+                    folderId={selectedFolderId}
+                    onSubmit={handleUploadDataset}
+                />
+            )}
         </>
     );
 }
