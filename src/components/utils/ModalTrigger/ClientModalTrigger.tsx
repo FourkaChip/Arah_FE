@@ -2,7 +2,7 @@
 'use client';
 
 import {useState} from 'react';
-import ModalDefault from "@/components/Modal/ModalDefault/ModalDefault";
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {ClientModalTriggerProps} from "@/types/modals";
 
 export default function ClientModalTrigger({

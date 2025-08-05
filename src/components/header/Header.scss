@@ -1,0 +1,60 @@
+@use "bulma/sass/utilities" as *;
+@use "bulma/sass/elements/button" as *;
+@use "bulma/sass/components/navbar" as *;
+
+// 헤더 로고 크기 조정
+.navbar-brand {
+  .navbar-item {
+    padding: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+
+    img {
+      height: 60px !important;
+      width: auto !important;
+      max-height: none !important; // Bulma의 기본 max-height: 3rem 제거
+    }
+  }
+}
+
+// is-primary 클래스에 대한 추가 설정
+.navbar.is-primary .navbar-brand .navbar-item {
+  padding: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+// 버튼 hover 스타일
+.button:hover,
+.button.has-text-link:hover,
+.button.is-hovered {
+  color: #232D64 !important;
+  font-weight: 600 !important;
+  transform: translateY(-1px) !important;
+}
+
+// 알림 버튼 스타일
+.notification-button {
+  position: relative !important;
+  cursor: pointer;
+
+
+  .notification-badge {
+    position: absolute;
+    top: -10px;
+    right: -0px;
+    background: #2E70E8;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import ChatbotSlider from '@/components/Slider/ChatbotSlider';
+import ChatbotSlider from '@/components/slider/ChatbotSlider';
 import { SLIDER_CONFIG, SLIDER_TEXTS } from '@/constants/sliderConfig';
 import type { SliderSettings } from '@/types/slider';
 import './Ara.scss';

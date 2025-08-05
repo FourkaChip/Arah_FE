@@ -1,6 +1,6 @@
 // 관리자 관리 페이지입니다.
 import './ManageAdmin.scss';
-import MasterAdminTable from "@/components/Table/AdminManageTable/AdminManageTable";
+import MasterAdminTable from "@/components/table/adminManageTable/AdminManageTable";
 
 export default function ManageAdminPage() {
     return (

@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import CustomDropDownForNoti from "@/components/CustomDropdown/CustomDropDownForNoti";
-import NotiTabs from "@/components/Tabs/NotiTabs";
-import Pagination from "@/components/CustomPagination/Pagination";
+import CustomDropDownForNoti from "@/components/customDropdown/CustomDropDownForNoti";
+import NotiTabs from "@/components/tabs/NotiTabs";
+import Pagination from "@/components/customPagination/Pagination";
 import NotificationList from './NotificationList';
 import MarkAllReadButton from './MarkAllReadButton';
 import { useNotificationContext } from '@/contexts/NotificationContext';

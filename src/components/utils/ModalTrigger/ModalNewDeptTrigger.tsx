@@ -3,9 +3,10 @@
 
 import {useState, useEffect} from 'react';
 import './ModalDeptTrigger.scss';
-import ModalInput from '@/components/Modal/ModalInput/ModalInput';
+import ModalInput from '@/components/modal/ModalInput/ModalInput';
 import {createDepartment, fetchCurrentUserInfo} from '@/api/auth/master';
 import {useQueryClient} from '@tanstack/react-query';
+import Image from 'next/image';
 
 export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }) {
     const [open, setOpen] = useState(false);
@@ -67,7 +68,7 @@ export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }
                 }}
                 disabled={isLoading}
             >
-                <img src="/AddAdmin.svg" alt="icon" className="icon-left"/>
+                <Image src="/AddAdmin.svg" alt="icon" className="icon-left"/>
                 {buttonText}
             </button>
             {open && (

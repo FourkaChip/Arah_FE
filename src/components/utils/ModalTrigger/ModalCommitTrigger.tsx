@@ -1,7 +1,7 @@
 'use client';
 
 import {useState} from 'react';
-import ModalCommit from '@/components/Modal/DataSet/ModalCommit/ModalCommit';
+import ModalCommit from '@/components/modal/DataSet/ModalCommit/ModalCommit';
 import {ModalCommitTriggerProps} from "@/types/dataset";
 
 export default function ModalCommitTrigger({ docId }: ModalCommitTriggerProps) {

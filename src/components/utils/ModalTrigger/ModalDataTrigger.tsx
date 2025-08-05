@@ -3,7 +3,7 @@
 
 import {useState} from 'react';
 import './ModalDeptTrigger.scss';
-import ModalUpload from "@/components/Modal/DataSet/ModalUpload/ModalUpload";
+import ModalUpload from "@/components/modal/DataSet/ModalUpload/ModalUpload";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 

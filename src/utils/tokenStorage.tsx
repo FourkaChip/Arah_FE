@@ -4,20 +4,20 @@ export const ACCESS_TOKEN_KEY = 'access_token';
 
 export const saveRefreshToken = (token: string) => {
     if (typeof window !== "undefined") {
-        localStorage.setItem(REFRESH_TOKEN_KEY, token);
+        sessionStorage.setItem(REFRESH_TOKEN_KEY, token);
     }
 };
 
 export const getRefreshToken = () => {
     if (typeof window !== "undefined") {
-        return localStorage.getItem(REFRESH_TOKEN_KEY);
+        return sessionStorage.getItem(REFRESH_TOKEN_KEY);
     }
     return null;
 };
 
 export const removeRefreshToken = () => {
     if (typeof window !== "undefined") {
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     }
 };
 
