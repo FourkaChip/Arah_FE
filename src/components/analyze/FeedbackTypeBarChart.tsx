@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo} from 'react';
 import {
   BarChart,
   Bar,
@@ -11,41 +11,27 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import dayjs from 'dayjs';
 import { DateRange } from '@/types/analyze';
 import { aggregateFeedbackTypeData } from '@/constants/dummydata/feedbackTypes';
+import useDefaultDateRange from '@/hooks/useDefaultDateRange';  
 import './AnalyzeChart.scss';
 
 const FeedbackTypeBarChart: React.FC = () => {
-  // 파스텔 톤 색상 배열 - 이미지와 유사한 부드러운 색상
   const COLORS = ['#FFB3C6', '#A8D8EA', '#C8A8E9', '#FFCC9C', '#F5E6A3'];
 
-  // 초기값을 고정값으로 설정
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: '2024-01-01',
-    endDate: '2024-01-31'
-  });
+  const initialRange = useDefaultDateRange();
+  const [dateRange, setDateRange] = useState<DateRange>(initialRange);
 
-  // 클라이언트에서만 현재 날짜 설정
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDateRange({
-        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
-        endDate: dayjs().format('YYYY-MM-DD')
-      });
-    }
-  }, []);
 
-  // 선택한 기간에 따른 피드백 유형 데이터 계산
+
   const feedbackTypeData = useMemo(() => {
-    return aggregateFeedbackTypeData(dateRange.startDate, dateRange.endDate);
-  }, [dateRange.startDate, dateRange.endDate]);
+  return aggregateFeedbackTypeData(dateRange.startDate, dateRange.endDate);
+}, [dateRange.startDate, dateRange.endDate]);
+
+
 
   const handleDateChange = (field: keyof DateRange, value: string) => {
-    setDateRange(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setDateRange(prev => ({ ...prev, [field]: value }));
   };
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
@@ -125,4 +111,4 @@ const FeedbackTypeBarChart: React.FC = () => {
   );
 };
 
-export default FeedbackTypeBarChart; 
+export default FeedbackTypeBarChart;
