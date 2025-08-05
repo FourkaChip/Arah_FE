@@ -6,6 +6,8 @@ import './Header.scss';
 import { useRouter, usePathname } from 'next/navigation';
 import { removeRefreshToken } from '@/utils/tokenStorage';
 import { useAuthStore } from '@/store/auth.store';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const Header = () => {
     const router = useRouter();
@@ -14,7 +16,6 @@ const Header = () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const isMaster = pathname.startsWith('/master');
-
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const notificationButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -39,7 +40,6 @@ const Header = () => {
             router.push('/');
         } catch (error) {
             alert('로그아웃 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-
             if (confirm('계속해서 로그아웃하시겠습니까?')) {
                 try {
                     if (typeof window !== 'undefined') {
@@ -61,9 +61,14 @@ const Header = () => {
         <>
             <nav className="navbar is-white" role="navigation" aria-label="main navigation">
                 <div className="navbar-brand">
-                    <a className="navbar-item" href="#">
-                        <img className="navbar-item-img" src="/kaef.svg" alt="Logo" />
-                    </a>
+                    <div className="navbar-item">
+                        <Image
+                            src="/kaef.svg"
+                            alt="Logo"
+                            width={500}
+                            height={160}
+                        />
+                    </div>
                 </div>
 
                 <div id="mainNavbar" className="navbar-menu">
@@ -106,7 +111,7 @@ const Header = () => {
                     </div>
                 </div>
             </nav>
-            {/* admin에서만 NotificationModal이 렌더링됩니다. */}
+
             {!isMaster && (
                 <NotificationModal
                     isOpen={isNotificationModalOpen}

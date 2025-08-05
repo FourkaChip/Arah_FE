@@ -1,30 +1,17 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo} from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import dayjs from 'dayjs';
 import { DateRange } from '@/types/analyze';
 import { aggregateSatisfactionData } from '@/constants/dummydata/satisfaction';
+import useDefaultDateRange from '@/hooks/useDefaultDateRange';  
 import './AnalyzeChart.scss';
 
 const SatisfactionDonutChart: React.FC = () => {
   const COLORS = ['#A8D8EA', '#FF9AA2'];
 
-  // 초기값을 고정값으로 설정
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: '2024-01-01',
-    endDate: '2024-01-31'
-  });
-
-  // 클라이언트에서만 현재 날짜 설정
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDateRange({
-        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
-        endDate: dayjs().format('YYYY-MM-DD')
-      });
-    }
-  }, []);
+  const initialRange = useDefaultDateRange();
+  const [dateRange, setDateRange] = useState<DateRange>(initialRange);
 
   // 선택한 기간에 따른 만족도 데이터 계산
   const satisfactionData = useMemo(() => {

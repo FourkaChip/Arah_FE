@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo} from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import dayjs from 'dayjs';
 import { DateRange } from '@/types/analyze';
 import { aggregateKeywordData } from '@/constants/dummydata/keywords';
+import useDefaultDateRange from '@/hooks/useDefaultDateRange';  
 import './AnalyzeChart.scss';
 
 const KeywordDonutChart: React.FC = () => {
@@ -21,26 +21,15 @@ const KeywordDonutChart: React.FC = () => {
     return keywordColors[keywordName] || '#D1F2A5'; // 기본 색상
   };
 
-  // 초기값을 고정값으로 설정
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: '2024-01-01',
-    endDate: '2024-01-31'
-  });
+  const initialRange = useDefaultDateRange();
+  const [dateRange, setDateRange] = useState<DateRange>(initialRange);
 
-  // 클라이언트에서만 현재 날짜 설정
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDateRange({
-        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
-        endDate: dayjs().format('YYYY-MM-DD')
-      });
-    }
-  }, []);
 
-  // 선택한 기간에 따른 키워드 데이터 계산
   const keywordData = useMemo(() => {
-    return aggregateKeywordData(dateRange.startDate, dateRange.endDate);
-  }, [dateRange.startDate, dateRange.endDate]);
+  return aggregateKeywordData(dateRange.startDate, dateRange.endDate);
+}, [dateRange.startDate, dateRange.endDate]);
+
+
 
   const handleDateChange = (field: keyof DateRange, value: string) => {
     setDateRange(prev => ({
