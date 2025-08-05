@@ -30,23 +30,42 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
         }
     }, [docId]);
 
-    // 더미 데이터 (docId가 없는 경우 사용)
+    const parseDiffContent = (content: string) => {
+        if (!content) return { addedLines: [], removedLines: [] };
+
+        const lines = content.split('\n');
+        const addedLines: string[] = [];
+        const removedLines: string[] = [];
+
+        lines.forEach(line => {
+            if (line.startsWith('+')) {
+                addedLines.push(line.substring(1));
+            } else if (line.startsWith('-')) {
+                removedLines.push(line.substring(1));
+            }
+        });
+
+        return { addedLines, removedLines };
+    };
+
+    const { addedLines, removedLines } = docId ? parseDiffContent(modifiedContent) : {
+        addedLines: [
+            "외부 저장매체 사용 시 사전 승인을 받아야 한다.",
+            "점심시간은 12:00~13:00",
+            "재택근무자는 매일 오전 10시까지 업무 시작 보고를 완료해야 함",
+            "연차 신청은 최소 3일 전에 해야 한다.",
+        ],
+        removedLines: [
+            "점심시간은 11:30~13:00",
+            "연차 신청은 최소 7일 전에 해야 한다.",
+            "유연근무제는 특별 승인된 팀에 한해 적용됨",
+            "복장은 평일 모두 정장 착용을 원칙으로 한다.",
+            "사내 시스템 로그인 시 OTP 인증을 필수로 한다.",
+        ]
+    };
+
+    // 더미 데이터는 docId가 없는 경우 사용합니다.
     const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정.";
-
-    const addedLines = [
-        "외부 저장매체 사용 시 사전 승인을 받아야 한다.",
-        "점심시간은 12:00~13:00",
-        "재택근무자는 매일 오전 10시까지 업무 시작 보고를 완료해야 함",
-        "연차 신청은 최소 3일 전에 해야 한다.",
-    ];
-
-    const removedLines = [
-        "점심시간은 11:30~13:00",
-        "연차 신청은 최소 7일 전에 해야 한다.",
-        "유연근무제는 특별 승인된 팀에 한해 적용됨",
-        "복장은 평일 모두 정장 착용을 원칙으로 한다.",
-        "사내 시스템 로그인 시 OTP 인증을 필수로 한다.",
-    ];
 
     return (
         <div className="modal-window commit-modal">
@@ -64,24 +83,49 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
                     <p><strong>현재 사용 중인 <b>버전</b></strong><span>과의 차이 비교</span></p>
                 </div>
 
-                <div className="diff-box">
+                <div className="diff-container">
                     {loading ? (
-                        <div style={{textAlign: "center", padding: "20px"}}>
+                        <div className="loading-message">
                             변경사항을 불러오는 중...
                         </div>
-                    ) : docId ? (
-                        <div className="diff-content">
-                            <pre>{modifiedContent}</pre>
-                        </div>
                     ) : (
-                        <>
-                            {addedLines.map((line, idx) => (
-                                <div className="diff-line added" key={`add-${idx}`}>+ {line}</div>
-                            ))}
-                            {removedLines.map((line, idx) => (
-                                <div className="diff-line removed" key={`remove-${idx}`}>- {line}</div>
-                            ))}
-                        </>
+                        <div className="diff-columns">
+                            <div className="diff-column added-column">
+                                <div className="diff-header added-header">
+                                    <span className="diff-icon">+</span>
+                                    추가된 내용
+                                </div>
+                                <div className="diff-content added-content">
+                                    {addedLines.length === 0 ? (
+                                        <div className="empty-message">추가된 내용이 없습니다</div>
+                                    ) : (
+                                        addedLines.map((line, index) => (
+                                            <div key={index} className="diff-line">
+                                                {line}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="diff-column removed-column">
+                                <div className="diff-header removed-header">
+                                    <span className="diff-icon">-</span>
+                                    삭제된 내용
+                                </div>
+                                <div className="diff-content removed-content">
+                                    {removedLines.length === 0 ? (
+                                        <div className="empty-message">삭제된 내용이 없습니다</div>
+                                    ) : (
+                                        removedLines.map((line, index) => (
+                                            <div key={index} className="diff-line">
+                                                {line}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
 
