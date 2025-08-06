@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { removeRefreshToken } from '@/utils/tokenStorage';
 import { useAuthStore } from '@/store/auth.store';
 import Image from 'next/image';
+import ModalBotTest from '../modal/BotTest/ModalBotTest';
 import Link from 'next/link';
 
 const Header = () => {
@@ -18,6 +19,7 @@ const Header = () => {
     const isMaster = pathname.startsWith('/master');
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const notificationButtonRef = useRef<HTMLButtonElement>(null);
+    const [isBotTestModalOpen, setIsBotTestModalOpen] = useState(false);
 
     let unreadCount = 0;
     if (!isMaster) {
@@ -96,7 +98,7 @@ const Header = () => {
                                                 <span className="notification-badge">{unreadCount}</span>
                                             )}
                                         </button>
-                                        <a className="button is-white has-text-link">봇테스트</a>
+                                        <button className="button is-white has-text-link" onClick={() => setIsBotTestModalOpen(true)}>봇테스트</button>
                                         <a
                                             className="button is-white has-text-grey-light"
                                             onClick={isLoggingOut ? undefined : handleLogout}
@@ -119,6 +121,9 @@ const Header = () => {
                     maxItems={5}
                     buttonRef={notificationButtonRef}
                 />
+            )}
+            {isBotTestModalOpen && (
+                <ModalBotTest onClose={() => setIsBotTestModalOpen(false)} />
             )}
         </>
     );
