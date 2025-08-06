@@ -200,6 +200,13 @@ export default function LoginForm() {
         handleLogin();
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleLogin();
+        }
+    };
+
     return (
         <>
             <form className="login-form" onSubmit={handleFormSubmit}>
@@ -214,6 +221,7 @@ export default function LoginForm() {
                             value={companyName}
                             className="login-form-input"
                             onChange={handleCompanyInputChange}
+                            onKeyDown={handleKeyDown}
                         />
                         {showSuggestions && suggestions.length > 0 && (
                             <ul className="company-suggestion-dropdown">
@@ -240,7 +248,9 @@ export default function LoginForm() {
                         placeholder="이메일을 입력해 주세요."
                         value={email}
                         className="login-form-input"
-                        onChange={(e) => setEmail(e.target.value)}/>
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
                 </label>
 
                 <label className="login-form-label">
@@ -255,7 +265,9 @@ export default function LoginForm() {
                         onChange={(e) => {
                             setPassword(e.target.value);
                             setPasswordError(false);
-                        }}/>
+                        }}
+                        onKeyDown={handleKeyDown}
+                    />
                     {passwordError && (
                         <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
                     )}
