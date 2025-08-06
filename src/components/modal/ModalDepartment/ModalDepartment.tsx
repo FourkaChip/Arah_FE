@@ -1,5 +1,5 @@
 "use client";
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import {createPortal} from 'react-dom';
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
@@ -27,13 +27,75 @@ export default function ModalDepartment({
     const [initialLoading, setInitialLoading] = useState(true);
     const queryClient = useQueryClient();
 
-    const handleErrorMessage = (message: string, error?: unknown) => {
-        setErrorMsg(message);
-    };
+    const initializedFromDefaultUser = useRef(false);
 
-    // defaultUser가 있으면 바로 부서 선택 단계로 진입하도록 구현했습니다.
+    // useCallback으로 함수들을 메모이제이션하여 불필요한 리렌더링 방지
+    const handleErrorMessage = useCallback((message: string, error?: unknown) => {
+        setErrorMsg(message);
+    }, []);
+
+    const handleDepartmentClick = useCallback((user: any) => {
+        setSelectedUser(user);
+        setChecked(user.departments ? user.departments.split(',') : []);
+        setStep('select');
+    }, []);
+
+    const toggleDepartment = useCallback((dept: string) => {
+        setChecked(prev =>
+            prev.includes(dept) ? prev.filter(d => d !== dept) : [...prev, dept]
+        );
+    }, []);
+
+    // fetchUserInfo 함수도 useCallback으로 최적화
+    const fetchUserInfo = useCallback(async (email: string) => {
+        if (currentUserCompanyId === null) {
+            handleErrorMessage('회사 정보를 가져올 수 없습니다. 다시 로그인해 주세요.');
+            return;
+        }
+
+        setLoading(true);
+        setErrorMsg('');
+        try {
+            const result = await fetchUserInfoByEmail(email, currentUserCompanyId);
+
+            if (result.role !== 'USER') {
+                handleErrorMessage('이미 관리자이거나 마스터인 사용자는 추가할 수 없습니다.');
+                return;
+            }
+
+            if (users.some(u => u.email === email)) {
+                handleErrorMessage('이미 목록에 있는 사용자입니다.');
+            } else {
+                setUsers(prevUsers => [
+                    ...prevUsers,
+                    {
+                        id: email,
+                        name: result.name,
+                        departments: (result.AdminDepartments || []).join(','),
+                        email: email,
+                        userId: result.userId,
+                        companyId: result.companyId
+                    }
+                ]);
+                setEmailInput('');
+            }
+        } catch (e: any) {
+            handleErrorMessage(e.message || '사용자 정보를 불러올 수 없습니다.', e);
+        } finally {
+            setLoading(false);
+        }
+    }, [currentUserCompanyId, users, handleErrorMessage]);
+
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && emailInput && !loading && currentUserCompanyId !== null) {
+            fetchUserInfo(emailInput);
+        }
+    }, [emailInput, loading, currentUserCompanyId, fetchUserInfo]);
+
     useEffect(() => {
-        if (defaultUser) {
+        if (defaultUser && !initializedFromDefaultUser.current) {
+            initializedFromDefaultUser.current = true;
+
             setSelectedUser(defaultUser);
             setChecked(
                 Array.isArray(defaultUser.adminDepartments)
@@ -42,7 +104,7 @@ export default function ModalDepartment({
             );
             setStep('select');
             setInitialLoading(false);
-        } else {
+        } else if (!defaultUser) {
             const loadCurrentUserInfo = async () => {
                 setInitialLoading(true);
                 try {
@@ -60,69 +122,9 @@ export default function ModalDepartment({
             };
             loadCurrentUserInfo();
         }
-    }, [defaultUser]);
+    }, [defaultUser, handleErrorMessage]);
 
-    const handleDepartmentClick = (user: any) => {
-        setSelectedUser(user);
-        setChecked(user.departments ? user.departments.split(',') : []);
-        setStep('select');
-    };
-
-    const toggleDepartment = (dept: string) => {
-        setChecked(prev =>
-            prev.includes(dept) ? prev.filter(d => d !== dept) : [...prev, dept]
-        );
-    };
-
-    // 이메일로 사용자 정보 조회 후 목록에 추가합니다.
-    const fetchUserInfo = async (email: string) => {
-        if (currentUserCompanyId === null) {
-            handleErrorMessage('회사 정보를 가져올 수 없습니다. 다시 로그인해 주세요.');
-            return;
-        }
-
-        setLoading(true);
-        setErrorMsg('');
-        try {
-            // 현재 사용자의 회사 ID를 전달하여 같은 회사 사용자인지 확인합니다.
-            const result = await fetchUserInfoByEmail(email, currentUserCompanyId);
-
-            // role이 "USER"인 경우에만 사용자가 추가됩니다.
-            if (result.role !== 'USER') {
-                handleErrorMessage('이미 관리자이거나 마스터인 사용자는 추가할 수 없습니다.');
-                return;
-            }
-
-            // 이미 목록에 있다면 추가하지 않고 에러 메시지를 띄웁니다.
-            if (users.some(u => u.email === email)) {
-                handleErrorMessage('이미 목록에 있는 사용자입니다.');
-            } else {
-                setUsers([
-                    ...users,
-                    {
-                        id: email,
-                        name: result.name,
-                        departments: (result.AdminDepartments || []).join(','),
-                        email: email,
-                        userId: result.userId,
-                        companyId: result.companyId
-                    }
-                ]);
-                setEmailInput('');
-            }
-        } catch (e: any) {
-            handleErrorMessage(e.message || '사용자 정보를 불러올 수 없습니다.', e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && emailInput && !loading && currentUserCompanyId !== null) {
-            fetchUserInfo(emailInput);
-        }
-    };
-
+    // 부서 목록 로드를 별도 useEffect로 분리
     useEffect(() => {
         if (step === 'select') {
             fetchDepartmentList()
@@ -131,8 +133,9 @@ export default function ModalDepartment({
         }
     }, [step]);
 
-    const handleConfirmDepartment = async () => {
+    const handleConfirmDepartment = useCallback(async () => {
         if (!selectedUser) return;
+
         const selectedDeptNames = departmentList
             .filter(dept => checked.includes(dept.name))
             .map(dept => dept.name);
@@ -156,8 +159,8 @@ export default function ModalDepartment({
             return;
         }
 
-        setUsers(users =>
-            users.map(u =>
+        setUsers(prevUsers =>
+            prevUsers.map(u =>
                 u.email === selectedUser.email
                     ? {...u, departments: selectedDeptNames.join(','), selectedDepartments: [...checked]}
                     : u
@@ -167,9 +170,9 @@ export default function ModalDepartment({
         setStep('list');
         setSelectedUser(null);
         setChecked([]);
-    };
+    }, [selectedUser, departmentList, checked, defaultUser, queryClient, onClose]);
 
-    const columns: GridColDef[] = [
+    const columns: GridColDef[] = useMemo(() => [
         {field: 'name', headerName: '이름', flex: 1, resizable: false},
         {
             field: 'departments',
@@ -178,10 +181,10 @@ export default function ModalDepartment({
             resizable: false,
             renderCell: (params) => (
                 <span>
-          {params.row.selectedDepartments && params.row.selectedDepartments.length > 0
-              ? params.row.selectedDepartments.join(', ')
-              : params.row.departments}
-        </span>
+                    {params.row.selectedDepartments && params.row.selectedDepartments.length > 0
+                        ? params.row.selectedDepartments.join(', ')
+                        : params.row.departments}
+                </span>
             )
         },
         {
@@ -196,7 +199,7 @@ export default function ModalDepartment({
             width: 100,
             resizable: false,
         },
-    ];
+    ], [handleDepartmentClick]);
 
     return typeof window !== 'undefined'
         ? createPortal(

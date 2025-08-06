@@ -4,15 +4,24 @@
 import {QueryClientProvider, QueryClient} from '@tanstack/react-query';
 import {ReactNode, useState, useEffect} from 'react';
 import {useAuthStore} from "@/store/auth.store";
-import {getRefreshToken, removeRefreshToken} from "@/utils/tokenStorage";
+import {getRefreshToken, removeRefreshToken, getAccessToken} from "@/utils/tokenStorage";
 
 export default function ClientProviders({children}: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient());
     const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
     useEffect(() => {
+        // 먼저 sessionStorage에서 accessToken 복원 시도
+        const storedAccessToken = getAccessToken();
+        if (storedAccessToken) {
+            setAccessToken(storedAccessToken);
+            return;
+        }
+
+        // accessToken이 없으면 refreshToken으로 재발급 시도
         const refreshToken = getRefreshToken();
         if (!refreshToken) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/reissue`, {
             method: 'POST',
             headers: {

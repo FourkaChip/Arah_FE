@@ -12,16 +12,15 @@ export const fetchUploadPdf = async (
 ) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title.toString());
-    formData.append('version', version.toString());
+    formData.append('title', title);
+    formData.append('version', version);
     formData.append('folder_id', folder_id.toString());
-    formData.append('commit_message', commit_message.toString());
+    formData.append('commit_message', commit_message);
 
     const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/documents/pdf/upload`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/pdf/upload`,
         {
             method: 'POST',
-            // headers: {'Content-Type': 'multipart/form-data'},
             body: formData,
         }
     );
@@ -36,7 +35,6 @@ export const fetchUpdatePdf = async (doc_id: number, title: string) => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/pdf/update`,
         {
             method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({doc_id, title}),
         }
     );
@@ -79,7 +77,6 @@ export const fetchDeletePdf = async (doc_id: number) => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/pdf/delete`,
         {
             method: 'DELETE',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({doc_id}),
         }
     );
@@ -94,7 +91,6 @@ export const fetchChangeMainDocument = async (doc_id: number, folder_id: number)
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/change/main`,
         {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({doc_id, folder_id}),
         }
     );
@@ -123,7 +119,6 @@ export const fetchCreateFolder = async (name: string, company_id: number) => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/folders/upload`,
         {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, company_id}),
         }
     );
@@ -138,7 +133,6 @@ export const fetchDeleteFolder = async (folder_id: number) => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/folders/delete`,
         {
             method: 'DELETE',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({folder_id}),
         }
     );
@@ -153,7 +147,6 @@ export const fetchUpdateFolder = async (folder_id: number, name: string) => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/folders/update`,
         {
             method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({folder_id, name}),
         }
     );

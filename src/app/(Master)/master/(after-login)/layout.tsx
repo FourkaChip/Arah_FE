@@ -8,7 +8,7 @@ import ClientProviders from '@/utils/QueryClientProvider';
 
 // ===== 메타데이터 설정 =====
 export const metadata: Metadata = {
-  title: 'FourKa',
+  title: '마스터 페이지',
   description: 'FourKa Application',
 };
 
