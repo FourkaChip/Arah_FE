@@ -14,6 +14,7 @@ export default function ModalInput({
                                        onClose,
                                        onSubmit,
                                        onResendCode,
+                                       onVerifyError,
                                        error: externalError
                                    }: ModalInputProps) {
     const router = useRouter();
@@ -24,11 +25,43 @@ export default function ModalInput({
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // 외부에서 전달된 에러 메시지가 변경되면 state를 업데이트
+    const [timeLeft, setTimeLeft] = useState(300);
+    const [isTimerActive, setIsTimerActive] = useState(modalType === 'auth');
+
     useEffect(() => {
         setErrorMsg(externalError);
         setError(!!externalError);
     }, [externalError]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+
+        if (isTimerActive && timeLeft > 0) {
+            interval = setInterval(() => {
+                setTimeLeft(prev => prev - 1);
+            }, 1000);
+        } else if (timeLeft === 0) {
+            setIsTimerActive(false);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isTimerActive, timeLeft]);
+
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    const handleResendCode = () => {
+        if (onResendCode) {
+            onResendCode();
+            setTimeLeft(300);
+            setIsTimerActive(true);
+        }
+    };
 
     const getModalConfig = () => {
         // 레이아웃에 맞춰 5가지 모달 타입으로 분기하였습니다.
@@ -106,7 +139,17 @@ export default function ModalInput({
 
         if (modalType === 'auth') {
             if (onSubmit) {
-                onSubmit(inputValue);
+                try {
+                    await onSubmit(inputValue);
+                } catch (error: any) {
+                    // 403 에러 등 인증 실패 시 부모 컴포넌트로 에러 전달
+                    if (onVerifyError) {
+                        onVerifyError(error);
+                    } else {
+                        setError(true);
+                        setErrorMsg('인증에 실패했습니다.');
+                    }
+                }
             }
             return;
         }
@@ -119,7 +162,7 @@ export default function ModalInput({
                     if (result !== false) {
                         await queryClient.invalidateQueries({queryKey: ['departmentList']});
                         setSuccessModal(true);
-                        setInputValue(''); // 입력 필드 초기화
+                        setInputValue('');
                         setError(false);
                         setErrorMsg(undefined);
                     } else {
@@ -224,17 +267,25 @@ export default function ModalInput({
             >
                 <div className="modal-input-container">
                     <h2 className="modal-input-title">{config.title}</h2>
-                    <input
-                        className={`input ${error ? 'is-error' : ''}`}
-                        placeholder={config.placeholder}
-                        value={inputValue}
-                        onChange={(e) => {
-                            setInputValue(e.target.value);
-                            setError(false);
-                            setErrorMsg(undefined);
-                        }}
-                        onKeyDown={handleKeyDown}
-                    />
+                    <div className="input-wrapper">
+                        <input
+                            className={`input ${error ? 'is-error' : ''}`}
+                            placeholder={config.placeholder}
+                            value={inputValue}
+                            onChange={(e) => {
+                                setInputValue(e.target.value);
+                                setError(false);
+                                setErrorMsg(undefined);
+                            }}
+                            onKeyDown={handleKeyDown}
+                            disabled={modalType === 'auth' && timeLeft === 0}
+                        />
+                        {modalType === 'auth' && (
+                            <span className={`timer-display ${timeLeft === 0 ? 'expired' : ''}`}>
+                                {timeLeft === 0 ? '요청 시간이 만료되었습니다' : formatTime(timeLeft)}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="modal-input-row">
                     <span className="modal-error-message">
@@ -250,8 +301,8 @@ export default function ModalInput({
                             {config.subText}
                             <a
                                 onClick={() => {
-                                    if (modalType === 'auth' && onResendCode) {
-                                        onResendCode();
+                                    if (modalType === 'auth') {
+                                        handleResendCode();
                                     }
                                 }}
                                 style={{cursor: 'pointer'}}

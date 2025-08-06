@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
 import "./ModalCommit.scss";
-import {fetchModifiedPart} from "@/api/admin/feedback/datasetFetch";
+import {fetchModifiedPart} from "@/api/admin/dataset/datasetFetch";
 import ModalButton from "@/components/modal/Buttons/ModalButton";
 
 interface ModalCommitProps {

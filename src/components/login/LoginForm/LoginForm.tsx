@@ -8,10 +8,17 @@ import './LoginForm.scss';
 import {dummyCompanies} from "@/constants/dummydata/DummyCompanyData";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import ModalInputFilled from "@/components/modal/ModalInput/ModalInputFilled";
-import {masterLogin, confirmMasterVerifyCode, sendMasterVerifyCode, fetchCompanyToken, registerCompanyToken} from '@/api/auth/master';
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
+import {
+    masterLogin,
+    confirmMasterVerifyCode,
+    sendMasterVerifyCode,
+    fetchCompanyToken,
+    registerCompanyToken
+} from '@/api/auth/master';
 import {adminLogin} from '@/api/auth/admin';
 import {useAuthStore} from "@/store/auth.store";
-import {saveAccessToken, saveRefreshToken} from "@/utils/tokenStorage";
+import {saveRefreshToken} from "@/utils/tokenStorage";
 import {useMutation} from '@tanstack/react-query';
 import {useRouter} from 'next/navigation';
 
@@ -25,10 +32,13 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [verifyToken, setVerifyToken] = useState('');
     const [passwordError, setPasswordError] = useState(false);
-    const [showTokenModal, setShowTokenModal] = useState(false); // 추가
+    const [showTokenModal, setShowTokenModal] = useState(false);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorType, setErrorType] = useState<'email' | 'password' | 'verify'>('password');
+    const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
     const handleCompanyInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
@@ -60,11 +70,13 @@ export default function LoginForm() {
                 await sendMasterVerifyCode(verifyToken);
                 setShowModal(true);
             } catch {
-                alert('인증번호 전송 실패');
+                setErrorMessages(['인증 처리 중 오류가 발생했습니다. 다시 시도해 주세요.']);
+                setShowErrorModal(true);
             }
         },
-        onError: () => {
+        onError: (error: any) => {
             setPasswordError(true);
+            handleLoginError(error);
         },
     });
 
@@ -76,17 +88,36 @@ export default function LoginForm() {
             saveRefreshToken(refreshToken);
             router.push('/admin/manage');
         },
-        onError: () => {
+        onError: (error: any) => {
             setPasswordError(true);
+            handleLoginError(error);
         },
     });
 
-    const handleLogin = () => {
-        if (pathname === '/master/login') {
-            masterLoginMutation.mutate();
-        } else if (pathname === '/admin/login') {
-            adminLoginMutation.mutate();
+    const handleLoginError = (error: any) => {
+        const messages: string[] = [];
+
+        if (error.response?.data?.error) {
+            const errorObj = error.response.data.error;
+
+            Object.values(errorObj).forEach((message: any) => {
+                if (typeof message === 'string') {
+                    messages.push(message);
+                }
+            });
         }
+        else if (error.response?.data?.message) {
+            messages.push(error.response.data.message);
+        }
+        else if (error instanceof Error) {
+            messages.push(error.message);
+        }
+        else {
+            messages.push('로그인 처리 중 오류가 발생했습니다.');
+        }
+
+        setErrorMessages(messages.length > 0 ? [messages[0]] : ['로그인 처리 중 오류가 발생했습니다.']);
+        setShowErrorModal(true);
     };
 
     const verifyMutation = useMutation({
@@ -107,9 +138,41 @@ export default function LoginForm() {
                 setTimeout(() => setShowTokenModal(true), 200);
             }
         },
-        onError: () => {
+        onError: (error: any) => {
+            handleVerifyError(error);
         },
     });
+
+    // 인증 에러 처리 함수 추가
+    const handleVerifyError = (error: any) => {
+        const messages: string[] = [];
+
+        // 403 에러 응답에서 error 객체의 value들만 추출
+        if (error.response?.data?.error) {
+            const errorObj = error.response.data.error;
+
+            Object.values(errorObj).forEach((message: any) => {
+                if (typeof message === 'string') {
+                    messages.push(message);
+                }
+            });
+        }
+        // response가 있지만 data.error가 없는 경우
+        else if (error.response?.data?.message) {
+            messages.push(error.response.data.message);
+        }
+        // error가 Error 객체인 경우
+        else if (error instanceof Error) {
+            messages.push(error.message);
+        }
+        // 기본 에러 메시지
+        else {
+            messages.push('인증 처리 중 오류가 발생했습니다.');
+        }
+
+        setErrorMessages(messages.length > 0 ? [messages[0]] : ['인증 처리 중 오류가 발생했습니다.']);
+        setShowErrorModal(true);
+    };
 
     const handleRegisterToken = async (inputToken: string) => {
         try {
@@ -118,14 +181,30 @@ export default function LoginForm() {
             router.push('/master/manage');
             return true;
         } catch (e: any) {
-            alert(e.message || '토큰 등록에 실패했습니다.');
+            setErrorMessages(['토큰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.']);
+            setShowErrorModal(true);
             return false;
+        }
+    };
+
+    const handleLogin = () => {
+        if (pathname === '/master/login') {
+            masterLoginMutation.mutate();
+        } else {
+            adminLoginMutation.mutate();
         }
     };
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         handleLogin();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleLogin();
+        }
     };
 
     return (
@@ -142,6 +221,7 @@ export default function LoginForm() {
                             value={companyName}
                             className="login-form-input"
                             onChange={handleCompanyInputChange}
+                            onKeyDown={handleKeyDown}
                         />
                         {showSuggestions && suggestions.length > 0 && (
                             <ul className="company-suggestion-dropdown">
@@ -168,12 +248,13 @@ export default function LoginForm() {
                         placeholder="이메일을 입력해 주세요."
                         value={email}
                         className="login-form-input"
-                        onChange={(e) => setEmail(e.target.value)}/>
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
                 </label>
 
                 <label className="login-form-label">
                     <p className="login-form-description">비밀번호</p>
-                    {/*비밀번호*/}
                     <input
                         id="password"
                         name="password"
@@ -184,7 +265,9 @@ export default function LoginForm() {
                         onChange={(e) => {
                             setPassword(e.target.value);
                             setPasswordError(false);
-                        }}/>
+                        }}
+                        onKeyDown={handleKeyDown}
+                    />
                     {passwordError && (
                         <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
                     )}
@@ -227,10 +310,15 @@ export default function LoginForm() {
                     onResendCode={() => {
                         if (verifyToken) {
                             sendMasterVerifyCode(verifyToken)
-                                .then(() => alert('인증 코드가 재전송되었습니다.'))
-                                .catch(() => alert('인증 코드 전송에 실패했습니다.'));
+                                .then(() => {
+                                })
+                                .catch(() => {
+                                    setErrorMessages(['인증코드 재전송에 실패했습니다. 다시 로그인해주세요.']);
+                                    setShowErrorModal(true);
+                                });
                         }
                     }}
+                    onVerifyError={handleVerifyError}
                 />
             )}
             {showPassword && (
@@ -246,6 +334,14 @@ export default function LoginForm() {
                     description="카카오워크 내 그룹 채팅방을 생성할 수 있는 토큰을 등록합니다."
                     onClose={() => setShowTokenModal(false)}
                     onSubmit={handleRegisterToken}
+                />
+            )}
+            {showErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label="로그인 오류"
+                    onClose={() => setShowErrorModal(false)}
+                    errorMessages={errorMessages}
                 />
             )}
         </>

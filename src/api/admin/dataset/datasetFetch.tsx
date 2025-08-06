@@ -12,15 +12,16 @@ export const fetchUploadPdf = async (
 ) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title);
-    formData.append('version', version);
+    formData.append('title', title.toString());
+    formData.append('version', version.toString());
     formData.append('folder_id', folder_id.toString());
-    formData.append('commit_message', commit_message);
+    formData.append('commit_message', commit_message.toString());
 
     const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/pdf/upload`,
+        `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/documents/pdf/upload`,
         {
             method: 'POST',
+            // headers: {'Content-Type': 'multipart/form-data'},
             body: formData,
         }
     );

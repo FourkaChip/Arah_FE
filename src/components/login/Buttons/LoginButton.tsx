@@ -8,7 +8,7 @@ interface LoginButtonProps {
 
 export default function LoginButton({ label, onClick }: LoginButtonProps) {
     return (
-        <button type="button" onClick={onClick} className="common-button-login">
+        <button type="submit" onClick={onClick} className="common-button-login">
             {label}
         </button>
     );
