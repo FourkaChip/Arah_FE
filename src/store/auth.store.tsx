@@ -26,7 +26,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     clearUser: () => set({user: null}),
 }));
 
-// 초기화 시 sessionStorage에서 accessToken 복원
 if (typeof window !== "undefined") {
     const storedToken = getAccessToken();
     if (storedToken) {

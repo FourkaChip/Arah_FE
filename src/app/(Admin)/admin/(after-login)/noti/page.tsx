@@ -1,6 +1,7 @@
 import React from 'react';
 import './Noti.scss';
 import Notification from '@/components/notification/Notification';
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 
 /** 페이지의 제목, 설명, 아이템 개수 등을 상수 객체 `PAGE_CONFIG`로 관리하도록 리팩토링 하였습니다. 
@@ -14,6 +15,7 @@ const PAGE_CONFIG = {
 
 export default function AdminNotiPage() {
   return (
+      <ProtectedRoute allowedRoles={['ADMIN']}>
     <div id="admin-main-page">
       <div className="page-header">
         <div className="admin-noti-page-wrapper">
@@ -24,5 +26,6 @@ export default function AdminNotiPage() {
       
       <Notification itemsPerPage={PAGE_CONFIG.ITEMS_PER_PAGE} />
     </div>
+      </ProtectedRoute>
   );
 }

@@ -1,8 +1,10 @@
 import './Faq.scss';
 import FaqTable from "@/components/table/faqTable/FaqTable";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function FaqPage() {
     return (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
         <div id="admin-faq-page" className="admin-faq-page">
             <div className="admin-faq-page-wrapper">
                 <h1 className="faq-title">FAQ</h1>
@@ -12,5 +14,6 @@ export default function FaqPage() {
                 <FaqTable/>
             </div>
         </div>
+        </ProtectedRoute>
     );
 }
