@@ -53,7 +53,17 @@ export const confirmMasterVerifyCode = async ({
         },
         body: JSON.stringify({code}),
     });
-    if (!res.ok) throw new Error('인증 실패');
+
+    if (!res.ok) {
+        if (res.status === 403) {
+            const errorData = await res.json();
+            const error = new Error('인증 실패');
+            (error as any).response = { data: errorData };
+            throw error;
+        }
+        throw new Error('인증 실패');
+    }
+
     return (await res.json()).result;
 };
 
@@ -88,7 +98,7 @@ export const fetchAdminList = async (): Promise<CombinedAdminInfo[]> => {
             return [];
         }
 
-        // 2. 전체 관리자 상세 정보를 가져��니다.
+        // 2. 전체 관리자 상세 정보를 가져옵니다.
         const allAdmins = await fetchAllAdmins();
 
         // 3. 회사별 관리자의 userIds를 추출합니다.

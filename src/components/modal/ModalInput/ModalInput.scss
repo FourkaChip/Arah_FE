@@ -4,12 +4,42 @@ $red: #EB1D1D;
 @use "../../../../node_modules/bulma/sass/utilities/functions" as *;
 
 
-.input {
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   background: $box-background-color;
+}
+
+.input {
+  flex: 1;
+  padding-right: 80px; // 타이머 공간 확보
+  background: $box-background-color !important;
   color: #000000;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: none;
+}
+
+.timer-display {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: #232D64;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 50px;
+  text-align: center;
+
+  &.expired {
+    color: #EB1D1D;
+    font-size: 12px;
+    min-width: 150px;
+    background: rgba(235, 29, 29, 0.1);
+  }
 }
 
 .modal-input-title {

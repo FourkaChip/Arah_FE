@@ -48,6 +48,7 @@ export interface ModalInputProps {
     onClose: () => void;
     onSubmit?: (code: string) => Promise<boolean | void> | boolean | void;
     onResendCode?: () => void;
+    onVerifyError?: (error: any) => void;
     error?: string;
 }
 
