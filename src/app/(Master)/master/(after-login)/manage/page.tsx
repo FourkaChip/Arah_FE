@@ -1,9 +1,11 @@
 // 관리자 관리 페이지입니다.
 import './ManageAdmin.scss';
 import MasterAdminTable from "@/components/table/adminManageTable/AdminManageTable";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ManageAdminPage() {
     return (
+        <ProtectedRoute allowedRoles={['MASTER']}>
         <div id="master-manage-page" className="master-manage-page">
             <div className="admin-manage-page-wrapper">
                 <h1 className="master-manage-title">관리자 관리</h1>
@@ -13,5 +15,6 @@ export default function ManageAdminPage() {
                 <MasterAdminTable/>
             </div>
         </div>
+        </ProtectedRoute>
     );
 }

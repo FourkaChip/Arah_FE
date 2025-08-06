@@ -21,16 +21,22 @@ export const removeRefreshToken = () => {
     }
 };
 
-// accessToken은 메모리(상태)에서만 관리
+// accessToken도 sessionStorage에서 관리
 export const saveAccessToken = (token: string) => {
-    // no-op
+    if (typeof window !== "undefined") {
+        sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+    }
 };
 
 export const getAccessToken = () => {
-    // no-op
+    if (typeof window !== "undefined") {
+        return sessionStorage.getItem(ACCESS_TOKEN_KEY);
+    }
     return null;
 };
 
 export const removeAccessToken = () => {
-    // no-op
+    if (typeof window !== "undefined") {
+        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    }
 };

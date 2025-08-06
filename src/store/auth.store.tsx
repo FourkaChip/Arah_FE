@@ -1,5 +1,6 @@
 // 로그인 auth 상태관리를 위한 zustand 스토어 파일입니다.
 import {create} from 'zustand';
+import {saveAccessToken, getAccessToken, removeAccessToken} from '@/utils/tokenStorage';
 
 type AuthStore = {
     accessToken: string | null;
@@ -10,11 +11,24 @@ type AuthStore = {
     clearUser: () => void;
 };
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
     accessToken: null,
-    setAccessToken: (token) => set({accessToken: token}),
-    clearAccessToken: () => set({accessToken: null}),
+    setAccessToken: (token) => {
+        saveAccessToken(token);
+        set({accessToken: token});
+    },
+    clearAccessToken: () => {
+        removeAccessToken();
+        set({accessToken: null});
+    },
     user: null,
     setUser: (user) => set({user}),
     clearUser: () => set({user: null}),
 }));
+
+if (typeof window !== "undefined") {
+    const storedToken = getAccessToken();
+    if (storedToken) {
+        useAuthStore.getState().setAccessToken(storedToken);
+    }
+}

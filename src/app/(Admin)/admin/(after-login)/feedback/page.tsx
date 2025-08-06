@@ -1,8 +1,10 @@
 import './Feedback.scss';
 import FeedbackTable from "@/components/table/feedbackTable/FeedbackTable";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function FeedbackPage() {
     return (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
         <div id="admin-feedback-page" className="admin-feedback-page">
             <div className="admin-feedback-page-wrapper">
                 <h1 className="feedback-title">피드백</h1>
@@ -12,5 +14,6 @@ export default function FeedbackPage() {
                 <FeedbackTable/>
             </div>
         </div>
+        </ProtectedRoute>
     );
 }

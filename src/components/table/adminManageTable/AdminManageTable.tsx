@@ -106,6 +106,21 @@ export default function MasterAdminTable() {
         setCurrentPage(page - 1);
     }, []);
 
+    // 부서 설정 모달 핸들러 - 선택된 admin이 변경될 때만 setState
+    const handleOpenDeptModal = useCallback((admin: AdminRowType) => {
+        setSelectedAdmin((prev) => {
+            const isSameAdmin = prev?.email === admin.email;
+            return isSameAdmin ? prev : admin;
+        });
+        setOpenDeptModal(true);
+    }, []);
+
+    // 삭제 모달 핸들러도 useCallback으로 최적화
+    const handleOpenDeleteModal = useCallback((email: string | number) => {
+        setDeletingEmail(typeof email === 'string' ? email : String(email));
+        setOpenDeleteModal(true);
+    }, []);
+
     // tanstack-table 컬럼 정의 - AdminRowType 타입에 맞게 조정
     const columns: ColumnDef<AdminRowType>[] = useMemo(() => {
         if (pathName === '/master/dept') {
@@ -175,11 +190,12 @@ export default function MasterAdminTable() {
                     id: "departmentSetting",
                     header: "부서 설정",
                     cell: ({row}) => (
-                        <button className="text-blue-600 underline"
-                                onClick={() => {
-                                    setSelectedAdmin(row.original); // 선택된 사용자 정보 저장
-                                    setOpenDeptModal(true);
-                                }}>부서 설정</button>
+                        <button
+                            className="text-blue-600 underline"
+                            onClick={() => handleOpenDeptModal(row.original)}
+                        >
+                            부서 설정
+                        </button>
                     ),
                 },
                 {
@@ -201,7 +217,7 @@ export default function MasterAdminTable() {
         }
         // 타입 에러 방지를 위해, 기본적으로 빈 배열을 반환합니다.
         return [];
-    }, [pathName, deletingEmail]);
+    }, [pathName, deletingEmail, handleOpenDeptModal, handleOpenDeleteModal]);
 
     // tanstack-table 초기화
     const table = useReactTable<AdminRowType>({
@@ -228,11 +244,6 @@ export default function MasterAdminTable() {
             setDeletingEmail(null);
             setOpenDeleteModal(false);
         }
-    };
-
-    const handleOpenDeleteModal = (email: string | number) => {
-        setDeletingEmail(typeof email === 'string' ? email : String(email));
-        setOpenDeleteModal(true);
     };
 
     const handleOpenTokenModal = async () => {
@@ -310,7 +321,7 @@ export default function MasterAdminTable() {
                         onPageChange={handlePageChange}
                     />
                 </div>
-                {openDeptModal && selectedAdmin &&
+                {openDeptModal && selectedAdmin && (
                     <ModalDepartment
                         onClose={() => {
                             setOpenDeptModal(false);
@@ -319,7 +330,7 @@ export default function MasterAdminTable() {
                         defaultStep="select"
                         defaultUser={selectedAdmin}
                     />
-                }
+                )}
                 {openDeleteModal &&
                     <ModalDefault
                         type="delete-data"

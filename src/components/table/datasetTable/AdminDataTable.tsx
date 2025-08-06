@@ -1,6 +1,6 @@
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
-import CustomSearch from "@/components/CustomSearch/CustomSearch";
+import CustomSearch from "@/components/customSearch/CustomSearch";
 import './AdminDataTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {

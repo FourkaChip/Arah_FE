@@ -1,7 +1,6 @@
 import styles from "./page.module.css";
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import ClientModalTrigger from "@/components/utils/ModalTrigger/ClientModalTrigger";
-import { useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
