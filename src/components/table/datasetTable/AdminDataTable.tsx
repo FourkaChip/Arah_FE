@@ -28,7 +28,7 @@ import {
     fetchCreateFolder,
     fetchUploadPdf,
     fetchDeleteFolder
-} from "@/api/admin/feedback/datasetFetch";
+} from "@/api/admin/dataset/datasetFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
