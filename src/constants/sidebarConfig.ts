@@ -27,7 +27,7 @@ export const MASTER_MENU_ITEMS: MenuItem[] = [
 export const MENU_ROUTES = {
     'manage-dataset': '/admin/manage',
     'faq': '/admin/faq',
-    'inquiry': '/admin/dataset',
+    'inquiry': '/admin/feedback',
     'statistics': '/admin/analyze',
     'alarm': '/admin/noti',
     'chatbot': '/admin/ara',
