@@ -8,7 +8,8 @@ import Pagination from "@/components/customPagination/Pagination";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchAdminList, fetchDepartmentList, removeAdminRole, fetchCompanyToken} from "@/api/auth/master";
+import {fetchAdminList, removeAdminRole} from "@/api/master/adminFetch";
+import {fetchDepartmentList, fetchCompanyToken, deleteDepartment} from "@/api/master/deptFetch";
 import {AdminListResponseDto, CompanyAdminListResponse, CombinedAdminInfo} from "@/types/tables";
 import CustomDropDownForDept from "@/components/customDropdown/CustomDropDownForDept";
 import ModalDeptTrigger from "@/components/utils/ModalTrigger/ModalDeptTrigger";
@@ -31,12 +32,15 @@ type AdminRowType = CombinedAdminInfo;
 
 export default function MasterAdminTable() {
     const [openDeptModal, setOpenDeptModal] = useState(false);
-    const [selectedAdmin, setSelectedAdmin] = useState<AdminRowType | null>(null); // 추가
+    const [selectedAdmin, setSelectedAdmin] = useState<AdminRowType | null>(null);
     const [selectedDept, setSelectedDept] = useState('all');
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openEditModal] = useState(false);
     const [openTokenModal, setOpenTokenModal] = useState(false);
-    const [companyToken, setCompanyToken] = useState<string>(''); // 추가
+    const [companyToken, setCompanyToken] = useState<string>('');
+    const [deletingDepartmentId, setDeletingDepartmentId] = useState<number | null>(null);
+    const [openSuccessModal, setOpenSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     const [searchValue, setSearchValue] = useState("");
     const [currentPage, setCurrentPage] = useState(0);
@@ -106,7 +110,6 @@ export default function MasterAdminTable() {
         setCurrentPage(page - 1);
     }, []);
 
-    // 부서 설정 모달 핸들러 - 선택된 admin이 변경될 때만 setState
     const handleOpenDeptModal = useCallback((admin: AdminRowType) => {
         setSelectedAdmin((prev) => {
             const isSameAdmin = prev?.email === admin.email;
@@ -115,13 +118,16 @@ export default function MasterAdminTable() {
         setOpenDeptModal(true);
     }, []);
 
-    // 삭제 모달 핸들러도 useCallback으로 최적화
-    const handleOpenDeleteModal = useCallback((email: string | number) => {
-        setDeletingEmail(typeof email === 'string' ? email : String(email));
+    const handleOpenDeleteModal = useCallback((identifier: string | number) => {
+        if (pathName === '/master/dept') {
+            setDeletingDepartmentId(typeof identifier === 'number' ? identifier : Number(identifier));
+        } else {
+            setDeletingEmail(typeof identifier === 'string' ? identifier : String(identifier));
+        }
         setOpenDeleteModal(true);
-    }, []);
+    }, [pathName]);
 
-    // tanstack-table 컬럼 정의 - AdminRowType 타입에 맞게 조정
+    // tanstack-table 열 정의 - AdminRowType 타입에 맞게 조정
     const columns: ColumnDef<AdminRowType>[] = useMemo(() => {
         if (pathName === '/master/dept') {
             return [
@@ -135,7 +141,7 @@ export default function MasterAdminTable() {
                     cell: ({row}) => (
                         <FontAwesomeIcon
                             icon={faTrash}
-                            onClick={() => handleOpenDeleteModal(row.original.departmentId as unknown as string)}
+                            onClick={() => handleOpenDeleteModal(row.original.departmentId as number)}
                             style={{color: 'red', cursor: 'pointer'}}
                         />
                     ),
@@ -226,7 +232,7 @@ export default function MasterAdminTable() {
         getCoreRowModel: getCoreRowModel(),
     });
 
-    // 삭제 로직 핸들러입니다.
+    // 관리자 삭제 로직 핸들러입니다.
     const handleDelete = async (email: string) => {
         if (!email) {
             alert("이메일이 유효하지 않습니다.");
@@ -238,6 +244,8 @@ export default function MasterAdminTable() {
         try {
             await removeAdminRole(email);
             await queryClient.invalidateQueries({queryKey: ['adminList']});
+            setSuccessMessage("관리자가 성공적으로 삭제되었습니다.");
+            setOpenSuccessModal(true);
         } catch (e) {
             alert("삭제에 실패했습니다. 다시 시도해주세요.");
         } finally {
@@ -246,13 +254,43 @@ export default function MasterAdminTable() {
         }
     };
 
+    const handleDeleteDepartment = async (departmentId: number) => {
+        if (!departmentId) {
+            alert("부서 ID가 유효하지 않습니다.");
+            setOpenDeleteModal(false);
+            return;
+        }
+
+        setDeletingDepartmentId(departmentId);
+        try {
+            await deleteDepartment(departmentId);
+            await queryClient.invalidateQueries({queryKey: ['departmentList']});
+            setSuccessMessage("부서가 성공적으로 삭제되었습니다.");
+            setOpenSuccessModal(true);
+        } catch (e: any) {
+            alert(e.message || "부서 삭제에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+            setDeletingDepartmentId(null);
+            setOpenDeleteModal(false);
+        }
+    };
+
+    const handleConfirmDelete = () => {
+        if (pathName === '/master/dept' && deletingDepartmentId !== null) {
+            handleDeleteDepartment(deletingDepartmentId);
+        } else if (pathName === '/master/manage' && deletingEmail) {
+            handleDelete(deletingEmail);
+        }
+    };
+
     const handleOpenTokenModal = async () => {
         try {
             const token = await fetchCompanyToken();
             setCompanyToken(token);
             setOpenTokenModal(true);
-        } catch (e) {
-            alert("토큰이 존재하지 않습니다.");
+        } catch (error) {
+            console.error('토큰 조회 실패:', error);
+            alert('토큰 조회에 실패했습니다.');
         }
     };
 
@@ -331,12 +369,23 @@ export default function MasterAdminTable() {
                         defaultUser={selectedAdmin}
                     />
                 )}
+                {openSuccessModal &&
+                    <ModalDefault
+                        type="default"
+                        label="삭제 완료"
+                        onClose={() => setOpenSuccessModal(false)}
+                        errorMessages={[successMessage]}
+                    />}
                 {openDeleteModal &&
                     <ModalDefault
                         type="delete-data"
-                        label="삭제하시겠습니까?"
-                        onClose={() => setOpenDeleteModal(false)}
-                        onSubmit={() => deletingEmail && handleDelete(deletingEmail)}
+                        label={pathName === '/master/dept' ? "부서를 삭제하시겠습니까?" : "관리자를 삭제하시겠습니까?"}
+                        onClose={() => {
+                            setOpenDeleteModal(false);
+                            setDeletingEmail(null);
+                            setDeletingDepartmentId(null);
+                        }}
+                        onSubmit={handleConfirmDelete}
                     />}
                 {openEditModal &&
                     <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}

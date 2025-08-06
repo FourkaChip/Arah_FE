@@ -3,7 +3,7 @@
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
 import { useEffect, useState } from "react";
-import { fetchDepartmentList } from "@/api/auth/master";
+import { fetchDepartmentList } from "@/api/master/deptFetch";
 
 interface OptionType {
     value: string;
