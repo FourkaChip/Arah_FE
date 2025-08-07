@@ -11,6 +11,7 @@ import type { ChatbotSliderProps, MarkStyleType } from '@/types/slider';
 export default function ChatbotSlider({
   value,
   onChange,
+  onAfterChange,
   label,
   leftLabel,
   rightLabel,
@@ -69,6 +70,12 @@ export default function ChatbotSlider({
     onChange(numValue === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : numValue);
   }, [onChange]);
 
+  // onAfterChange 핸들러 최적화
+  const handleAfterChange = useCallback((sliderValue: number | number[]) => {
+    const numValue = typeof sliderValue === 'number' ? sliderValue : sliderValue[0];
+    onAfterChange(numValue === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : numValue);
+  }, [onAfterChange]);
+
   return (
     <div className="slider-block">
       <h3 className="slider-title">{label}</h3>
@@ -92,6 +99,7 @@ export default function ChatbotSlider({
           step={SLIDER_CONFIG.STEP}
           value={value}
           onChange={handleChange}
+          onChangeComplete={handleAfterChange}
           trackStyle={sliderStyles.trackStyle}
           handleStyle={sliderStyles.handleStyle}
           railStyle={sliderStyles.railStyle}

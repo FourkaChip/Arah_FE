@@ -2,6 +2,7 @@
 export interface ChatbotSliderProps {
   value: number;
   onChange: (value: number) => void;
+  onAfterChange: (val: number) => void;
   label: string;
   leftLabel: string;
   rightLabel: string;
