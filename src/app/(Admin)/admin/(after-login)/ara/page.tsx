@@ -1,18 +1,12 @@
 // src/app/(Admin)/admin/(after-login)/ara/page.tsx
 'use client';
-
+import { Toaster } from 'react-hot-toast';
 import ChatbotSlider from "@/components/slider/ChatbotSlider";
 import { SLIDER_CONFIG, SLIDER_TEXTS } from "@/constants/sliderConfig";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useCompanyChatbotSettings } from "@/hooks/useCompanyChatbotSettings";
 import "./Ara.scss";
-
-const PAGE_CONTENT = {
-  TITLE: "챗봇 설정",
-  DESCRIPTION:
-    "챗봇의 연결 기준과 응답 스타일을 설정할 수 있습니다. 발화 유사도와 사고 스타일을 조절해 응답의 정밀도와 사고 표현을 자유롭게 조정하세요.",
-  RANGE_INFO: "모든 설정은 1~10 사이 값으로 선택 가능합니다.",
-} as const;
+import { PAGE_CONTENT } from "@/constants/pageContent";
 
 export default function ChatbotSettingsPage() {
   const {
@@ -23,8 +17,27 @@ export default function ChatbotSettingsPage() {
     onStyleComplete,
   } = useCompanyChatbotSettings();
 
+  // ❶ 에러만 다시 던지고, 토스트는 슬라이더에서 모두 처리
+  const handleSimilarityComplete = async (value: number) => {
+    try {
+      await onSimilarityComplete(value);
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleStyleComplete = async (value: number) => {
+    try {
+      await onStyleComplete(value);
+    } catch (err) {
+      throw err;
+    }
+  };
+
   return (
     <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <Toaster position="top-right" />
+
       <div className="chatbot-settings-page">
         <div className="container">
           <div className="admin-main-page-wrapper">
@@ -49,7 +62,7 @@ export default function ChatbotSettingsPage() {
           <ChatbotSlider
             value={settings.similarity}
             onChange={onSimilarityChange}
-            onAfterChange ={onSimilarityComplete}
+            onChangeComplete={handleSimilarityComplete}
             label={SLIDER_TEXTS.SIMILARITY.LABEL}
             leftLabel={SLIDER_TEXTS.SIMILARITY.LEFT_LABEL}
             rightLabel={SLIDER_TEXTS.SIMILARITY.RIGHT_LABEL}
@@ -59,7 +72,7 @@ export default function ChatbotSettingsPage() {
           <ChatbotSlider
             value={settings.style}
             onChange={onStyleChange}
-            onAfterChange ={onStyleComplete}
+            onChangeComplete={handleStyleComplete}
             label={SLIDER_TEXTS.STYLE.LABEL}
             leftLabel={SLIDER_TEXTS.STYLE.LEFT_LABEL}
             rightLabel={SLIDER_TEXTS.STYLE.RIGHT_LABEL}

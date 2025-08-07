@@ -15,11 +15,12 @@ export default function ModalInput({
                                        onSubmit,
                                        onResendCode,
                                        onVerifyError,
-                                       error: externalError
+                                       error: externalError,
+                                       defaultValue = ''
                                    }: ModalInputProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState(defaultValue);
     const [error, setError] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | undefined>(externalError);
     const [successModal, setSuccessModal] = useState(false);
@@ -48,6 +49,10 @@ export default function ModalInput({
             if (interval) clearInterval(interval);
         };
     }, [isTimerActive, timeLeft]);
+
+    useEffect(() => {
+        setInputValue(defaultValue);
+    }, [defaultValue]);
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -118,6 +123,14 @@ export default function ModalInput({
                     buttonType: 'default',
                     buttonLabel: '생성',
                 };
+            case 'edit-dataset':
+                return {
+                    title: '데이터셋 이름 수정',
+                    description: '변경할 데이터셋 이름을 입력해주세요.',
+                    placeholder: '데이터셋명 (ex.회사규정)',
+                    buttonType: 'default',
+                    buttonLabel: '수정',
+                };
             default:
                 throw new Error(`Unknown modalType: ${modalType}`);
         }
@@ -142,7 +155,6 @@ export default function ModalInput({
                 try {
                     await onSubmit(inputValue);
                 } catch (error: any) {
-                    // 403 에러 등 인증 실패 시 부모 컴포넌트로 에러 전달
                     if (onVerifyError) {
                         onVerifyError(error);
                     } else {
@@ -247,6 +259,29 @@ export default function ModalInput({
             return;
         }
 
+        if (modalType === 'edit-dataset') {
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        setInputValue('');
+                        setError(false);
+                        setErrorMsg(undefined);
+                        onClose();
+                    } else {
+                        setError(true);
+                    }
+                } catch (e: any) {
+                    setError(true);
+                    setErrorMsg(e.message || '데이터셋 이름 수정에 실패했습니다.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+            return;
+        }
+
         onClose();
     };
 
@@ -294,6 +329,7 @@ export default function ModalInput({
                         {error && modalType === 'department' && !errorMsg ? '부서 등록에 실패했습니다' : ''}
                         {error && modalType === 'tag' && !errorMsg ? '태그 등록에 실패했습니다' : ''}
                         {error && modalType === 'folder' && !errorMsg ? '폴더 생성에 실패했습니다' : ''}
+                        {error && modalType === 'edit-dataset' && !errorMsg ? '데이터셋 이름 수정에 실패했습니다' : ''}
                         {errorMsg || ''}
                     </span>
                     {config.subText && (

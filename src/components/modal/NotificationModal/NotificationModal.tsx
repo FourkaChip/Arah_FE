@@ -8,8 +8,6 @@ import MarkAllReadButton from '@/components/notification/MarkAllReadButton';
 import './NotificationModal.scss';
 import { NotificationModalProps } from '@/types/notificationModal';
 
-
-
 const NotificationModal = memo<NotificationModalProps>(({ 
   isOpen, 
   onClose, 
@@ -18,7 +16,7 @@ const NotificationModal = memo<NotificationModalProps>(({
 }) => {
   const router = useRouter();
   const [position, setPosition] = useState({ top: 0, right: 0 });
-  
+
   const {
     notifications,
     unreadCount,
@@ -26,7 +24,6 @@ const NotificationModal = memo<NotificationModalProps>(({
     handleMarkAllAsRead
   } = useNotificationContext();
 
-  // 안 읽은 알림만 필터링하여 최대 개수만큼 가져오기
   const unreadNotifications = React.useMemo(() => 
     notifications
       .filter(n => !n.isRead)
@@ -34,13 +31,12 @@ const NotificationModal = memo<NotificationModalProps>(({
     [notifications, maxItems]
   );
 
-  // 버튼 위치 계산
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
       setPosition({
-        top: buttonRect.bottom + 8, // 버튼 아래쪽에 8px 간격
-        right: window.innerWidth - buttonRect.right // 오른쪽 정렬
+        top: buttonRect.bottom + 8,
+        right: window.innerWidth - buttonRect.right
       });
     }
   }, [isOpen, buttonRef]);
@@ -64,10 +60,12 @@ const NotificationModal = memo<NotificationModalProps>(({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="notification-dropdown-backdrop" onClick={handleBackdropClick}>
+    <div
+      className="notification-dropdown-backdrop"
+      onClick={handleBackdropClick}
+      style={{ display: isOpen ? 'block' : 'none' }}
+    >
       <div 
         className="notification-dropdown"
         style={{

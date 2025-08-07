@@ -50,3 +50,16 @@ export const authorizedFetch = async (
         headers: customHeaders,
     });
 };
+
+// 로그아웃 함수입니다.
+export const logout = async () => {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/logout`, {
+        method: 'POST',
+    });
+
+    if (!res.ok) {
+        throw new Error('로그아웃 실패');
+    }
+
+    return res.json();
+};

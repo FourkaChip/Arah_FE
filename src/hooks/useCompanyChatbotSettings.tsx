@@ -16,7 +16,9 @@ export function useCompanyChatbotSettings() {
   useEffect(() => {
     getCompanyChatbotSettings()
       .then(setSettings)
-      .catch((err) => console.error("[초기값 로딩 실패]", err));
+      .catch((err) => {
+        throw err;
+      });
   }, []);
 
   // 로컬 상태 변경 핸들러
@@ -31,13 +33,14 @@ export function useCompanyChatbotSettings() {
   // 변경 완료 시 서버 업데이트
   const handleAfterChange = useCallback(
     (field: "similarity" | "style") =>
-      (value: number) => {
+      async (value: number) => {
         const updated = { ...settings, [field]: value } as SliderSettings;
-        updateCompanyChatbotSettings(updated)
-          .then(() => console.log(`[${field}] 업데이트 성공`, value))
-          .catch((err) =>
-            console.error(`[${field}] 업데이트 실패]`, err)
-          );
+
+        try {
+          await updateCompanyChatbotSettings(updated);
+        } catch (err) {
+          throw err;
+        }
       },
     [settings]
   );

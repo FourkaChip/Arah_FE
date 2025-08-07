@@ -12,15 +12,14 @@ import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {
     masterLogin,
     confirmMasterVerifyCode,
-    sendMasterVerifyCode,
-    fetchCompanyToken,
-    registerCompanyToken
+    sendMasterVerifyCode
 } from '@/api/auth/master';
 import {adminLogin} from '@/api/auth/admin';
 import {useAuthStore} from "@/store/auth.store";
 import {saveRefreshToken} from "@/utils/tokenStorage";
 import {useMutation} from '@tanstack/react-query';
 import {useRouter} from 'next/navigation';
+import {fetchCompanyToken, registerCompanyToken} from "@/api/master/deptFetch";
 
 export default function LoginForm() {
     const pathname = usePathname();
