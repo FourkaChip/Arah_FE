@@ -2,7 +2,7 @@ $blue: #232D64;
 $primary: $blue;
 @use "bulma/sass/utilities/functions" as *;
 
-.button.is-danger.is-outlined {
+.button.is-danger.is-outlined, .button.is-link.is-light {
   height: 34px;
 }
 
@@ -56,6 +56,7 @@ $primary: $blue;
 .action-buttons {
   display: flex;
   gap: 8px;
+  margin-left: 15px;
 
   .create-folder,
   .delete-folder {
@@ -260,10 +261,6 @@ $primary: $blue;
       }
     }
   }
-}
-
-.button.is-danger.is-outlined {
-  height: 34px;
 }
 
 .add-dataset-button {

@@ -23,3 +23,13 @@ export interface UserInfoResponse {
   companyId?: number;
   companyName?: string;
 }
+
+export interface ProtectedRouteProps {
+  allowedRoles: string[];
+  children: React.ReactNode;
+}
+
+export interface LoginButtonProps {
+  label: string;
+  onClick: () => void;
+}

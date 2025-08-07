@@ -68,3 +68,36 @@ export interface CustomDropDownForPeriodProps {
   value: string;
   onChange: (value: string) => void;
 }
+
+// 날짜별 만족도 데이터 타입
+export interface DailySatisfactionData {
+  date: string; // YYYY-MM-DD 형식
+  satisfaction: {
+    만족: number;
+    불만족: number;
+  };
+}
+
+// 날짜별 피드백 유형 데이터 타입
+export interface DailyFeedbackTypeData {
+  date: string; // YYYY-MM-DD 형식
+  feedbackTypes: {
+    '오래된 정보': number;
+    '질문 의도 파악 실패': number;
+    '잘못된 답변': number;
+    '정보 누락': number;
+    '기타': number;
+  };
+}
+
+// 날짜별 키워드 데이터 타입
+export interface DailyKeywordData {
+  date: string; // YYYY-MM-DD 형식
+  keywords: {
+    휴가: number;
+    야근: number;
+    사직서: number;
+    회의: number;
+    교육: number;
+  };
+}

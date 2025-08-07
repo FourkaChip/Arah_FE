@@ -289,7 +289,6 @@ export default function MasterAdminTable() {
             setCompanyToken(token);
             setOpenTokenModal(true);
         } catch (error) {
-            console.error('토큰 조회 실패:', error);
             alert('토큰 조회에 실패했습니다.');
         }
     };
