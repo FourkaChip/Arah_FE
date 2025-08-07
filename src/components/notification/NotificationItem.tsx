@@ -4,6 +4,7 @@ import {
     NotificationCategory,
     NotificationItemProps
 } from '@/types/notification';
+import './Notification.scss';
 
 
 const CATEGORY_ICONS: Record<NotificationCategory, { icon: string; color: string }> = {
