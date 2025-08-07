@@ -34,8 +34,10 @@ import {
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
+import { useModalMessage } from "@/hooks/useModalMessage";
 
 export default function AdminDataTable() {
+    const modalMessage = useModalMessage();
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
@@ -59,10 +61,6 @@ export default function AdminDataTable() {
     const [openFolderModal, setOpenFolderModal] = useState(false);
     const [openUploadModal, setOpenUploadModal] = useState(false);
     const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
-    const [openSuccessModal, setOpenSuccessModal] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [openErrorModal, setOpenErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
 
     const [editingDocumentId, setEditingDocumentId] = useState<number | null>(null);
     const [editingDocumentTitle, setEditingDocumentTitle] = useState<string>('');
@@ -280,11 +278,9 @@ export default function AdminDataTable() {
                 }));
             }
 
-            setSuccessMessage('문서가 성공적으로 삭제되었습니다.');
-            setOpenSuccessModal(true);
+            modalMessage.showSuccess('문서가 성공적으로 삭제되었습니다.');
         } catch (error) {
-            setErrorMessage('문서 삭제에 실패했습니다.');
-            setOpenErrorModal(true);
+            modalMessage.showError('문서 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -306,13 +302,9 @@ export default function AdminDataTable() {
                 subRows: undefined
             })));
 
-            setSuccessMessage('폴더가 성공적으로 생성되었습니다.');
-            setOpenSuccessModal(true);
-
             return true;
         } catch (error) {
-            setErrorMessage('폴더 생성에 실패했습니다.');
-            setOpenErrorModal(true);
+            modalMessage.showError('폴더 생성에 실패했습니다.');
             throw error;
         }
     };
@@ -323,7 +315,7 @@ export default function AdminDataTable() {
         }
 
         try {
-            const title = file.name.replace('.pdf', ''); // 파일명에서 확장자 제거
+            const title = file.name.replace('.pdf', '');
             const version = '0.1.0';
 
             const result = await fetchUploadPdf(
@@ -340,13 +332,10 @@ export default function AdminDataTable() {
                 [selectedFolderId]: updatedDocuments || []
             }));
 
-            setSuccessMessage('데이터셋이 성공적으로 업로드되었습니다.');
-            setOpenSuccessModal(true);
-
+            modalMessage.showSuccess('데이터셋이 성공적으로 업로드되었습니다.');
             return result;
         } catch (error) {
-            setErrorMessage('데이터셋 업로드에 실패했습니다.');
-            setOpenErrorModal(true);
+            modalMessage.showError('데이터셋 업로드에 실패했습니다.');
             throw error;
         }
     };
@@ -392,11 +381,9 @@ export default function AdminDataTable() {
                 return newFolderDocuments;
             });
 
-            setSuccessMessage(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
-            setOpenSuccessModal(true);
+            modalMessage.showSuccess(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
         } catch (error) {
-            setErrorMessage('폴더 삭제에 실패했습니다.');
-            setOpenErrorModal(true);
+            modalMessage.showError('폴더 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenTopRowDeleteModal(false);
@@ -414,11 +401,9 @@ export default function AdminDataTable() {
                 [folderId]: updatedDocuments || []
             }));
 
-            setSuccessMessage('메인 데이터셋이 성공적으로 변경되었습니다.');
-            setOpenSuccessModal(true);
+            modalMessage.showSuccess('메인 데이터셋이 성공적으로 변경되었습니다.');
         } catch (error) {
-            setErrorMessage('메인 데이터셋 변경에 실패했습니다.');
-            setOpenErrorModal(true);
+            modalMessage.showError('메인 데이터셋 변경에 실패했습니다.');
         } finally {
             setLoading(false);
         }
@@ -440,9 +425,7 @@ export default function AdminDataTable() {
                 }));
             }
 
-            setSuccessMessage('데이터셋 이름이 성공적으로 변경되었습니다.');
-            setOpenSuccessModal(true);
-
+            modalMessage.showSuccess('데이터셋 이름이 성공적으로 변경되었습니다.');
             return true;
         } catch (error) {
             throw error;
@@ -638,20 +621,23 @@ export default function AdminDataTable() {
                     />
                 </div>
             </div>
-            {openSuccessModal &&
+            {/* ModalDefault를 직접 사용 */}
+            {modalMessage.openSuccessModal && (
                 <ModalDefault
                     type="default"
-                    label="업로드 완료"
-                    onClose={() => setOpenSuccessModal(false)}
-                    errorMessages={[successMessage]}
-                />}
-            {openErrorModal &&
+                    label="완료"
+                    onClose={modalMessage.closeSuccess}
+                    errorMessages={[modalMessage.successMessage]}
+                />
+            )}
+            {modalMessage.openErrorModal && (
                 <ModalDefault
                     type="default"
                     label="오류"
-                    onClose={() => setOpenErrorModal(false)}
-                    errorMessages={[errorMessage]}
-                />}
+                    onClose={modalMessage.closeError}
+                    errorMessages={[modalMessage.errorMessage]}
+                />
+            )}
             {openDeleteModal &&
                 <ModalDefault
                     type="delete-data"
