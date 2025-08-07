@@ -5,7 +5,7 @@ export interface OptionType {
 
 export interface Props {
     onChange: (value: string) => void;
-    companyId: number;
+    companyId?: number;
 }
 
 export interface OptionType {

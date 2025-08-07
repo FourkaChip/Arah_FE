@@ -54,7 +54,6 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                 }
 
             } catch (error) {
-                console.error('문서 데이터 로딩 실패:', error);
                 setModifiedContent("변경사항을 불러오는데 실패했습니다.");
                 hasLoadedData.current = false;
             } finally {

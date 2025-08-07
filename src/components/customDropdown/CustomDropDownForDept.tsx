@@ -7,11 +7,11 @@ import { fetchDepartmentList } from "@/api/master/deptFetch";
 import {OptionType, Props} from "@/types/dropdown";
 
 
+
 export default function CustomDropDownForDept({onChange}: Props) {
     const [options, setOptions] = useState<OptionType[]>([{value: 'all', label: '전체'}]);
 
     useEffect(() => {
-        // fetchDepartmentList는 JWT 기반으로 회사 부서만 반환
         fetchDepartmentList()
             .then((list) => {
                 const deptOptions = list.map((dept: { departmentId: number; name: string }) => ({

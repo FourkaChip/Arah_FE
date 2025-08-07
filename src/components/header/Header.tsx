@@ -60,13 +60,11 @@ const Header = () => {
 
             router.push('/');
         } catch (error) {
-            console.error('로그아웃 API 호출 실패:', error);
             try {
                 removeRefreshToken();
                 clearAccessToken();
                 router.push('/');
             } catch (localError) {
-                console.error('클라이언트 토큰 정리 실패:', localError);
                 setShowErrorModal(true);
             }
         } finally {

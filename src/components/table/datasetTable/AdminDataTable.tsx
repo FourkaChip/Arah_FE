@@ -96,7 +96,6 @@ export default function AdminDataTable() {
                     subRows: undefined
                 })));
             } catch (error) {
-                console.error('폴더 데이터 로딩 실패:', error);
                 setData([]);
             } finally {
                 setLoading(false);
@@ -255,7 +254,6 @@ export default function AdminDataTable() {
                 [folderIdNum]: documents || []
             }));
         } catch (error) {
-            console.error(`폴더 ${folderIdNum} 문서 로딩 실패:`, error);
             setFolderDocuments(prev => ({ ...prev, [folderIdNum]: [] }));
         } finally {
             setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: false }));
@@ -285,7 +283,6 @@ export default function AdminDataTable() {
             setSuccessMessage('문서가 성공적으로 삭제되었습니다.');
             setOpenSuccessModal(true);
         } catch (error) {
-            console.error('문서 삭제 실패:', error);
             setErrorMessage('문서 삭제에 실패했습니다.');
             setOpenErrorModal(true);
         } finally {
@@ -314,7 +311,6 @@ export default function AdminDataTable() {
 
             return true;
         } catch (error) {
-            console.error('폴더 생성 실패:', error);
             setErrorMessage('폴더 생성에 실패했습니다.');
             setOpenErrorModal(true);
             throw error;
@@ -349,7 +345,6 @@ export default function AdminDataTable() {
 
             return result;
         } catch (error) {
-            console.error('데이터셋 업로드 실패:', error);
             setErrorMessage('데이터셋 업로드에 실패했습니다.');
             setOpenErrorModal(true);
             throw error;
@@ -400,7 +395,6 @@ export default function AdminDataTable() {
             setSuccessMessage(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
             setOpenSuccessModal(true);
         } catch (error) {
-            console.error('폴더 삭제 실패:', error);
             setErrorMessage('폴더 삭제에 실패했습니다.');
             setOpenErrorModal(true);
         } finally {
@@ -423,7 +417,6 @@ export default function AdminDataTable() {
             setSuccessMessage('메인 데이터셋이 성공적으로 변경되었습니다.');
             setOpenSuccessModal(true);
         } catch (error) {
-            console.error('메인 데이터셋 변경 실패:', error);
             setErrorMessage('메인 데이터셋 변경에 실패했습니다.');
             setOpenErrorModal(true);
         } finally {
@@ -452,7 +445,6 @@ export default function AdminDataTable() {
 
             return true;
         } catch (error) {
-            console.error('데이터셋 이름 수정 실패:', error);
             throw error;
         }
     };
