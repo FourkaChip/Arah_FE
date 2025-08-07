@@ -22,7 +22,8 @@ import {
     fetchAdminFaqList,
     fetchDeleteAdminFaq,
     fetchUpdateAdminFaq,
-    fetchAdminFaqTagList
+    fetchAdminFaqTagList,
+    clearFaqListCache
 } from "@/api/admin/faq/faqFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 
@@ -267,7 +268,6 @@ export default function FaqAdminTable() {
                 alert("선택한 태그가 존재하지 않습니다.");
                 return;
             }
-            // fetchUpdateAdminFaq가 body로 데이터를 보내므로 FastAPI에서 DTO를 Body로 받아야 함!
             await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
             const faqList = await fetchAdminFaqList();
             setFaqData(faqList.map((faq: any, idx: number) => ({

@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
-import {fetchAdminFaqTagList, fetchAddAdminFaqTag} from "@/api/admin/faq/faqFetch";
+import {fetchAdminFaqTagList, fetchAddAdminFaqTag, clearFaqTagListCache} from "@/api/admin/faq/faqFetch";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 
 export default function CustomDropDown({
