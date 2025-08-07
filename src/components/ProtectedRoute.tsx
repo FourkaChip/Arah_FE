@@ -4,32 +4,54 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { decodeJwtRole } from '@/utils/decodeJwtRole';
-import { getAccessToken } from '@/utils/tokenStorage';
-import {ProtectedRouteProps} from "@/types/auth";
-
+import { getValidAccessToken } from '@/utils/tokenStorage';
+import { ProtectedRouteProps } from "@/types/auth";
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     const router = useRouter();
-
     const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const accessToken = getAccessToken();
-        if (!accessToken) {
-            router.replace('/unauthorized');
-            return;
-        }
+        const checkAccess = async () => {
+            setIsLoading(true);
+            try {
+                const accessToken = await getValidAccessToken();
 
-        const role = decodeJwtRole(accessToken);
-        if (!role || !allowedRoles.includes(role)) {
-            router.replace('/unauthorized');
-            return;
-        }
+                if (!accessToken) {
+                    console.log('No valid access token, redirecting to login');
+                    router.replace('/login');
+                    return;
+                }
 
-        setIsAllowed(true);
+                const role = decodeJwtRole(accessToken);
+                console.log('Current role:', role, 'Allowed roles:', allowedRoles);
+
+                if (!role || !allowedRoles.includes(role)) {
+                    console.log('Role not allowed, redirecting to unauthorized');
+                    router.replace('/unauthorized');
+                    return;
+                }
+
+                setIsAllowed(true);
+            } catch (error) {
+                console.error('Access check failed:', error);
+                router.replace('/login');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkAccess();
     }, [allowedRoles, router]);
 
-    if (isAllowed === null) return null;
+    if (isLoading) {
+        return <div>인증 확인 중...</div>;
+    }
+
+    if (isAllowed === null || !isAllowed) {
+        return null;
+    }
 
     return <>{children}</>;
 };
