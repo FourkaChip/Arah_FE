@@ -2,6 +2,11 @@
 
 import {authorizedFetch} from "@/api/auth/authorizedFetch";
 
+let foldersCache: any[] | null = null;
+let foldersPromise: Promise<any[]> | null = null;
+let foldersCacheTime: number = 0;
+const FOLDERS_CACHE_DURATION = 2 * 60 * 1000;
+
 // PDF 파일 업로드용 함수입니다.
 export const fetchUploadPdf = async (
     file: File,
@@ -45,16 +50,49 @@ export const fetchUpdatePdf = async (doc_id: number, title: string) => {
 
 // 회사별 폴더 목록 조회용 함수입니다. (folder_id 불필요)
 export const fetchFoldersByCompany = async () => {
-    const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/folders`,
-        {
-            method: 'GET',
-            cache: 'no-store',
+    const now = Date.now();
+
+    if (foldersCache && (now - foldersCacheTime) < FOLDERS_CACHE_DURATION) {
+        return foldersCache;
+    }
+
+    if (foldersPromise) {
+        return await foldersPromise;
+    }
+
+    foldersPromise = (async () => {
+        try {
+            const res = await authorizedFetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/folders`,
+                {
+                    method: 'GET',
+                    cache: 'no-store',
+                }
+            );
+            if (!res.ok) throw new Error('폴더 목록 조회 실패');
+            const data = await res.json();
+
+            foldersCache = data.result;
+            foldersCacheTime = Date.now();
+
+            return data.result;
+        } catch (error) {
+            foldersCache = null;
+            foldersCacheTime = 0;
+            throw error;
+        } finally {
+            foldersPromise = null;
         }
-    );
-    if (!res.ok) throw new Error('폴더 목록 조회 실패');
-    const data = await res.json();
-    return data.result;
+    })();
+
+    return await foldersPromise;
+};
+
+// 폴더 캐시 초기화 함수입니다. (폴더 생성/삭제 후 사용)
+export const clearFoldersCache = () => {
+    foldersCache = null;
+    foldersPromise = null;
+    foldersCacheTime = 0;
 };
 
 // 폴더 버전 히스토리 조회용 함수입니다. (여기서 folder_id 사용)

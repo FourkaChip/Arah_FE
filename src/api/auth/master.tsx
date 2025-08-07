@@ -67,16 +67,55 @@ export const confirmMasterVerifyCode = async ({
     return (await res.json()).result;
 };
 
+// 사용자 정보 캐싱을 위한 변수들
+let userInfoCache: any = null;
+let userInfoPromise: Promise<any> | null = null;
+let userInfoCacheTime: number = 0;
+const USER_INFO_CACHE_DURATION = 5 * 60 * 1000;
+
 // 현재 로그인한 사용자 정보 조회 함수입니다.
 export const fetchCurrentUserInfo = async () => {
-    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
-        method: 'GET',
-    });
+    const now = Date.now();
 
-    if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
-    const data = await res.json();
-    if (!data.result) throw new Error('사용자 정보가 없습니다.');
-    return data.result;
+    if (userInfoCache && (now - userInfoCacheTime) < USER_INFO_CACHE_DURATION) {
+        return userInfoCache;
+    }
+
+    if (userInfoPromise) {
+        return await userInfoPromise;
+    }
+
+    userInfoPromise = (async () => {
+        try {
+            const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
+                method: 'GET',
+            });
+
+            if (!res.ok) throw new Error('사용자 정보를 불러올 수 없습니다.');
+            const data = await res.json();
+            if (!data.result) throw new Error('사용자 정보가 없습니다.');
+
+            userInfoCache = data.result;
+            userInfoCacheTime = Date.now();
+
+            return data.result;
+        } catch (error) {
+            userInfoCache = null;
+            userInfoCacheTime = 0;
+            throw error;
+        } finally {
+            userInfoPromise = null;
+        }
+    })();
+
+    return await userInfoPromise;
+};
+
+// 사용자 정보 캐시 초기화 함수 (로그아웃 시 사용)
+export const clearUserInfoCache = () => {
+    userInfoCache = null;
+    userInfoPromise = null;
+    userInfoCacheTime = 0;
 };
 
 // 이메일 기반 사용자 정보 조회 함수입니다.
