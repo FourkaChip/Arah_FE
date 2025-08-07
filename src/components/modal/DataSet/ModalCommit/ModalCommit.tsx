@@ -11,7 +11,7 @@ interface ModalCommitProps {
 
 export default function ModalCommit({ onClose, docId, folderId }: ModalCommitProps) {
     const [modifiedContent, setModifiedContent] = useState<string>("");
-    const [commitMessage, setCommitMessage] = useState<string>("용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정.");
+    const [commitMessage, setCommitMessage] = useState<string>("변경사항이 없습니다.");
     const [loading, setLoading] = useState(false);
 
     const hasLoadedData = useRef(false);
@@ -46,7 +46,7 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
             try {
 
                 const [modifiedData, versionHistory] = await Promise.all([
-                    fetchModifiedPart(docId),
+                    fetchModifiedPart(folderId, docId),
                     fetchVersionHistory(folderId)
                 ]);
 
