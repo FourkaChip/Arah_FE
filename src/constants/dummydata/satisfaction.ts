@@ -1,13 +1,6 @@
-import { SatisfactionData } from '@/types/analyze';
+import {DailySatisfactionData, SatisfactionData} from '@/types/analyze';
 
-// 날짜별 만족도 데이터 타입
-export interface DailySatisfactionData {
-  date: string; // YYYY-MM-DD 형식
-  satisfaction: {
-    만족: number;
-    불만족: number;
-  };
-}
+
 
 // 날짜별 만족도 데이터 생성 함수
 export const generateDailySatisfactionData = (startDate: string, endDate: string): DailySatisfactionData[] => {

@@ -3,10 +3,8 @@ export const decodeJwtRole = (token: string): string | null => {
     try {
         const payloadBase64 = token.split('.')[1];
         const payload = JSON.parse(atob(payloadBase64));
-        console.log('Decoded payload:', payload); // 디버깅용 로그 추가
         return payload.role || null;
     } catch (err) {
-        console.error('Failed to decode token:', err);
         return null;
     }
 };

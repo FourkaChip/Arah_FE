@@ -6,8 +6,10 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import './ModalDepartment.scss';
 import {userRows} from "@/constants/dummydata/DummyMasterFile";
 import {ModalDepartmentProps} from "@/types/modals";
-import {fetchUserInfoByEmail, fetchDepartmentList, assignAdminRole, fetchCurrentUserInfo} from "@/api/auth/master";
+import {fetchUserInfoByEmail, fetchCurrentUserInfo} from "@/api/auth/master";
+import {fetchDepartmentList} from "@/api/master/deptFetch";
 import {useQueryClient} from "@tanstack/react-query";
+import {assignAdminRole} from "@/api/master/adminFetch";
 
 export default function ModalDepartment({
                                             defaultStep = 'list',

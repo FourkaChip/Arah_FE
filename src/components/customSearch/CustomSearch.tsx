@@ -4,12 +4,6 @@ import "./CustomSearch.scss";
 import {useState} from "react";
 import {usePathname} from "next/navigation";
 
-interface CustomSearchProps {
-    onSearch: (params: { search: string; start: string; end: string }) => void;
-    startDate?: string;
-    endDate?: string;
-}
-
 export default function CustomSearch({onSearch, className = ""}: { onSearch: (search: string) => void; className?: string
 }) {
     const [input, setInput] = useState("");

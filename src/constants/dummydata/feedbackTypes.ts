@@ -1,16 +1,6 @@
-import { FeedbackTypeData } from '@/types/analyze';
+import {DailyFeedbackTypeData, FeedbackTypeData} from '@/types/analyze';
 
-// 날짜별 피드백 유형 데이터 타입
-export interface DailyFeedbackTypeData {
-  date: string; // YYYY-MM-DD 형식
-  feedbackTypes: {
-    '오래된 정보': number;
-    '질문 의도 파악 실패': number;
-    '잘못된 답변': number;
-    '정보 누락': number;
-    '기타': number;
-  };
-}
+
 
 // 날짜별 피드백 유형 데이터 생성 함수
 export const generateDailyFeedbackTypeData = (startDate: string, endDate: string): DailyFeedbackTypeData[] => {

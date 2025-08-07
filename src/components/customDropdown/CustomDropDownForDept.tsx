@@ -3,22 +3,15 @@
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
 import { useEffect, useState } from "react";
-import { fetchDepartmentList } from "@/api/auth/master";
+import { fetchDepartmentList } from "@/api/master/deptFetch";
+import {OptionType, Props} from "@/types/dropdown";
 
-interface OptionType {
-    value: string;
-    label: string;
-}
 
-interface Props {
-    onChange: (value: string) => void;
-}
 
 export default function CustomDropDownForDept({onChange}: Props) {
     const [options, setOptions] = useState<OptionType[]>([{value: 'all', label: '전체'}]);
 
     useEffect(() => {
-        // fetchDepartmentList는 JWT 기반으로 회사 부서만 반환
         fetchDepartmentList()
             .then((list) => {
                 const deptOptions = list.map((dept: { departmentId: number; name: string }) => ({
