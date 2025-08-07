@@ -28,7 +28,8 @@ import {
     fetchCreateFolder,
     fetchUploadPdf,
     fetchDeleteFolder,
-    fetchChangeMainDocument
+    fetchChangeMainDocument,
+    fetchUpdatePdf
 } from "@/api/admin/dataset/datasetFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
@@ -39,6 +40,7 @@ export default function AdminDataTable() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
     const [openCommitModal, setOpenCommitModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -61,6 +63,10 @@ export default function AdminDataTable() {
     const [successMessage, setSuccessMessage] = useState('');
     const [openErrorModal, setOpenErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [editingDocumentId, setEditingDocumentId] = useState<number | null>(null);
+    const [editingDocumentTitle, setEditingDocumentTitle] = useState<string>('');
+    const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
 
     useEffect(() => {
         const getCompanyId = async () => {
@@ -425,6 +431,39 @@ export default function AdminDataTable() {
         }
     };
 
+    const handleUpdateDocument = async (newTitle: string) => {
+        if (!editingDocumentId) {
+            throw new Error('수정할 문서가 선택되지 않았습니다.');
+        }
+
+        try {
+            await fetchUpdatePdf(editingDocumentId, newTitle);
+
+            if (editingFolderId) {
+                const updatedDocuments = await fetchVersionHistory(editingFolderId);
+                setFolderDocuments(prev => ({
+                    ...prev,
+                    [editingFolderId]: updatedDocuments || []
+                }));
+            }
+
+            setSuccessMessage('데이터셋 이름이 성공적으로 변경되었습니다.');
+            setOpenSuccessModal(true);
+
+            return true;
+        } catch (error) {
+            console.error('데이터셋 이름 수정 실패:', error);
+            throw error;
+        }
+    };
+
+    const handleEditClick = (docId: number, currentTitle: string, folderId: number) => {
+        setEditingDocumentId(docId);
+        setEditingDocumentTitle(currentTitle);
+        setEditingFolderId(folderId);
+        setOpenEditModal(true);
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -550,7 +589,7 @@ export default function AdminDataTable() {
                                                                         <td>
                                                                             <button className="edit-icon">
                                                                                 <FontAwesomeIcon icon={faPen}
-                                                                                                 onClick={() => setOpenCommitModal(true)}
+                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
                                                                                                  style={{
                                                                                                      color: '#232D64',
                                                                                                      cursor: 'pointer',
@@ -629,9 +668,19 @@ export default function AdminDataTable() {
                     onClose={() => setOpenTopRowDeleteModal(false)}
                     onSubmit={handleDeleteSelectedFolders}
                 />}
-            {/* 현재는 따로 파일 props를 받는 로직이 없기 때문에, 차후 API 연결 후 DB 조회가 성립되면 ModalUpload와 연계하여 커밋 수정을 구현할 예정입니다. */}
-            {openCommitModal &&
-                <ModalUpload onClose={() => setOpenCommitModal(false)}/>}
+            {openEditModal && (
+                <ModalInput
+                    modalType="edit-dataset"
+                    onClose={() => {
+                        setOpenEditModal(false);
+                        setEditingDocumentId(null);
+                        setEditingDocumentTitle('');
+                        setEditingFolderId(null);
+                    }}
+                    onSubmit={handleUpdateDocument}
+                    defaultValue={editingDocumentTitle}
+                />
+            )}
             {openFolderModal && (
                 <ModalInput
                     modalType="folder"

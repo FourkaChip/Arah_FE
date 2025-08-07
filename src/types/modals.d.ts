@@ -14,7 +14,7 @@ export type ModalType =
     | 'department-register'
     | 'delete-password-check';
 
-export type ModalInputType = 'token' | 'auth' | 'department' | 'password' | 'tag' | 'folder';
+export type ModalInputType = 'auth' | 'token' | 'department' | 'tag' | 'password' | 'folder' | 'edit-dataset';
 
 // ModalButtonProps는 모달에서 버튼에 사용되는 속성 타입입니다.
 export interface ClientModalTriggerProps {
@@ -46,10 +46,11 @@ export interface ModalInputProps {
     title?: string;
     description?: string;
     onClose: () => void;
-    onSubmit?: (code: string) => Promise<boolean | void> | boolean | void;
+    onSubmit?: (value: string) => Promise<boolean | void> | boolean | void;
     onResendCode?: () => void;
     onVerifyError?: (error: any) => void;
     error?: string;
+    defaultValue?: string; // 기본값 추가
 }
 
 // ModalLayoutProps는 모달 입력창에서 사용되는 속성 타입입니다.
