@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import NotificationModal from '@/components/modal/NotificationModal/NotificationModal';
+import '@/components/modal/NotificationModal/NotificationModal.scss';
 import ModalDefault from '@/components/modal/ModalDefault/ModalDefault';
 import './Header.scss';
 import { useRouter, usePathname } from 'next/navigation';
@@ -162,6 +163,14 @@ const Header = () => {
                     errorMessages={['계속해서 로그아웃하시겠습니까?']}
                 />
             )}
+            <div style={{ display: 'none' }}>
+                <NotificationModal
+                    isOpen={true}
+                    onClose={() => {}}
+                    maxItems={0}
+                    buttonRef={notificationButtonRef}
+                />
+            </div>
         </>
     );
 };

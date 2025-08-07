@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { NotificationItem as NotificationItemType, NotificationCategory } from '@/types/notification';
+import './Notification.scss';
 
 interface NotificationItemProps {
   item: NotificationItemType;
