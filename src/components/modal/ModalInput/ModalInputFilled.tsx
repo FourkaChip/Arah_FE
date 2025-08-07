@@ -1,4 +1,4 @@
-import {registerCompanyToken} from '@/api/auth/master';
+import {registerCompanyToken} from '@/api/master/deptFetch';
 import {useAuthStore} from '@/store/auth.store';
 import {modalInputFilledConfig} from '@/constants/modalConfig';
 import '@/components/modal/ModalInput/ModalInputFilled.scss';

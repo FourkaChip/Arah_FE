@@ -4,9 +4,10 @@
 import {useState, useEffect} from 'react';
 import './ModalDeptTrigger.scss';
 import ModalInput from '@/components/modal/ModalInput/ModalInput';
-import {createDepartment, fetchCurrentUserInfo} from '@/api/auth/master';
+import {fetchCurrentUserInfo} from '@/api/auth/master';
 import {useQueryClient} from '@tanstack/react-query';
 import Image from 'next/image';
+import {createDepartment} from "@/api/master/deptFetch";
 
 export default function ModalNewDeptTrigger({buttonText}: { buttonText: string }) {
     const [open, setOpen] = useState(false);

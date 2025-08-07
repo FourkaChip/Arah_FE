@@ -12,9 +12,11 @@ export default function ModalDefault({ type, label, onClose, onSubmit, errorMess
     switch (type) {
         case 'default':
             if (errorMessages && errorMessages.length > 0) {
-                description = errorMessages.join('\n');
+                description = errorMessages[0]; // 첫 번째 메시지를 description으로 사용
             } else if (label === '토큰 재등록') {
                 description = '토큰 재등록이 완료되었습니다.';
+            } else if (label === '삭제 완료') {
+                description = '성공적으로 삭제되었습니다.';
             } else {
                 description = '답변이 전송되었습니다.';
             }
