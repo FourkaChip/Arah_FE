@@ -7,13 +7,9 @@ import Pagination from "@/components/customPagination/Pagination";
 import NotificationList from './NotificationList';
 import MarkAllReadButton from './MarkAllReadButton';
 import { useNotificationContext } from '@/contexts/NotificationContext';
-import { NOTIFICATION_TABS } from '@/types/notification.d';
+import {NOTIFICATION_TABS, NotificationProps} from '@/types/notification.d';
 import './Notification.scss';
 
-interface NotificationProps {
-  itemsPerPage?: number;
-  className?: string;
-}
 
 export default function Notification({ 
   itemsPerPage = 5, 

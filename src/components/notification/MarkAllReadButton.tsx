@@ -1,12 +1,7 @@
 import React, { memo } from 'react';
 import './MarkAllReadButton.scss';
+import {MarkAllReadButtonProps} from "@/types/notificationModal";
 
-interface MarkAllReadButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  className?: string;
-  children?: React.ReactNode;
-}
 
 const MarkAllReadButton = memo<MarkAllReadButtonProps>(({ 
   onClick, 

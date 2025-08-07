@@ -100,9 +100,9 @@ export const fetchChangeMainDocument = async (doc_id: number, folder_id: number)
 };
 
 // 문서 변경사항 비교 조회용 함수입니다.
-export const fetchModifiedPart = async (doc_id: number) => {
+export const fetchModifiedPart = async (folder_id: number, doc_id: number) => {
     const res = await authorizedFetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/modified-part/${doc_id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/documents/modified-part/${folder_id}/${doc_id}`,
         {
             method: 'GET',
             cache: 'no-store',

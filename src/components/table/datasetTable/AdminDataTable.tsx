@@ -27,17 +27,22 @@ import {
     fetchDeletePdf,
     fetchCreateFolder,
     fetchUploadPdf,
-    fetchDeleteFolder
+    fetchDeleteFolder,
+    fetchChangeMainDocument,
+    fetchUpdatePdf
 } from "@/api/admin/dataset/datasetFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
+import { useModalMessage } from "@/hooks/useModalMessage";
 
 export default function AdminDataTable() {
+    const modalMessage = useModalMessage();
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
     const [openCommitModal, setOpenCommitModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -56,6 +61,10 @@ export default function AdminDataTable() {
     const [openFolderModal, setOpenFolderModal] = useState(false);
     const [openUploadModal, setOpenUploadModal] = useState(false);
     const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+
+    const [editingDocumentId, setEditingDocumentId] = useState<number | null>(null);
+    const [editingDocumentTitle, setEditingDocumentTitle] = useState<string>('');
+    const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
 
     useEffect(() => {
         const getCompanyId = async () => {
@@ -85,7 +94,6 @@ export default function AdminDataTable() {
                     subRows: undefined
                 })));
             } catch (error) {
-                console.error('폴더 데이터 로딩 실패:', error);
                 setData([]);
             } finally {
                 setLoading(false);
@@ -244,7 +252,6 @@ export default function AdminDataTable() {
                 [folderIdNum]: documents || []
             }));
         } catch (error) {
-            console.error(`폴더 ${folderIdNum} 문서 로딩 실패:`, error);
             setFolderDocuments(prev => ({ ...prev, [folderIdNum]: [] }));
         } finally {
             setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: false }));
@@ -271,10 +278,9 @@ export default function AdminDataTable() {
                 }));
             }
 
-            alert('문서가 성공적으로 삭제되었습니다.');
+            modalMessage.showSuccess('문서가 성공적으로 삭제되었습니다.');
         } catch (error) {
-            console.error('문서 삭제 실패:', error);
-            alert('문서 삭제에 실패했습니다.');
+            modalMessage.showError('문서 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -298,7 +304,7 @@ export default function AdminDataTable() {
 
             return true;
         } catch (error) {
-            console.error('폴더 생성 실패:', error);
+            modalMessage.showError('폴더 생성에 실패했습니다.');
             throw error;
         }
     };
@@ -309,7 +315,7 @@ export default function AdminDataTable() {
         }
 
         try {
-            const title = file.name.replace('.pdf', ''); // 파일명에서 확장자 제거
+            const title = file.name.replace('.pdf', '');
             const version = '0.1.0';
 
             const result = await fetchUploadPdf(
@@ -326,9 +332,10 @@ export default function AdminDataTable() {
                 [selectedFolderId]: updatedDocuments || []
             }));
 
+            modalMessage.showSuccess('데이터셋이 성공적으로 업로드되었습니다.');
             return result;
         } catch (error) {
-            console.error('데이터셋 업로드 실패:', error);
+            modalMessage.showError('데이터셋 업로드에 실패했습니다.');
             throw error;
         }
     };
@@ -374,14 +381,66 @@ export default function AdminDataTable() {
                 return newFolderDocuments;
             });
 
-            alert(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
+            modalMessage.showSuccess(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
         } catch (error) {
-            console.error('폴더 삭제 실패:', error);
-            alert('폴더 삭제에 실패했습니다.');
+            modalMessage.showError('폴더 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenTopRowDeleteModal(false);
         }
+    };
+
+    const handleChangeMainDocument = async (docId: number, folderId: number) => {
+        try {
+            setLoading(true);
+            await fetchChangeMainDocument(docId, folderId);
+
+            const updatedDocuments = await fetchVersionHistory(folderId);
+            setFolderDocuments(prev => ({
+                ...prev,
+                [folderId]: updatedDocuments || []
+            }));
+
+            modalMessage.showSuccess('메인 데이터셋이 성공적으로 변경되었습니다.');
+        } catch (error) {
+            modalMessage.showError('메인 데이터셋 변경에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateDocument = async (newTitle: string) => {
+        if (!editingDocumentId) {
+            throw new Error('수정할 문서가 선택되지 않았습니다.');
+        }
+
+        try {
+            await fetchUpdatePdf(editingDocumentId, newTitle);
+
+            if (editingFolderId) {
+                const updatedDocuments = await fetchVersionHistory(editingFolderId);
+                setFolderDocuments(prev => ({
+                    ...prev,
+                    [editingFolderId]: updatedDocuments || []
+                }));
+            }
+
+            modalMessage.showSuccess('데이터셋 이름이 성공적으로 변경되었습니다.');
+            return true;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const handleEditClick = (docId: number, currentTitle: string, folderId: number) => {
+        setEditingDocumentId(docId);
+        setEditingDocumentTitle(currentTitle);
+        setEditingFolderId(folderId);
+        setOpenEditModal(true);
+    };
+
+    const handleOpenFile = (url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -398,7 +457,7 @@ export default function AdminDataTable() {
                     />
                 </div>
                 <div className="action-buttons">
-                    <button className="create-folder" onClick={() => setOpenFolderModal(true)}>
+                    <button className="button is-link is-light" onClick={() => setOpenFolderModal(true)}>
                         <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                         폴더 생성
                     </button>
@@ -470,7 +529,7 @@ export default function AdminDataTable() {
                                                                 <th>데이터셋명</th>
                                                                 <th>버전</th>
                                                                 <th>변경사항</th>
-                                                                <th>다운로드</th>
+                                                                <th>미리보기</th>
                                                                 <th>정보 수정</th>
                                                                 <th>삭제</th>
                                                             </tr>
@@ -488,8 +547,9 @@ export default function AdminDataTable() {
                                                                         <td>
                                                                             <input
                                                                                 type="radio"
-                                                                                name={`use-${row.id}`}
-                                                                                defaultChecked={doc.is_used || idx === 0}
+                                                                                name={`use-${folderId}`}
+                                                                                checked={doc.is_used || false}
+                                                                                onChange={() => handleChangeMainDocument(doc.doc_id, folderId)}
                                                                             />
                                                                         </td>
                                                                         <td>{idx + 1}</td>
@@ -497,15 +557,23 @@ export default function AdminDataTable() {
                                                                         <td>{doc.title}</td>
                                                                         <td>{doc.version}</td>
                                                                         <td>
-                                                                            <ModalCommitTrigger docId={doc.doc_id} />
+                                                                            <ModalCommitTrigger
+                                                                                docId={doc.doc_id}
+                                                                                folderId={folderId}
+                                                                            />
                                                                         </td>
                                                                         <td>
-                                                                            <button className="sub-btn">다운로드</button>
+                                                                            <button
+                                                                                className="sub-btn"
+                                                                                onClick={() => handleOpenFile(doc.url)}
+                                                                            >
+                                                                                미리보기
+                                                                            </button>
                                                                         </td>
                                                                         <td>
                                                                             <button className="edit-icon">
                                                                                 <FontAwesomeIcon icon={faPen}
-                                                                                                 onClick={() => setOpenCommitModal(true)}
+                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
                                                                                                  style={{
                                                                                                      color: '#232D64',
                                                                                                      cursor: 'pointer',
@@ -553,6 +621,23 @@ export default function AdminDataTable() {
                     />
                 </div>
             </div>
+            {/* ModalDefault를 직접 사용 */}
+            {modalMessage.openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label="완료"
+                    onClose={modalMessage.closeSuccess}
+                    errorMessages={[modalMessage.successMessage]}
+                />
+            )}
+            {modalMessage.openErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label="오류"
+                    onClose={modalMessage.closeError}
+                    errorMessages={[modalMessage.errorMessage]}
+                />
+            )}
             {openDeleteModal &&
                 <ModalDefault
                     type="delete-data"
@@ -570,9 +655,19 @@ export default function AdminDataTable() {
                     onClose={() => setOpenTopRowDeleteModal(false)}
                     onSubmit={handleDeleteSelectedFolders}
                 />}
-            {/* 현재는 따로 파일 props를 받는 로직이 없기 때문에, 차후 API 연결 후 DB 조회가 성립되면 ModalUpload와 연계하여 커밋 수정을 구현할 예정입니다. */}
-            {openCommitModal &&
-                <ModalUpload onClose={() => setOpenCommitModal(false)}/>}
+            {openEditModal && (
+                <ModalInput
+                    modalType="edit-dataset"
+                    onClose={() => {
+                        setOpenEditModal(false);
+                        setEditingDocumentId(null);
+                        setEditingDocumentTitle('');
+                        setEditingFolderId(null);
+                    }}
+                    onSubmit={handleUpdateDocument}
+                    defaultValue={editingDocumentTitle}
+                />
+            )}
             {openFolderModal && (
                 <ModalInput
                     modalType="folder"

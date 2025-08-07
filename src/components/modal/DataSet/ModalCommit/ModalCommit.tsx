@@ -1,16 +1,16 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, useRef} from "react";
 import "./ModalCommit.scss";
-import {fetchModifiedPart} from "@/api/admin/dataset/datasetFetch";
+import {fetchModifiedPart, fetchVersionHistory} from "@/api/admin/dataset/datasetFetch";
 import ModalButton from "@/components/modal/Buttons/ModalButton";
+import {ModalCommitProps} from "@/types/modals";
 
-interface ModalCommitProps {
-    onClose: () => void;
-    docId?: number;
-}
 
-export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
+export default function ModalCommit({ onClose, docId, folderId }: ModalCommitProps) {
     const [modifiedContent, setModifiedContent] = useState<string>("");
+    const [commitMessage, setCommitMessage] = useState<string>("변경사항이 없습니다.");
     const [loading, setLoading] = useState(false);
+
+    const hasLoadedData = useRef(false);
 
     // 모달 열릴 때 body 스크롤을 막기 위한 useEffect입니다. 차후 코드 리팩토링 시 컴포넌트 분리 예정
     useEffect(() => {
@@ -31,22 +31,38 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
     }, []);
 
     useEffect(() => {
-        if (docId) {
-            const loadModifiedPart = async () => {
-                setLoading(true);
-                try {
-                    const content = await fetchModifiedPart(docId);
-                    setModifiedContent(content || "변경사항이 없습니다.");
-                } catch (error) {
-                    console.error('변경사항 로딩 실패:', error);
-                    setModifiedContent("변경사항을 불러오는데 실패했습니다.");
-                } finally {
-                    setLoading(false);
-                }
-            };
-            loadModifiedPart();
+        if (hasLoadedData.current || !docId || !folderId) {
+            return;
         }
-    }, [docId]);
+
+        const loadDocumentData = async () => {
+            hasLoadedData.current = true;
+            setLoading(true);
+
+            try {
+
+                const [modifiedData, versionHistory] = await Promise.all([
+                    fetchModifiedPart(folderId, docId),
+                    fetchVersionHistory(folderId)
+                ]);
+
+                setModifiedContent(modifiedData || "변경사항이 없습니다.");
+
+                const currentDocument = versionHistory.find((doc: any) => doc.doc_id === docId);
+                if (currentDocument && currentDocument.commit_message) {
+                    setCommitMessage(currentDocument.commit_message);
+                }
+
+            } catch (error) {
+                setModifiedContent("변경사항을 불러오는데 실패했습니다.");
+                hasLoadedData.current = false;
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadDocumentData();
+    }, [docId, folderId]);
 
     const parseDiffContent = (content: string) => {
         if (!content) return { addedLines: [], removedLines: [] };
@@ -82,8 +98,6 @@ export default function ModalCommit({ onClose, docId }: ModalCommitProps) {
         ]
     };
 
-    // 더미 데이터는 docId가 없는 경우 사용합니다.
-    const commitMessage = "용어사전 관련 QnA 오탈자 수정 및 응답 문장 수정.";
 
     return (
         <div className="modal-window commit-modal">

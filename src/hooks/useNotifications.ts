@@ -1,33 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  NotificationItem, 
-  NotificationFilters, 
-  NotificationTab, 
-  CategoryFilter
+import {
+  NotificationItem,
+  NotificationFilters,
+  NotificationTab,
+  CategoryFilter, UseNotificationsProps, UseNotificationsReturn
 } from '@/types/notification';
 
-interface UseNotificationsProps {
-  initialData: NotificationItem[];
-  itemsPerPage?: number;
-}
-
-interface UseNotificationsReturn {
-  // 상태
-  notifications: NotificationItem[];
-  filteredNotifications: NotificationItem[];
-  paginatedNotifications: NotificationItem[];
-  filters: NotificationFilters;
-  currentPage: number;
-  totalPages: number;
-  unreadCount: number;
-  
-  // 액션
-  handleTabChange: (tab: NotificationTab) => void;
-  handleCategoryChange: (category: string) => void;
-  handlePageChange: (page: number) => void;
-  handleItemClick: (id: string) => void;
-  handleMarkAllAsRead: () => void;
-}
 
 export function useNotifications({ 
   initialData, 

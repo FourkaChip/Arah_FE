@@ -5,12 +5,8 @@ import '@/components/modal/ModalInput/ModalInputFilled.scss';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {useState, useEffect} from 'react';
+import {ModalInputFilledProps} from "@/types/modals";
 
-interface ModalInputFilledProps {
-    type: 'password-lost' | 'token-check';
-    onClose: () => void;
-    value?: string;
-}
 
 const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
     const {title, description, value: defaultValue, buttonLabel} = modalInputFilledConfig[type];
