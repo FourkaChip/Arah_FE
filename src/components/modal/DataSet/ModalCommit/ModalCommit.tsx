@@ -2,12 +2,8 @@ import {useState, useEffect, useRef} from "react";
 import "./ModalCommit.scss";
 import {fetchModifiedPart, fetchVersionHistory} from "@/api/admin/dataset/datasetFetch";
 import ModalButton from "@/components/modal/Buttons/ModalButton";
+import {ModalCommitProps} from "@/types/modals";
 
-interface ModalCommitProps {
-    onClose: () => void;
-    docId?: number;
-    folderId?: number;
-}
 
 export default function ModalCommit({ onClose, docId, folderId }: ModalCommitProps) {
     const [modifiedContent, setModifiedContent] = useState<string>("");

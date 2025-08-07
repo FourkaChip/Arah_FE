@@ -2,15 +2,7 @@
 "use client";
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
-
-interface OptionType {
-    value: string;
-    label: string;
-}
-
-interface Props {
-    onChange: (value: string) => void;
-}
+import {OptionType, Props} from "@/types/notification";
 
 export default function CustomDropDownForNoti({onChange}: Props) {
     const options: OptionType[] = [

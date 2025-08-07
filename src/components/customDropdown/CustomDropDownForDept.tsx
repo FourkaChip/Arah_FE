@@ -4,15 +4,8 @@ import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
 import { useEffect, useState } from "react";
 import { fetchDepartmentList } from "@/api/master/deptFetch";
+import {OptionType, Props} from "@/types/dropdown";
 
-interface OptionType {
-    value: string;
-    label: string;
-}
-
-interface Props {
-    onChange: (value: string) => void;
-}
 
 export default function CustomDropDownForDept({onChange}: Props) {
     const [options, setOptions] = useState<OptionType[]>([{value: 'all', label: '전체'}]);

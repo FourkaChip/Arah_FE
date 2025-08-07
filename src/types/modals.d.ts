@@ -95,3 +95,20 @@ export interface CustomDropDownProps {
     onChange: (value: string) => void;
     onAddOption?: () => void;
 }
+
+export interface ModalCommitProps {
+    onClose: () => void;
+    docId?: number;
+    folderId?: number;
+}
+
+export interface ExtendedModalUploadProps extends ModalUploadProps {
+    folderId?: number | null;
+    onSubmit?: (file: File, commitMessage: string) => Promise<any>;
+}
+
+export interface ModalInputFilledProps {
+    type: 'password-lost' | 'token-check';
+    onClose: () => void;
+    value?: string;
+}

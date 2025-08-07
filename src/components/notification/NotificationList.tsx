@@ -1,11 +1,7 @@
 import React, { memo } from 'react';
-import { NotificationItem as NotificationItemType } from '@/types/notification';
+import {NotificationItem as NotificationItemType, NotificationListProps} from '@/types/notification';
 import NotificationItem from './NotificationItem';
 
-interface NotificationListProps {
-  items: NotificationItemType[];
-  onItemClick: (id: string) => void;
-}
 
 const EmptyMessage = memo(() => (
   <div className="empty-notification-message">

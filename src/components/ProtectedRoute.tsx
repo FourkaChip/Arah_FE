@@ -5,11 +5,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { decodeJwtRole } from '@/utils/decodeJwtRole';
 import { getAccessToken } from '@/utils/tokenStorage';
+import {ProtectedRouteProps} from "@/types/auth";
 
-interface ProtectedRouteProps {
-    allowedRoles: string[];
-    children: React.ReactNode;
-}
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     const router = useRouter();
