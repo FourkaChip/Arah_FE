@@ -464,6 +464,10 @@ export default function AdminDataTable() {
         setOpenEditModal(true);
     };
 
+    const handleOpenFile = (url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -550,7 +554,7 @@ export default function AdminDataTable() {
                                                                 <th>데이터셋명</th>
                                                                 <th>버전</th>
                                                                 <th>변경사항</th>
-                                                                <th>다운로드</th>
+                                                                <th>미리보기</th>
                                                                 <th>정보 수정</th>
                                                                 <th>삭제</th>
                                                             </tr>
@@ -584,7 +588,12 @@ export default function AdminDataTable() {
                                                                             />
                                                                         </td>
                                                                         <td>
-                                                                            <button className="sub-btn">다운로드</button>
+                                                                            <button
+                                                                                className="sub-btn"
+                                                                                onClick={() => handleOpenFile(doc.url)}
+                                                                            >
+                                                                                미리보기
+                                                                            </button>
                                                                         </td>
                                                                         <td>
                                                                             <button className="edit-icon">
