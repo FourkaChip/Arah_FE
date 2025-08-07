@@ -17,6 +17,8 @@ export default function ModalDefault({ type, label, onClose, onSubmit, errorMess
                 description = '토큰 재등록이 완료되었습니다.';
             } else if (label === '삭제 완료') {
                 description = '성공적으로 삭제되었습니다.';
+            } else if (label === '업로드 완료') {
+                description = '데이터셋이 성공적으로 업로드되었습니다.';
             } else {
                 description = '답변이 전송되었습니다.';
             }

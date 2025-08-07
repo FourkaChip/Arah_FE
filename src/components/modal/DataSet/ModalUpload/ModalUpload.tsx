@@ -17,7 +17,6 @@ export default function ModalUpload({
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
-    const [successModal, setSuccessModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -79,34 +78,14 @@ export default function ModalUpload({
 
         try {
             await onSubmit(uploadedFile, comment);
-            setSuccessModal(true);
+            // 성공 시 onClose만 호출하여 부모 컴포넌트에서 성공 처리
+            onClose();
         } catch (error: any) {
             setError(error.message || '업로드에 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
-
-    if (successModal) {
-        return (
-            <div className="modal-window upload-modal">
-                <div className="modal-dialog upload-modal">
-                    <button className="modal-close upload-modal" onClick={onClose}>×</button>
-                    <div className="modal-content" style={{textAlign: 'center', padding: '40px'}}>
-                        <h2 className="modal-title">업로드 완료</h2>
-                        <p style={{margin: '20px 0', color: '#666'}}>
-                            데이터셋이 성공적으로 업로드되었습니다.
-                        </p>
-                        <ModalButton
-                            type="default"
-                            label="확인"
-                            onClick={onClose}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="modal-window upload-modal">

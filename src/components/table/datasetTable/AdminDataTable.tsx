@@ -56,6 +56,8 @@ export default function AdminDataTable() {
     const [openFolderModal, setOpenFolderModal] = useState(false);
     const [openUploadModal, setOpenUploadModal] = useState(false);
     const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+    const [openSuccessModal, setOpenSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         const getCompanyId = async () => {
@@ -326,6 +328,10 @@ export default function AdminDataTable() {
                 [selectedFolderId]: updatedDocuments || []
             }));
 
+            // 성공 메시지 설정 및 성공 모달 표시
+            setSuccessMessage('데이터셋이 성공적으로 업로드되었습니다.');
+            setOpenSuccessModal(true);
+
             return result;
         } catch (error) {
             console.error('데이터셋 업로드 실패:', error);
@@ -553,6 +559,13 @@ export default function AdminDataTable() {
                     />
                 </div>
             </div>
+            {openSuccessModal &&
+                <ModalDefault
+                    type="default"
+                    label="업로드 완료"
+                    onClose={() => setOpenSuccessModal(false)}
+                    errorMessages={[successMessage]}
+                />}
             {openDeleteModal &&
                 <ModalDefault
                     type="delete-data"
