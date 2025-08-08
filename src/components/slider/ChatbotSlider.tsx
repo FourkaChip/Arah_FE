@@ -1,9 +1,9 @@
-// components/ChatbotSlider.tsx
+// components/slider/ChatbotSlider.tsx
 'use client';
-
 import React, { useMemo, useCallback } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { toast } from 'react-hot-toast';
 import './ChatbotSlider.scss';
 import { SLIDER_CONFIG, COLORS } from '@/constants/sliderConfig';
 import type { ChatbotSliderProps, MarkStyleType } from '@/types/slider';
@@ -11,63 +11,69 @@ import type { ChatbotSliderProps, MarkStyleType } from '@/types/slider';
 export default function ChatbotSlider({
   value,
   onChange,
+  onChangeComplete,
   label,
   leftLabel,
   rightLabel,
   tips,
 }: ChatbotSliderProps) {
-  // 스타일 객체들을 useMemo로 메모화
-  const sliderStyles = useMemo(() => ({
-    trackStyle: { 
-      backgroundColor: COLORS.PRIMARY, 
-      height: 8 
-    },
-    handleStyle: {
-      backgroundColor: COLORS.WHITE,
-      border: `2px solid ${COLORS.PRIMARY}`,
-      height: 24,
-      width: 24,
-      marginTop: -8,
-      marginBottom: 10,
-    },
-    railStyle: { 
-      backgroundColor: COLORS.RAIL_GRAY, 
-      height: 8 
-    },
-    dotStyle: { 
-      display: 'none' 
-    },
-  }), []);
+  const sliderStyles = useMemo(
+    () => ({
+      trackStyle: { backgroundColor: COLORS.PRIMARY, height: 8 },
+      handleStyle: {
+        backgroundColor: COLORS.WHITE,
+        border: `2px solid ${COLORS.PRIMARY}`,
+        height: 24,
+        width: 24,
+        marginTop: -8,
+        marginBottom: 10,
+      },
+      railStyle: { backgroundColor: COLORS.RAIL_GRAY, height: 8 },
+      dotStyle: { display: 'none' },
+    }),
+    []
+  );
 
-  // 마크 클래스명 결정 함수
-  const getMarkClassName = useCallback((index: number, currentValue: number): MarkStyleType => {
-    if (index === 0) return 'zero-value';
-    if (index === currentValue) return 'current-value';
-    return 'default-value';
-  }, []);
+  const getMarkClassName = useCallback(
+    (i: number, cur: number): MarkStyleType =>
+      i === 0 ? 'zero-value' : i === cur ? 'current-value' : 'default-value',
+    []
+  );
 
-  // 동적으로 marks 생성 - useMemo로 최적화
   const marks = useMemo(() => {
-    const marksObject: { [key: number]: React.ReactNode } = {};
-    
+    const o: Record<number, React.ReactNode> = {};
     for (let i = SLIDER_CONFIG.MIN_VALUE; i <= SLIDER_CONFIG.MAX_VALUE; i++) {
-      const className = getMarkClassName(i, value);
-      marksObject[i] = (
-        <span className={className} key={i}>
+      o[i] = (
+        <span className={getMarkClassName(i, value)} key={i}>
           {i}
         </span>
       );
     }
-    
-    return marksObject;
+    return o;
   }, [value, getMarkClassName]);
 
-  // onChange 핸들러 최적화
-  const handleChange = useCallback((sliderValue: number | number[]) => {
-    const numValue = typeof sliderValue === 'number' ? sliderValue : sliderValue[0];
-    // 0으로 가려고 하면 1로 튕기게 함
-    onChange(numValue === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : numValue);
-  }, [onChange]);
+  const handleChange = useCallback(
+    (v: number | number[]) => {
+      const num = typeof v === 'number' ? v : v[0];
+      onChange(num === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : num);
+    },
+    [onChange]
+  );
+
+  const handleAfter = useCallback(
+    async (v: number | number[]) => {
+      const num = typeof v === 'number' ? v : v[0];
+      const final = num === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : num;
+
+      try {
+        await onChangeComplete(final);
+        toast.success(`${label}이 저장되었습니다.`);
+      } catch (err) {
+        toast.error(`${label} 저장에 실패했습니다.`);
+      }
+    },
+    [onChangeComplete, label]
+  );
 
   return (
     <div className="slider-block">
@@ -77,8 +83,8 @@ export default function ChatbotSlider({
         <div className="slider-tip-box">
           <p className="slider-tip-label">사용 팁</p>
           <div className="slider-tip-content">
-            {tips.map((tip, index) => (
-              <p key={index}>{tip}</p>
+            {tips.map((tip, i) => (
+              <p key={i}>{tip}</p>
             ))}
           </div>
         </div>
@@ -92,6 +98,7 @@ export default function ChatbotSlider({
           step={SLIDER_CONFIG.STEP}
           value={value}
           onChange={handleChange}
+          onChangeComplete={handleAfter}
           trackStyle={sliderStyles.trackStyle}
           handleStyle={sliderStyles.handleStyle}
           railStyle={sliderStyles.railStyle}
