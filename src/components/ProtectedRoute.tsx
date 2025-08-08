@@ -19,23 +19,19 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
                 const accessToken = await getValidAccessToken();
 
                 if (!accessToken) {
-                    console.log('No valid access token, redirecting to login');
                     router.replace('/login');
                     return;
                 }
 
                 const role = decodeJwtRole(accessToken);
-                console.log('Current role:', role, 'Allowed roles:', allowedRoles);
 
                 if (!role || !allowedRoles.includes(role)) {
-                    console.log('Role not allowed, redirecting to unauthorized');
                     router.replace('/unauthorized');
                     return;
                 }
 
                 setIsAllowed(true);
             } catch (error) {
-                console.error('Access check failed:', error);
                 router.replace('/login');
             } finally {
                 setIsLoading(false);

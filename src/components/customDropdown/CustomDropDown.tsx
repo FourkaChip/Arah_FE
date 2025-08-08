@@ -4,6 +4,8 @@ import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
 import {fetchAdminFaqTagList, fetchAddAdminFaqTag, clearFaqTagListCache} from "@/api/admin/faq/faqFetch";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
+import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function CustomDropDown({
     value,
@@ -14,6 +16,12 @@ export default function CustomDropDown({
 }: CustomDropDownProps & { companyId: number }) {
     const [options, setOptions] = useState<string[]>(_options);
     const [showInputModal, setShowInputModal] = useState(false);
+    const {
+        openErrorModal,
+        errorMessage,
+        showError,
+        closeError,
+    } = useModalMessage();
 
     useEffect(() => {
         fetchAdminFaqTagList()
@@ -46,7 +54,7 @@ export default function CustomDropDown({
             setOptions(tagNames);
             onChange(tagName);
         } catch {
-            alert("태그 등록에 실패했습니다.");
+            showError("태그 등록에 실패했습니다.");
         } finally {
             setShowInputModal(false);
         }
@@ -82,6 +90,13 @@ export default function CustomDropDown({
                     description="새로운 태그 이름을 입력해 주세요."
                     onClose={() => setShowInputModal(false)}
                     onSubmit={handleAddTag}
+                />
+            )}
+            {openErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label={errorMessage}
+                    onClose={closeError}
                 />
             )}
         </div>

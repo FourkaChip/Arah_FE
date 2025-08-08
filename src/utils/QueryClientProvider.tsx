@@ -22,7 +22,6 @@ export default function ClientProviders({children}: { children: ReactNode }) {
                     removeAccessToken();
                 }
             } catch (error) {
-                console.error('Auth initialization failed:', error);
                 removeRefreshToken();
                 removeAccessToken();
             }

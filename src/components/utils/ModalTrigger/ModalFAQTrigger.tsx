@@ -2,15 +2,27 @@
 
 import {useState} from 'react';
 import ModalFAQ from "@/components/modal/ModalFAQ/ModalFAQ";
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import './ModalFAQTrigger.scss';
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fetchAddAdminFaq, fetchAdminFaqTagList} from "@/api/admin/faq/faqFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
+import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
     const [isOpen, setIsOpen] = useState(false);
     const [companyId, setCompanyId] = useState<number>(1);
+    const {
+        openSuccessModal,
+        successMessage,
+        openErrorModal,
+        errorMessage,
+        showSuccess,
+        showError,
+        closeSuccess,
+        closeError,
+    } = useModalMessage();
 
     const handleOpen = async () => {
         try {
@@ -32,15 +44,15 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {
-                alert("선택한 태그가 존재하지 않습니다.");
+                showError("선택한 태그가 존재하지 않습니다.");
                 return;
             }
             await fetchAddAdminFaq(companyId, data.question, data.answer, tag_id);
-            alert("FAQ가 성공적으로 등록되었습니다.");
+            showSuccess("FAQ가 성공적으로 등록되었습니다.");
             if (onAdded) onAdded();
             handleClose();
         } catch (e) {
-            alert("FAQ 등록에 실패했습니다.");
+            showError("FAQ 등록에 실패했습니다.");
         }
     };
 
@@ -55,6 +67,20 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
                 onSubmit={handleSubmit}
                 companyId={companyId}
             />}
+            {openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={successMessage}
+                    onClose={closeSuccess}
+                />
+            )}
+            {openErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label={errorMessage}
+                    onClose={closeError}
+                />
+            )}
         </>
     );
 }

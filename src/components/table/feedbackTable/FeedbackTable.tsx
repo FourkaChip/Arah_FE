@@ -46,7 +46,6 @@ export default function FaqAdminTable() {
                 }));
                 setData(dataWithId);
             } catch (error) {
-                console.error('피드백 데이터 로드 실패:', error);
                 setData([]);
             } finally {
                 setLoading(false);
