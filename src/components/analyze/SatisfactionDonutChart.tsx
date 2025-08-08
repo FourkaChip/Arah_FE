@@ -3,7 +3,7 @@
 import React, { useState, useMemo} from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { DateRange } from '@/types/analyze';
-import { aggregateSatisfactionData } from '@/constants/dummydata/satisfaction';
+import { aggregateSatisfactionData } from '@/constants/dummydata/DummyAnalyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';  
 import './AnalyzeChart.scss';
 
@@ -33,7 +33,7 @@ const SatisfactionDonutChart: React.FC = () => {
         x={entry.x}
         y={entry.y}
         dy={8}
-        fill="#333" // 여기가 텍스트 색상!
+        fill="#333"
         fontSize={14}
         textAnchor="middle"
       >
