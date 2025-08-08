@@ -12,27 +12,13 @@ import React from "react";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
-import {FeedbackRowData} from "@/types/tables";
+import { FeedbackRowData } from "@/types/dataset";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
 import Pagination from "@/components/customPagination/Pagination";
-import {fetchUnlikeFeedbackList} from "@/api/admin/feedback/feedbackFetch";
+import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache} from "@/api/admin/feedback/feedbackFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
-import { useModalMessage } from "@/hooks/useModalMessage";
 
-interface FeedbackApiData {
-    feedback_id: number;
-    chat_id: number;
-    feedback_type: string;
-    feedback_reason: string | null;
-    feedback_content: string | null;
-    answer: string;
-    created_at: string;
-    user_question: string;
-    company_id: number;
-}
-
-export default function FeedbackTable() {
-    const modalMessage = useModalMessage();
+export default function FaqAdminTable() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const router = useRouter();
 
@@ -41,59 +27,34 @@ export default function FeedbackTable() {
     const [searchValue, setSearchValue] = useState("");
     const [data, setData] = useState<FeedbackRowData[]>([]);
     const [loading, setLoading] = useState(true);
-    const [companyId, setCompanyId] = useState<number>(2); // 기본값 설정
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
 
-    const [hasLoadedData, setHasLoadedData] = useState(false);
-
+    // 데이터 로드
     useEffect(() => {
-        const getCompanyId = async () => {
-            try {
-                const userInfo = await fetchCurrentUserInfo();
-                if (userInfo.companyId || userInfo.company_id) {
-                    setCompanyId(userInfo.companyId ?? userInfo.company_id);
-                }
-            } catch (error) {
-                console.error('회사 정보 조회 실패:', error);
-                setCompanyId(2);
-            }
-        };
-        getCompanyId();
-    }, []);
-
-    useEffect(() => {
-        if (!companyId || hasLoadedData) return;
-
         const loadFeedbackData = async () => {
-            setLoading(true);
             try {
-                const feedbackData: FeedbackApiData[] = await fetchUnlikeFeedbackList(companyId);
-
-                const transformedData: FeedbackRowData[] = feedbackData.map((item, index) => ({
-                    id: item.feedback_id,
-                    no: index + 1,
-                    docFaq: item.feedback_reason || "기타",
-                    registeredAt: new Date(item.created_at).toLocaleDateString('ko-KR').replace(/\. /g, '/').replace('.', ''),
-                    question: item.user_question || "질문 없음",
-                    answer: item.answer,
-                    feedback: item.feedback_content || item.feedback_reason || "피드백 없음"
+                setLoading(true);
+                const userInfo = await fetchCurrentUserInfo();
+                const feedbackList = await fetchUnlikeFeedbackList(userInfo.companyId);
+                const dataWithId = feedbackList.map(item => ({
+                    ...item,
+                    id: item.feedback_id
                 }));
-
-                setData(transformedData);
-                setHasLoadedData(true);
+                setData(dataWithId);
             } catch (error) {
-                modalMessage.showError('피드백 데이터를 불러오는데 실패했습니다.');
+                console.error('피드백 데이터 로드 실패:', error);
+                setData([]);
             } finally {
                 setLoading(false);
             }
         };
 
         loadFeedbackData();
-    }, [companyId, hasLoadedData, modalMessage]);
+    }, []);
 
     const handleSearch = (search: string) => {
         setSearchValue(search);
@@ -101,17 +62,20 @@ export default function FeedbackTable() {
 
     const filteredData = useMemo(() => {
         return data.filter(row => {
+            // 태그 필터 (chat_type 사용)
             const isTagAll = selectedTag === 'all';
-            const tagMatch = isTagAll || row.docFaq === selectedTag;
+            const tagMatch = isTagAll || row.chat_type === selectedTag;
 
+            // 검색어 필터
             const matches = searchValue === "" ||
-                row.docFaq.includes(searchValue) ||
+                row.chat_type.includes(searchValue) ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
 
-            const registered = row.registeredAt.replace(/\//g, "-");
-            const afterStart = !startDate || registered >= startDate;
-            const beforeEnd = !endDate || registered <= endDate;
+            // 날짜 필터 (created_at 사용)
+            const createdDate = new Date(row.created_at).toISOString().split('T')[0];
+            const afterStart = !startDate || createdDate >= startDate;
+            const beforeEnd = !endDate || createdDate <= endDate;
 
             return tagMatch && matches && afterStart && beforeEnd;
         });
@@ -126,19 +90,21 @@ export default function FeedbackTable() {
 
     const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
         {
-            accessorKey: "no",
+            accessorKey: "feedback_id",
             header: "No.",
         },
         {
-            accessorKey: "docFaq",
-            header: "피드백 사유",
+            accessorKey: "chat_type",
+            header: "태그",
             cell: info => <strong className="faq-strong">{info.getValue() as string}</strong>,
         },
         {
-            accessorKey: "registeredAt",
+            accessorKey: "created_at",
             header: "등록일",
             cell: info => (
-                <span className="faq-date">{info.getValue() as string}</span>
+                <span className="faq-date">
+                    {new Date(info.getValue() as string).toLocaleDateString('ko-KR')}
+                </span>
             ),
         },
         {
@@ -157,7 +123,7 @@ export default function FeedbackTable() {
             id: "edit",
             header: "FAQ 이동",
             cell: ({row}) => (
-                row.original.docFaq === "FAQ" ? (
+                row.original.chat_type === "FAQ" ? (
                     <button className="goto-faq-icon">
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
@@ -200,7 +166,7 @@ export default function FeedbackTable() {
                 </button>
             ),
         },
-    ], [expandedRowId, paginatedData, selectedRowIds, router]);
+    ], [expandedRowId, paginatedData, selectedRowIds]);
 
     const table = useReactTable({
         data: paginatedData,
@@ -211,69 +177,70 @@ export default function FeedbackTable() {
     useEffect(() => {
         if (checkboxRef.current) {
             checkboxRef.current.indeterminate =
-                paginatedData.some((row) => selectedRowIds[row.id]) &&
-                !paginatedData.every((row) => selectedRowIds[row.id]);
+                paginatedData.some((row) => selectedRowIds[row.feedback_id]) &&
+                !paginatedData.every((row) => selectedRowIds[row.feedback_id]);
         }
     }, [paginatedData, selectedRowIds]);
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
+
+    if (loading) {
+        return <div>로딩 중...</div>;
+    }
 
     return (
         <>
             <div className="admin-dataset-header">
             </div>
             <div id="master-admin-table" className="master-admin-table" style={{width: "100%"}}>
-                {loading ? (
-                    <div style={{textAlign: "center", padding: "40px"}}>피드백 데이터를 불러오는 중...</div>
-                ) : (
-                    <table className="tanstack-table">
-                        <thead>
-                        {table.getHeaderGroups().map(headerGroup => (
-                            <tr key={headerGroup.id}>
-                                {headerGroup.headers.map(header => (
-                                    <th key={header.id}>
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                    </th>
-                                ))}
-                            </tr>
-                        ))}
-                        </thead>
-                        <tbody>
-                        {table.getRowModel().rows.length === 0 ? (
-                            <tr>
-                                <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
-                                    {loading ? "데이터를 불러오는 중입니다..." : "피드백 데이터가 없습니다"}
-                                </td>
-                            </tr>
-                        ) : (
-                            table.getRowModel().rows.map(row => (
-                                <React.Fragment key={row.id}>
-                                    <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
-                                        {row.getVisibleCells().map(cell => (
-                                            <td key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                    <tr className="faq-expanded-row">
-                                        <td colSpan={table.getAllLeafColumns().length}>
-                                            <div
-                                                className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
-                                            >
-                                                <div className="faq-detail-view">
-                                                    <p><strong>질문</strong> {row.original.question}</p>
-                                                    <p className="answer"><strong>답변</strong> {row.original.answer}</p>
-                                                    <p className="feedback"><strong>피드백 사유</strong> {row.original.feedback}</p>
-                                                </div>
-                                            </div>
+                <table className="tanstack-table">
+                    <thead>
+                    {table.getHeaderGroups().map(headerGroup => (
+                        <tr key={headerGroup.id}>
+                            {headerGroup.headers.map(header => (
+                                <th key={header.id}>
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                </th>
+                            ))}
+                        </tr>
+                    ))}
+                    </thead>
+                    <tbody>
+                    {table.getRowModel().rows.length === 0 ? (
+                        <tr>
+                            <td className="empty-row" colSpan={table.getAllLeafColumns().length}>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    ) : (
+                        table.getRowModel().rows.map(row => (
+                            <React.Fragment key={row.id}>
+                                <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
+                                    {row.getVisibleCells().map(cell => (
+                                        <td key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </td>
-                                    </tr>
-                                </React.Fragment>
-                            )))}
-                        </tbody>
-                    </table>
-                )}
-                {/* pagination-footer 제거, Pagination 중앙 배치 */}
+                                    ))}
+                                </tr>
+                                <tr className="faq-expanded-row">
+                                    <td colSpan={table.getAllLeafColumns().length}>
+                                        <div
+                                            className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
+                                        >
+                                            <div className="faq-detail-view">
+                                                <p><strong>질문</strong> {row.original.question}</p>
+                                                <p className="answer"><strong>답변</strong> {row.original.answer}</p>
+                                                <p className="feedback">
+                                                    <strong>사유</strong> {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </React.Fragment>
+                        )))}
+                    </tbody>
+                </table>
                 <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
                     <Pagination
                         currentPage={currentPage + 1}
@@ -282,22 +249,6 @@ export default function FeedbackTable() {
                     />
                 </div>
             </div>
-            {modalMessage.openSuccessModal && (
-                <ModalDefault
-                    type="default"
-                    label="완료"
-                    onClose={modalMessage.closeSuccess}
-                    errorMessages={[modalMessage.successMessage]}
-                />
-            )}
-            {modalMessage.openErrorModal && (
-                <ModalDefault
-                    type="default"
-                    label="오류"
-                    onClose={modalMessage.closeError}
-                    errorMessages={[modalMessage.errorMessage]}
-                />
-            )}
             {openDeleteModal &&
                 <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
         </>
