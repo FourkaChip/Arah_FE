@@ -29,7 +29,8 @@ import {
     fetchUploadPdf,
     fetchDeleteFolder,
     fetchChangeMainDocument,
-    fetchUpdatePdf
+    fetchUpdatePdf,
+    clearFoldersCache
 } from "@/api/admin/dataset/datasetFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
@@ -292,6 +293,7 @@ export default function AdminDataTable() {
         try {
             await fetchCreateFolder(folderName, companyId);
 
+            clearFoldersCache();
             const folders = await fetchFoldersByCompany();
             setData(folders.map((folder: any, idx: number) => ({
                 id: folder.folder_id.toString(),
@@ -361,6 +363,7 @@ export default function AdminDataTable() {
                 selectedFolderIds.map(folderId => fetchDeleteFolder(folderId))
             );
 
+            clearFoldersCache();
             const folders = await fetchFoldersByCompany();
             setData(folders.map((folder: any, idx: number) => ({
                 id: folder.folder_id.toString(),

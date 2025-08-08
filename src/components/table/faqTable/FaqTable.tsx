@@ -22,15 +22,28 @@ import {
     fetchAdminFaqList,
     fetchDeleteAdminFaq,
     fetchUpdateAdminFaq,
-    fetchAdminFaqTagList
+    fetchAdminFaqTagList,
+    clearFaqListCache
 } from "@/api/admin/faq/faqFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
+import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function FaqAdminTable() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openFaqModal, setOpenFaqModal] = useState(false);
     const [editRow, setEditRow] = useState<RowData | null>(null);
     const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
+    const {
+        openSuccessModal,
+        successMessage,
+        openErrorModal,
+        errorMessage,
+        showSuccess,
+        showError,
+        closeSuccess,
+        closeError,
+    } = useModalMessage();
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
@@ -247,8 +260,9 @@ export default function FaqAdminTable() {
                 question: faq.question,
                 answer: faq.answer,
             })));
+            showSuccess("FAQ가 성공적으로 삭제되었습니다.");
         } catch (e) {
-            alert("FAQ 삭제에 실패했습니다.");
+            showError("FAQ 삭제에 실패했습니다.");
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -264,10 +278,9 @@ export default function FaqAdminTable() {
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {
-                alert("선택한 태그가 존재하지 않습니다.");
+                showError("선택한 태그가 존재하지 않습니다.");
                 return;
             }
-            // fetchUpdateAdminFaq가 body로 데이터를 보내므로 FastAPI에서 DTO를 Body로 받아야 함!
             await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
             const faqList = await fetchAdminFaqList();
             setFaqData(faqList.map((faq: any, idx: number) => ({
@@ -278,8 +291,9 @@ export default function FaqAdminTable() {
                 question: faq.question,
                 answer: faq.answer,
             })));
+            showSuccess("FAQ가 성공적으로 수정되었습니다.");
         } catch (e) {
-            alert("FAQ 수정에 실패했습니다.");
+            showError("FAQ 수정에 실패했습니다.");
         } finally {
             setLoading(false);
             setOpenFaqModal(false);
@@ -400,6 +414,20 @@ export default function FaqAdminTable() {
                     answer={editRow?.answer}
                     companyId={companyId}
                 />}
+            {openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={successMessage}
+                    onClose={closeSuccess}
+                />
+            )}
+            {openErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label={errorMessage}
+                    onClose={closeError}
+                />
+            )}
         </>
     );
 }

@@ -1,15 +1,51 @@
 // 부서 리스트 조회 함수입니다.
 import {authorizedFetch} from "@/api/auth/authorizedFetch";
 
-export const fetchDepartmentList = async () => {
-    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments/list`, {
-        method: 'GET',
-    });
-    if (!res.ok) throw new Error('부서 리스트 조회 실패');
-    const data = await res.json();
-    if (!data.result) throw new Error('부서 리스트가 없습니다.');
+let departmentListCache: any[] | null = null;
+let departmentListPromise: Promise<any[]> | null = null;
+let departmentListCacheTime: number = 0;
+const DEPARTMENT_LIST_CACHE_DURATION = 5 * 60 * 1000;
 
-    return data.result;
+export const fetchDepartmentList = async () => {
+    const now = Date.now();
+
+    if (departmentListCache && (now - departmentListCacheTime) < DEPARTMENT_LIST_CACHE_DURATION) {
+        return departmentListCache;
+    }
+
+    if (departmentListPromise) {
+        return await departmentListPromise;
+    }
+
+    departmentListPromise = (async () => {
+        try {
+            const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/departments/list`, {
+                method: 'GET',
+            });
+            if (!res.ok) throw new Error('부서 리스트 조회 실패');
+            const data = await res.json();
+            if (!data.result) throw new Error('부서 리스트가 없습니다.');
+
+            departmentListCache = data.result;
+            departmentListCacheTime = Date.now();
+
+            return data.result;
+        } catch (error) {
+            departmentListCache = null;
+            departmentListCacheTime = 0;
+            throw error;
+        } finally {
+            departmentListPromise = null;
+        }
+    })();
+
+    return await departmentListPromise;
+};
+
+export const clearDepartmentListCache = () => {
+    departmentListCache = null;
+    departmentListPromise = null;
+    departmentListCacheTime = 0;
 };
 
 // 부서 생성 함수입니다.
@@ -37,6 +73,8 @@ export const createDepartment = async (name: string, companyId: number) => {
         }
     }
 
+    clearDepartmentListCache();
+
     const responseData = await res.json();
     return responseData.result;
 };
@@ -55,6 +93,8 @@ export const deleteDepartment = async (departmentId: number) => {
             throw new Error('부서 삭제 실패');
         }
     }
+
+    clearDepartmentListCache();
 
     return res.json();
 };

@@ -12,46 +12,70 @@ import React from "react";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
-import {FeedbackRowData} from "@/types/tables";
-import {defaultFeedbackData} from "@/constants/dummydata/DummyFeedback";
+import { FeedbackRowData } from "@/types/dataset";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
 import Pagination from "@/components/customPagination/Pagination";
+import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache} from "@/api/admin/feedback/feedbackFetch";
+import {fetchCurrentUserInfo} from "@/api/auth/master";
 
 export default function FaqAdminTable() {
-
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const router = useRouter();
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
-    const [data] = useState(() => defaultFeedbackData);
+    const [data, setData] = useState<FeedbackRowData[]>([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 8;
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
 
+    // 데이터 로드
+    useEffect(() => {
+        const loadFeedbackData = async () => {
+            try {
+                setLoading(true);
+                const userInfo = await fetchCurrentUserInfo();
+                const feedbackList = await fetchUnlikeFeedbackList(userInfo.companyId);
+                const dataWithId = feedbackList.map(item => ({
+                    ...item,
+                    id: item.feedback_id
+                }));
+                setData(dataWithId);
+            } catch (error) {
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadFeedbackData();
+    }, []);
+
     const handleSearch = (search: string) => {
         setSearchValue(search);
     };
+
     const filteredData = useMemo(() => {
         return data.filter(row => {
-            // 태그 필터 추가
+            // 태그 필터 (chat_type 사용)
             const isTagAll = selectedTag === 'all';
-            const tagMatch = isTagAll || row.docFaq === selectedTag;
+            const tagMatch = isTagAll || row.chat_type === selectedTag;
 
-            // 기존 검색어 필터
+            // 검색어 필터
             const matches = searchValue === "" ||
-                row.docFaq.includes(searchValue) ||
+                row.chat_type.includes(searchValue) ||
                 row.question.includes(searchValue) ||
                 row.answer.includes(searchValue);
 
-            const registered = row.registeredAt.replace(/\//g, "-");
-            const afterStart = !startDate || registered >= startDate;
-            const beforeEnd = !endDate || registered <= endDate;
+            // 날짜 필터 (created_at 사용)
+            const createdDate = new Date(row.created_at).toISOString().split('T')[0];
+            const afterStart = !startDate || createdDate >= startDate;
+            const beforeEnd = !endDate || createdDate <= endDate;
 
-            // 태그, 검색어, 날짜 모두 만족해야 함
             return tagMatch && matches && afterStart && beforeEnd;
         });
     }, [data, selectedTag, searchValue, startDate, endDate]);
@@ -65,19 +89,21 @@ export default function FaqAdminTable() {
 
     const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
         {
-            accessorKey: "no",
+            accessorKey: "feedback_id",
             header: "No.",
         },
         {
-            accessorKey: "docFaq",
+            accessorKey: "chat_type",
             header: "태그",
             cell: info => <strong className="faq-strong">{info.getValue() as string}</strong>,
         },
         {
-            accessorKey: "registeredAt",
+            accessorKey: "created_at",
             header: "등록일",
             cell: info => (
-                <span className="faq-date">{info.getValue() as string}</span>
+                <span className="faq-date">
+                    {new Date(info.getValue() as string).toLocaleDateString('ko-KR')}
+                </span>
             ),
         },
         {
@@ -96,7 +122,7 @@ export default function FaqAdminTable() {
             id: "edit",
             header: "FAQ 이동",
             cell: ({row}) => (
-                row.original.docFaq === "FAQ" ? (
+                row.original.chat_type === "FAQ" ? (
                     <button className="goto-faq-icon">
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
@@ -150,12 +176,16 @@ export default function FaqAdminTable() {
     useEffect(() => {
         if (checkboxRef.current) {
             checkboxRef.current.indeterminate =
-                paginatedData.some((row) => selectedRowIds[row.id]) &&
-                !paginatedData.every((row) => selectedRowIds[row.id]);
+                paginatedData.some((row) => selectedRowIds[row.feedback_id]) &&
+                !paginatedData.every((row) => selectedRowIds[row.feedback_id]);
         }
     }, [paginatedData, selectedRowIds]);
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
+
+    if (loading) {
+        return <div>로딩 중...</div>;
+    }
 
     return (
         <>
@@ -199,7 +229,9 @@ export default function FaqAdminTable() {
                                             <div className="faq-detail-view">
                                                 <p><strong>질문</strong> {row.original.question}</p>
                                                 <p className="answer"><strong>답변</strong> {row.original.answer}</p>
-                                                <p className="feedback"><strong>사유</strong> {row.original.feedback}</p>
+                                                <p className="feedback">
+                                                    <strong>사유</strong> {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>
@@ -208,7 +240,6 @@ export default function FaqAdminTable() {
                         )))}
                     </tbody>
                 </table>
-                {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
                     <Pagination
                         currentPage={currentPage + 1}
