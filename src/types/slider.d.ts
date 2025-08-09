@@ -25,4 +25,4 @@ export interface SliderConfig {
   readonly DEFAULT_VALUE: number;
   readonly STEP: number;
   readonly SELECTABLE_MIN: number;
-} 
+}
