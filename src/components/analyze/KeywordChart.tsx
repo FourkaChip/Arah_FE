@@ -1,37 +1,34 @@
+// src/components/analyze/KeyWordChart.tsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { DateRange } from '@/types/analyze';
 import { aggregateKeywordData } from '@/constants/dummydata/DummyAnalyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
+import {
+  KEYWORD_COLORS,
+  DEFAULT_KEYWORD_COLOR,
+} from '@/constants/analyzeConfig';
 import './AnalyzeChart.scss';
 
-// 키워드 10종 색상 매핑(라벨 고정형)
-const KEYWORD_COLORS: Record<string, string> = {
-  '휴가': '#B8E6B8',
-  '야근': '#FF9AA2',
-  '사직서': '#A8D8EA',
-  '회의': '#C8A8E9',
-  '교육': '#FFCCCC',
-  '복지': '#FFD3B6',
-  '인사': '#E0BBE4',
-  '출장': '#99CCFF',
-  '채용': '#9FE2BF',
-  '보너스': '#FFDF91',
+type KeywordDatum = {
+  name: string;
+  value: number;
+  percentage: number;
 };
-const getKeywordColor = (name: string) => KEYWORD_COLORS[name] ?? '#D1F2A5';
 
-const KeywordBarChart: React.FC = () => {
+const getKeywordColor = (name: string) => KEYWORD_COLORS[name] ?? DEFAULT_KEYWORD_COLOR;
+
+const KeywordChart: React.FC = () => {
   const initialRange = useDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRange>(initialRange);
 
-  // aggregateKeywordData는 이제 10개 반환(이름, value, percentage)
-  const keywordAgg = useMemo(() => {
+  const keywordAgg: KeywordDatum[] = useMemo(() => {
     const res = aggregateKeywordData(dateRange.startDate, dateRange.endDate);
-    // 막대차트용 필드만 추림
     return res.map(k => ({ name: k.name, value: k.value, percentage: k.percentage }));
   }, [dateRange.startDate, dateRange.endDate]);
 
@@ -39,14 +36,12 @@ const KeywordBarChart: React.FC = () => {
     setDateRange(prev => ({ ...prev, [field]: value }));
   };
 
-  const CustomTooltip = ({
-    active, payload, label,
-  }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
-      const { value } = payload[0];
+      const val = payload[0]?.value as number | undefined;
       return (
         <div className="tooltip">
-          <p>{`${label}: ${value}건`}</p>
+          <p>{`${label}: ${val ?? 0}건`}</p>
         </div>
       );
     }
@@ -113,4 +108,4 @@ const KeywordBarChart: React.FC = () => {
   );
 };
 
-export default KeywordBarChart;
+export default KeywordChart;

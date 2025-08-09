@@ -3,26 +3,24 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend,
 } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { FeedbackPeriod } from '@/types/analyze';
 import {
   feedbackDataByYear,
   availableYears,
   generateDailySatisfactionData,
-  generateHourlySatisfactionData, // [ADD]
+  generateHourlySatisfactionData,
 } from '@/constants/dummydata/DummyAnalyze';
+import {
+  SATIS_COLOR,
+  UNSAT_COLOR,
+} from '@/constants/analyzeConfig';
 import CustomDropDownForPeriod from '@/components/customDropdown/CustomDropDownForPeriod';
 import './AnalyzeChart.scss';
 
-// [UTIL] 해당 월의 시작/끝 날짜 문자열(YYYY-MM-DD)
 const monthRange = (y: number, m: number) => {
   const start = `${y}-${String(m).padStart(2, '0')}-01`;
   const endDay = new Date(y, m, 0).getDate();
@@ -34,9 +32,9 @@ type DailySatPoint = { day: number; sat: number; unsat: number };
 type WeeklySatPoint = { week: number; sat: number; unsat: number };
 type MonthlySatPoint = { month: number; sat: number; unsat: number };
 type HourlySatPoint = { hour: number; sat: number; unsat: number };
+type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
 
 const FeedbackLineChart: React.FC = () => {
-  // 초기값을 고정값으로 설정
   const [currentYear, setCurrentYear] = useState<number>(2024);
   const [currentMonth, setCurrentMonth] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<number>(1);
@@ -46,29 +44,22 @@ const FeedbackLineChart: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
 
-  // 클라이언트에서만 현재 시간 설정
   useEffect(() => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
+    setCurrentYear(now.getFullYear());
+    setCurrentMonth(now.getMonth() + 1);
+    setCurrentDay(now.getDate());
 
-    setCurrentYear(year);
-    setCurrentMonth(month);
-    setCurrentDay(day);
-
-    setSelectedYear(year);
-    setSelectedMonth(month);
-    setSelectedDay(day);
+    setSelectedYear(now.getFullYear());
+    setSelectedMonth(now.getMonth() + 1);
+    setSelectedDay(now.getDate());
   }, []);
 
-  // 기간별 표시 텍스트 가져오기
   const getDisplayText = () => {
     switch (selectedPeriod) {
       case '월별 보기':
         return `${selectedYear}`;
       case '일별 보기':
-        return `${selectedYear}.${String(selectedMonth).padStart(2, '0')}`;
       case '주별 보기':
         return `${selectedYear}.${String(selectedMonth).padStart(2, '0')}`;
       case '시간별 보기':
@@ -78,8 +69,7 @@ const FeedbackLineChart: React.FC = () => {
     }
   };
 
-  // [FIX] 모든 기간에서 듀얼 라인 데이터 생성(시간별 포함)
-  const { data, xKey} = useMemo(() => {
+  const { data, xKey } = useMemo(() => {
     switch (selectedPeriod) {
       case '월별 보기': {
         const capMonth = (y: number, m: number) =>
@@ -99,7 +89,7 @@ const FeedbackLineChart: React.FC = () => {
           });
           arr.push({ month: m, sat, unsat });
         }
-        return { data: arr, xKey: 'month', showDual: true };
+        return { data: arr as SatPoint[], xKey: 'month' as const };
       }
 
       case '일별 보기': {
@@ -122,7 +112,7 @@ const FeedbackLineChart: React.FC = () => {
           })
           .filter((p) => p.day <= maxDay);
 
-        return { data: mapped, xKey: 'day', showDual: true };
+        return { data: mapped as SatPoint[], xKey: 'day' as const };
       }
 
       case '주별 보기': {
@@ -149,30 +139,33 @@ const FeedbackLineChart: React.FC = () => {
           .filter((p) => p.week <= maxWeek)
           .sort((a, b) => a.week - b.week);
 
-        return { data: result, xKey: 'week', showDual: true };
+        return { data: result as SatPoint[], xKey: 'week' as const };
       }
 
-      case '시간별 보기': { 
+      case '시간별 보기': {
         const isToday =
           selectedYear === currentYear &&
           selectedMonth === currentMonth &&
           selectedDay === currentDay;
+
         if (isToday) {
-          return { data: [] as HourlySatPoint[], xKey: 'hour', showDual: true };
+          return { data: [] as SatPoint[], xKey: 'hour' as const };
         }
 
-        // [ADD] 시간별 만족/불만족 사용
-        const hourly: HourlySatPoint[] = generateHourlySatisfactionData(selectedYear, selectedMonth, selectedDay);
-        return { data: hourly, xKey: 'hour', showDual: true };
+        const hourly: HourlySatPoint[] = generateHourlySatisfactionData(
+          selectedYear, selectedMonth, selectedDay
+        );
+        return { data: hourly as SatPoint[], xKey: 'hour' as const };
       }
 
       default:
-        return { data: [], xKey: 'day', showDual: true };
+        return { data: [] as SatPoint[], xKey: 'day' as const };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod, selectedYear, selectedMonth, selectedDay, currentYear, currentMonth, currentDay]);
+  }, [
+    selectedPeriod, selectedYear, selectedMonth, selectedDay,
+    currentYear, currentMonth, currentDay,
+  ]);
 
-  // 이전/다음/변경 핸들러 — 기존과 동일 (생략 없이 유지)
   const handlePrev = () => {
     switch (selectedPeriod) {
       case '월별 보기':
@@ -237,7 +230,7 @@ const FeedbackLineChart: React.FC = () => {
   };
 
   const handlePeriodChange = (period: FeedbackPeriod) => {
-    setSelectedPeriod(period as FeedbackPeriod);
+    setSelectedPeriod(period);
     switch (period) {
       case '월별 보기':
       case '일별 보기':
@@ -262,9 +255,7 @@ const FeedbackLineChart: React.FC = () => {
     }
   };
 
-  // 커스텀 툴팁(듀얼 라인 대응)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (!active || !payload || !payload.length) return null;
     const title =
       selectedPeriod === '월별 보기' ? `${label}월` :
@@ -284,7 +275,6 @@ const FeedbackLineChart: React.FC = () => {
     );
   };
 
-  // 버튼 비활성화 조건(기존 유지)
   const isPrevDisabled = () => {
     switch (selectedPeriod) {
       case '월별 보기':
@@ -298,6 +288,7 @@ const FeedbackLineChart: React.FC = () => {
         return false;
     }
   };
+
   const isNextDisabled = () => {
     const maxYear = Math.max(...availableYears);
     switch (selectedPeriod) {
@@ -356,16 +347,14 @@ const FeedbackLineChart: React.FC = () => {
 
       <div className="chartWrapper">
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data as any[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+          <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey={xKey} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-
-            {/* 듀얼 라인: 모든 기간에서 sat/unsat 표시 */}
-            <Line type="monotone" name="만족" dataKey="sat" stroke="#A8D8EA" strokeWidth={4} dot={false} activeDot={{ r: 6, fill: '#A8D8EA' }} />
-            <Line type="monotone" name="불만족" dataKey="unsat" stroke="#FF9AA2" strokeWidth={4} dot={false} activeDot={{ r: 6, fill: '#FF9AA2' }} />
+            <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
+            <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -373,4 +362,4 @@ const FeedbackLineChart: React.FC = () => {
   );
 };
 
-export default FeedbackLineChart
+export default FeedbackLineChart;

@@ -25,7 +25,7 @@ const KeywordChart = dynamic(
 
 // 만족도 도넛 차트(기존 유지)
 const SatisfactionDonutChart = dynamic(
-  () => import('@/components/analyze/SatisfactionDonutChart'),
+  () => import('@/components/analyze/SatisfactionChart'),
   { ssr: false, loading: () => <p>Loading chart...</p> }
 );
 
