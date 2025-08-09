@@ -279,9 +279,9 @@ export default function AdminDataTable() {
                 }));
             }
 
-            modalMessage.showSuccess('문서가 성공적으로 삭제되었습니다.');
+            modalMessage.showSuccess('삭제 완료', '문서가 성공적으로 삭제되었습니다.');
         } catch (error) {
-            modalMessage.showError('문서 삭제에 실패했습니다.');
+            modalMessage.showError('삭제 실패', '문서 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -304,9 +304,10 @@ export default function AdminDataTable() {
                 subRows: undefined
             })));
 
+            modalMessage.showSuccess('폴더 생성 완료', '폴더가 성공적으로 생성되었습니다.');
             return true;
         } catch (error) {
-            modalMessage.showError('폴더 생성에 실패했습니다.');
+            modalMessage.showError('폴더 생성 실패', '폴더 생성에 실패했습니다.');
             throw error;
         }
     };
@@ -334,10 +335,10 @@ export default function AdminDataTable() {
                 [selectedFolderId]: updatedDocuments || []
             }));
 
-            modalMessage.showSuccess('데이터셋이 성공적으로 업로드되었습니다.');
+            modalMessage.showSuccess('업로드 완료', '데이터셋이 성공적으로 업로드되었습니다.');
             return result;
         } catch (error) {
-            modalMessage.showError('데이터셋 업로드에 실패했습니다.');
+            modalMessage.showError('업로드 실패', '데이터셋 업로드에 실패했습니다.');
             throw error;
         }
     };
@@ -384,9 +385,9 @@ export default function AdminDataTable() {
                 return newFolderDocuments;
             });
 
-            modalMessage.showSuccess(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
+            modalMessage.showSuccess('삭제 완료', `${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
         } catch (error) {
-            modalMessage.showError('폴더 삭제에 실패했습니다.');
+            modalMessage.showError('삭제 실패', '폴더 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenTopRowDeleteModal(false);
@@ -404,9 +405,9 @@ export default function AdminDataTable() {
                 [folderId]: updatedDocuments || []
             }));
 
-            modalMessage.showSuccess('메인 데이터셋이 성공적으로 변경되었습니다.');
+            modalMessage.showSuccess('변경 완료', '메인 데이터셋이 성공적으로 변경되었습니다.');
         } catch (error) {
-            modalMessage.showError('메인 데이터셋 변경에 실패했습니다.');
+            modalMessage.showError('변경 실패', '메인 데이터셋 변경에 실패했습니다.');
         } finally {
             setLoading(false);
         }
@@ -428,9 +429,10 @@ export default function AdminDataTable() {
                 }));
             }
 
-            modalMessage.showSuccess('데이터셋 이름이 성공적으로 변경되었습니다.');
+            modalMessage.showSuccess('이름 변경 완료', '데이터셋 이름이 성공적으로 변경되었습니다.');
             return true;
         } catch (error) {
+            modalMessage.showError('이름 변경 실패', '데이터셋 이름 변경에 실패했습니다.');
             throw error;
         }
     };
@@ -649,17 +651,37 @@ export default function AdminDataTable() {
             {modalMessage.openSuccessModal && (
                 <ModalDefault
                     type="default"
-                    label="완료"
+                    label={
+                        modalMessage.successTitle && modalMessage.successTitle !== "성공"
+                            ? modalMessage.successTitle
+                            : "작업 완료"
+                    }
+                    description={
+                        modalMessage.successDescription
+                            ? modalMessage.successDescription
+                            : modalMessage.successTitle && modalMessage.successTitle !== "성공"
+                                ? ""
+                                : "작업이 성공적으로 처리되었습니다."
+                    }
                     onClose={modalMessage.closeSuccess}
-                    errorMessages={[modalMessage.successMessage]}
                 />
             )}
             {modalMessage.openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label="오류"
+                    label={
+                        modalMessage.errorTitle && modalMessage.errorTitle !== "오류"
+                            ? modalMessage.errorTitle
+                            : "오류"
+                    }
+                    description={
+                        modalMessage.errorDescription
+                            ? modalMessage.errorDescription
+                            : modalMessage.errorTitle && modalMessage.errorTitle !== "오류"
+                                ? ""
+                                : "작업 처리 중 오류가 발생했습니다."
+                    }
                     onClose={modalMessage.closeError}
-                    errorMessages={[modalMessage.errorMessage]}
                 />
             )}
             {openDeleteModal &&

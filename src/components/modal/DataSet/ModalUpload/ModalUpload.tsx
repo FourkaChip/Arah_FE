@@ -3,6 +3,7 @@ import './ModalUpload.scss';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {ExtendedModalUploadProps, ModalUploadProps} from "@/types/modals";
 import Image from "next/image";
+import {useModalMessage} from "@/hooks/useModalMessage";
 
 
 
@@ -16,6 +17,7 @@ export default function ModalUpload({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const { showSuccess } = useModalMessage(); // 추가
 
     // 모달 열릴 때 body 스크롤을 막기 위한 useEffect입니다. 차후 코드 리팩토링 시 컴포넌트 분리 예정
     useEffect(() => {
@@ -75,7 +77,8 @@ export default function ModalUpload({
 
         try {
             await onSubmit(uploadedFile, comment);
-            // 성공 시 onClose만 호출하여 부모 컴포넌트에서 성공 처리
+            // 업로드 성공 시 완료 메시지 모달 노출
+            showSuccess("업로드 완료", "데이터셋이 성공적으로 업로드되었습니다.");
             onClose();
         } catch (error: any) {
             setError(error.message || '업로드에 실패했습니다.');

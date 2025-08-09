@@ -14,7 +14,8 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
     const [selectedCategory, setSelectedCategory] = useState(category ?? "");
     const {
         openErrorModal,
-        errorMessage,
+        errorTitle,
+        errorDescription,
         showError,
         closeError,
     } = useModalMessage();
@@ -37,8 +38,16 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
     }, [companyId]);
 
     const handleSubmit = async () => {
-        if (!selectedCategory || !question || !answer) {
-            showError("모든 필드를 입력해 주세요.");
+        if (!selectedCategory) {
+            showError("등록 실패", "카테고리를 선택해 주세요.");
+            return;
+        }
+        if (!question) {
+            showError("등록 실패", "질문을 등록해 주세요.");
+            return;
+        }
+        if (!answer) {
+            showError("등록 실패", "답변을 등록해 주세요.");
             return;
         }
         onSubmit({
@@ -97,7 +106,8 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorMessage}
+                    label={errorTitle}
+                    description={errorDescription}
                     onClose={closeError}
                 />
             )}
