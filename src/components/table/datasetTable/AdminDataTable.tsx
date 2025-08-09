@@ -11,7 +11,6 @@ import {
     ColumnDef
 } from "@tanstack/react-table";
 import React from "react";
-import ModalDataTrigger from "@/components/utils/ModalTrigger/ModalDataTrigger";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
@@ -36,6 +35,7 @@ import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 import { useModalMessage } from "@/hooks/useModalMessage";
+import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 export default function AdminDataTable() {
     const modalMessage = useModalMessage();
@@ -485,15 +485,13 @@ export default function AdminDataTable() {
                     />
                 </div>
                 <div className="action-buttons">
-                    <button className="button is-link is-light" onClick={() => setOpenFolderModal(true)}>
+                    <button className="create-folder" onClick={() => setOpenFolderModal(true)}>
                         <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                         폴더 생성
                     </button>
-                    <button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>
+                    <button className="delete-folder" onClick={() => setOpenTopRowDeleteModal(true)}>
+                        <FontAwesomeIcon icon={faTimes} style={{ width: 20, height: 20, marginRight: 10 }} />
                         <span>폴더 삭제</span>
-                        <span className="icon is-small">
-                        <i className="fas fa-times"></i>
-                        </span>
                     </button>
                 </div>
             </div>
