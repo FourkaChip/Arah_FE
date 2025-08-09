@@ -5,26 +5,26 @@ import dynamic from 'next/dynamic';
 import './Analyze.scss';
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-// 라인 차트 (피드백 추이)
+// 피드백 차트 (피드백 추이)
 const FeedbackLineChart = dynamic(
   () => import('@/components/analyze/FeedbackLineChart'),
   { ssr: false, loading: () => <p>Loading chart...</p> }
 );
 
-// ✅ 피드백 유형 = 도넛 차트
+// 피드백 유형
 const FeedbackTypeChart = dynamic(
   () => import('@/components/analyze/FeedbackTypeChart'),
   { ssr: false, loading: () => <p>Loading chart...</p> }
 );
 
-// ✅ 키워드 = 막대 차트 (10개 키워드 대응)
+// 키워드 차트 (10개 키워드)
 const KeywordChart = dynamic(
   () => import('@/components/analyze/KeywordChart'),
   { ssr: false, loading: () => <p>Loading chart...</p> }
 );
 
-// 만족도 도넛 차트(기존 유지)
-const SatisfactionDonutChart = dynamic(
+// 만족도 차트
+const SatisfactionChart = dynamic(
   () => import('@/components/analyze/SatisfactionChart'),
   { ssr: false, loading: () => <p>Loading chart...</p> }
 );
@@ -49,7 +49,7 @@ export default function AnalysisPage() {
             <FeedbackTypeChart />
           </section>
           <section className="grid-item donut-right">
-            <SatisfactionDonutChart />
+            <SatisfactionChart />
           </section>
 
           {/* 3) 키워드 — 전체 가로 */}
