@@ -1,16 +1,5 @@
-// components/Modal/BotTest/ModalBotTest.scss
-// ModalLayout 재정의
-.modal-overlay {
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  background: none;
-  align-items: flex-end;
-  justify-items: flex-end;
-}
-
-.modal-window.bot-test-modal {
+// ModalBotTest 전용으로 사용되는 ModalLayout 관련 스타일링입니다.
+.botTestModal :global(.modal-window) {
   position: fixed;
   top: 23%;
   left: 73%;
@@ -20,7 +9,7 @@
   transform: none;
 }
 
-.modal-dialog.bot-test-modal {
+.botTestModal :global(.modal-dialog) {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -29,19 +18,20 @@
   position: relative;
 }
 
-.modal-title.bot-test-modal-title {
+.botTestModal :global(.modal-title) {
   text-align: center;
 }
 
-.modal-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+// 필요하다면 아래처럼 조합
+// .botChatContainer :global(.modal-content) {
+//   width: 100%;
+//   height: 100%;
+//   display: flex;
+//   flex-direction: column;
+// }
 
 // 봇 테스트 채팅 UI 컨테이너
-.bot-chat-container {
+.botChatContainer {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -49,7 +39,7 @@
 }
 
 // 채팅 메시지 영역
-.chat-area {
+.chatArea {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 10px;
@@ -62,49 +52,49 @@
   }
   &::-webkit-scrollbar-thumb {
     background-color: #dbdbdb;
-    border-radius: 3px; 
+    border-radius: 3px;
   }
 }
 
 // 메시지 버블 컨테이너(봇/유저)
-.message-bubble-container {
+.messageBubbleContainer {
   display: flex;
   align-items: flex-end;
   gap: 8px;
   max-width: 80%;
 
-  &.is-bot {
+  &.isBot {
     align-self: flex-start;
   }
 
-  &.is-user {
+  &.isUser {
     align-self: flex-end;
-    .message-bubble {
+    .messageBubble {
       background-color: #E4E5FF;
       color: #5D5FEF;
     }
   }
 }
 
-.bot-icon {
+.botIcon {
   border-radius: 50%;
 }
 
-.message-bubble {
+.messageBubble {
   padding: 10px 14px;
   border-radius: 16px;
   background-color: #f5f5f5;
   word-break: keep-all;
 }
 
-.message-text {
+.messageText {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
 // 입력창 영역
-.chat-input-container {
+.chatInputContainer {
   flex: 0 0 auto;
   bottom: 0;
   padding: 16px 24px;
@@ -116,7 +106,7 @@
 
   .input {
     width: 100%;
-    height: 40px; 
+    height: 40px;
     border: 0.5px solid #dbdbdb;
     border-radius: 120px;
     padding:12px;
@@ -127,7 +117,7 @@
       color: #b5b5b5;
     }
   }
-  .send-button {
+  .sendButton {
     font-size: 16px;
     color: #ffffff;
     cursor: pointer;
@@ -142,7 +132,7 @@
 }
 
 // 타이핑 애니메이션(봇이 입력 중일 때)
-.typing-indicator {
+.typingIndicator {
   display: flex;
   align-items: center;
   padding: 10px 20px;
@@ -157,19 +147,16 @@
     border-radius: 50%;
     display: inline-block;
     margin: 0 2px;
-    animation: bounce 1.2s infinite; // 점프 애니메이션
-
+    animation: bounce 1.2s infinite;
     &:nth-of-type(2) {
-      animation-delay: 0.2s; // 두 번째 점 딜레이
+      animation-delay: 0.2s;
     }
-
     &:nth-of-type(3) {
-      animation-delay: 0.4s; // 세 번째 점 딜레이
+      animation-delay: 0.4s;
     }
   }
 }
 
-// 점프 애니메이션 키프레임
 @keyframes bounce {
   0%, 60%, 100% {
     transform: translateY(0);
@@ -179,3 +166,38 @@
   }
 }
 
+// ModalBotTest 전용 오버레이/윈도우/다이얼로그
+.botTestOverlay {
+  position: fixed;
+  inset: 0;
+  background: none;
+  z-index: 1020;
+  display: flex;
+  align-items: flex-end;
+  justify-items: flex-end;
+}
+
+.botTestWindow {
+  position: fixed;
+  top: 23%;
+  left: 73%;
+  width: 380px;
+  height: 550px;
+  padding: 0;
+  transform: none;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.botTestDialog {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  padding-bottom: 0;
+  position: relative;
+}
