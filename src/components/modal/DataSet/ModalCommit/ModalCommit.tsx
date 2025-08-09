@@ -120,6 +120,10 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                         <div className="loading-message">
                             변경사항을 불러오는 중...
                         </div>
+                    ) : (addedLines.length === 0 && removedLines.length === 0 ? (
+                        <div className="loading-message">
+                            변화 없음
+                        </div>
                     ) : (
                         <div className="diff-columns">
                             <div className="diff-column added-column">
@@ -158,7 +162,7 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                                 </div>
                             </div>
                         </div>
-                    )}
+                    ))}
                 </div>
 
                 <div className="modal-footer">

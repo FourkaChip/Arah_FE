@@ -529,11 +529,11 @@ export default function AdminDataTable() {
                                                                 <th>사용현황</th>
                                                                 <th>No.</th>
                                                                 <th>버전 등록일</th>
-                                                                <th>데이터셋명</th>
+                                                                <th>파일명</th>
+                                                                <th>파일명 수정</th>
                                                                 <th>버전</th>
                                                                 <th>변경사항</th>
                                                                 <th>미리보기</th>
-                                                                <th>정보 수정</th>
                                                                 <th>삭제</th>
                                                             </tr>
                                                             </thead>
@@ -558,6 +558,18 @@ export default function AdminDataTable() {
                                                                         <td>{idx + 1}</td>
                                                                         <td>{doc.created_at?.slice(0, 10).replace(/-/g, '/') || ""}</td>
                                                                         <td>{doc.title}</td>
+                                                                        <td>
+                                                                            <button className="edit-icon">
+                                                                                <FontAwesomeIcon icon={faPen}
+                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
+                                                                                                 style={{
+                                                                                                     color: '#232D64',
+                                                                                                     cursor: 'pointer',
+                                                                                                     width: '14px',
+                                                                                                     height: '14px'
+                                                                                                 }}/>
+                                                                            </button>
+                                                                        </td>
                                                                         <td>{doc.version}</td>
                                                                         <td>
                                                                             <ModalCommitTrigger
@@ -571,18 +583,6 @@ export default function AdminDataTable() {
                                                                                 onClick={() => handleOpenFile(doc.url)}
                                                                             >
                                                                                 미리보기
-                                                                            </button>
-                                                                        </td>
-                                                                        <td>
-                                                                            <button className="edit-icon">
-                                                                                <FontAwesomeIcon icon={faPen}
-                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
-                                                                                                 style={{
-                                                                                                     color: '#232D64',
-                                                                                                     cursor: 'pointer',
-                                                                                                     width: '14px',
-                                                                                                     height: '14px'
-                                                                                                 }}/>
                                                                             </button>
                                                                         </td>
                                                                         <td>
@@ -615,7 +615,6 @@ export default function AdminDataTable() {
                         </tbody>
                     </table>
                 )}
-                {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination
                         currentPage={currentPage + 1}
@@ -624,7 +623,6 @@ export default function AdminDataTable() {
                     />
                 </div>
             </div>
-            {/* ModalDefault를 직접 사용 */}
             {modalMessage.openSuccessModal && (
                 <ModalDefault
                     type="default"
