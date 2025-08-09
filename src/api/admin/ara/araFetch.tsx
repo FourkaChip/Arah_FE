@@ -5,25 +5,57 @@ import type { SliderSettings } from "@/types/slider";
 
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/companies/levels`;
 
+let chatbotSettingsCache: SliderSettings | null = null;
+let chatbotSettingsPromise: Promise<SliderSettings> | null = null;
+let chatbotSettingsCacheTime: number = 0;
+const CHATBOT_SETTINGS_CACHE_DURATION = 2 * 60 * 1000;
+
 // 회사 챗봇 설정 값(유사도, 스타일) 조회
 export const getCompanyChatbotSettings = async (): Promise<SliderSettings> => {
-  const res = await authorizedFetch(BASE_URL, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
+  const now = Date.now();
 
-  if (!res.ok) {
-    throw new Error(`설정값 조회에 실패했습니다. (HTTP ${res.status})`);
+  if (
+    chatbotSettingsCache &&
+    (now - chatbotSettingsCacheTime) < CHATBOT_SETTINGS_CACHE_DURATION
+  ) {
+    return chatbotSettingsCache;
   }
 
-  const data = await res.json();
-  console.log("설정값 조회 성공", data);
+  if (chatbotSettingsPromise) {
+    return await chatbotSettingsPromise;
+  }
 
-  const { thinkLevel, speechLevel } = data.result;
-  return {
-    similarity: speechLevel,
-    style: thinkLevel,
-  };
+  chatbotSettingsPromise = (async () => {
+    const res = await authorizedFetch(BASE_URL, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      chatbotSettingsPromise = null;
+      throw new Error(`설정값 조회에 실패했습니다. (HTTP ${res.status})`);
+    }
+
+    const data = await res.json();
+    const { thinkLevel, speechLevel } = data.result;
+    const settings: SliderSettings = {
+      similarity: speechLevel,
+      style: thinkLevel,
+    };
+
+    chatbotSettingsCache = settings;
+    chatbotSettingsCacheTime = Date.now();
+    chatbotSettingsPromise = null;
+    return settings;
+  })();
+
+  return await chatbotSettingsPromise;
+};
+
+export const clearCompanyChatbotSettingsCache = () => {
+  chatbotSettingsCache = null;
+  chatbotSettingsPromise = null;
+  chatbotSettingsCacheTime = 0;
 };
 
 // 회사 챗봇 설정 값(유사도, 스타일) 업데이트
@@ -56,5 +88,6 @@ export const updateCompanyChatbotSettings = async (
     throw new Error(`설정값 업데이트에 실패했습니다. (${data.message})`);
   }
 
-  console.log("설정값 업데이트 성공", data);
+  clearCompanyChatbotSettingsCache();
+
 };

@@ -47,4 +47,4 @@ export const SLIDER_TEXTS = {
       '다양한 관점의 답변을 원한다면 기준을 높여서 창의적으로 대화할 수 있어요.'
     ]
   }
-} as const; 
+} as const;

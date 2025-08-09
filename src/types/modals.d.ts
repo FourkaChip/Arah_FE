@@ -60,6 +60,12 @@ export interface ModalLayoutProps {
     onClose: () => void;
     children?: React.ReactNode;
     footer?: React.ReactNode;
+    className?: string | {
+        overlay?: string;
+        window?: string;
+        dialog?: string;
+        modal?: string;
+    };
 }
 
 // ModalDepartmentProps는 부서 등록 모달에서 사용되는 속성 타입입니다.

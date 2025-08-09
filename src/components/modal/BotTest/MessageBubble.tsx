@@ -3,6 +3,7 @@
 import React from 'react';
 import { Message } from '@/constants/dummydata/DummyBotTest';
 import Image from 'next/image';
+import styles from './ModalBotTest.module.scss';
 
 interface MessageBubbleProps {
   message: Message;
@@ -12,12 +13,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const isBot = message.sender === 'bot';
 
   return (
-    <div className={`message-bubble-container ${isBot ? 'is-bot' : 'is-user'}`}>
+    <div className={`${styles.messageBubbleContainer} ${isBot ? styles.isBot : styles.isUser}`}>
       {isBot && (
-        <Image src="/bot-icon.jpeg" alt="Bot Icon" width={32} height={32} className="bot-icon" />
+        <Image src="/bot-icon.jpeg" alt="Bot Icon" width={32} height={32} className={styles.botIcon} />
       )}
-      <div className="message-bubble">
-        <p className="message-text">{message.text}</p>
+      <div className={styles.messageBubble}>
+        <p className={styles.messageText}>{message.text}</p>
       </div>
     </div>
   );
