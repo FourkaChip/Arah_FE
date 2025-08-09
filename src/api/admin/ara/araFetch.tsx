@@ -88,8 +88,6 @@ export const updateCompanyChatbotSettings = async (
     throw new Error(`설정값 업데이트에 실패했습니다. (${data.message})`);
   }
 
-  // 업데이트 성공 시 캐시 무효화
   clearCompanyChatbotSettingsCache();
 
-  // console.log("설정값 업데이트 성공", data);
 };
