@@ -7,26 +7,40 @@
   height: 550px;
   padding: 0;
   transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 .botTestModal :global(.modal-dialog) {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  padding-bottom: 0;
+  padding: 24px 24px 0;
   position: relative;
 }
 
 .botTestModal :global(.modal-title) {
   text-align: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.botTestDialog :global(.modal-content) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .botChatContainer {
-  flex-grow: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 0;
 }
 
 // 채팅 메시지 영역
@@ -38,6 +52,7 @@
   flex-direction: column;
   gap: 12px;
   justify-content: flex-end;
+  min-width: 330px;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -89,11 +104,14 @@
 
 // 입력창 영역
 .chatInputContainer {
-  flex: 0 0 auto;
+  position: sticky;
   bottom: 0;
+  z-index: 1;
+  background: #fff;
+  border-top: 1px solid #eee;
+  flex: 0 0 auto;
   padding: 16px 24px;
   margin: 0 -24px;
-  padding: 16px 24px;
   display: flex;
   flex-direction: row;
   gap: 12px;
@@ -177,8 +195,8 @@
 
 .botTestWindow {
   position: fixed;
-  top: 23%;
-  left: 73%;
+  bottom: 20px;
+  right: 20px;
   width: 380px;
   height: 550px;
   padding: 0;
@@ -195,7 +213,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  padding-bottom: 0;
+  align-items: stretch;
+  padding: 24px 24px 0;
   position: relative;
 }
