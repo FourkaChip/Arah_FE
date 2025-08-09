@@ -3,6 +3,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { DateRange } from '@/types/analyze';
 import { aggregateFeedbackTypeData } from '@/constants/dummydata/DummyAnalyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
@@ -61,7 +63,7 @@ const FeedbackTypeChart: React.FC = () => {
     return { lines, full };
   };
 
-  
+
   const renderLabelWithLeader = (props: any) => {
     const { cx, cy, midAngle, outerRadius, percent, payload } = props;
     const ratio = percent * 100;
@@ -110,7 +112,7 @@ const FeedbackTypeChart: React.FC = () => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name: string; value: number; percentage: number }[] }) => {
+  const CustomTooltip = ({ active, payload }: TooltipContentProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -163,7 +165,7 @@ const FeedbackTypeChart: React.FC = () => {
                 <Cell key={`cell-${index}`} fill={getTypeColor(entry.name)} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} />} />
           </PieChart>
         </ResponsiveContainer>
       </div>

@@ -5,7 +5,8 @@ import React, { useState, useMemo } from 'react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { DateRange } from '@/types/analyze';
 import { aggregateKeywordData } from '@/constants/dummydata/DummyAnalyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
@@ -36,12 +37,12 @@ const KeywordChart: React.FC = () => {
     setDateRange(prev => ({ ...prev, [field]: value }));
   };
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipContentProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
-      const val = payload[0]?.value as number | undefined;
+      const valNum = Number(payload[0]?.value ?? 0);
       return (
         <div className="tooltip">
-          <p>{`${label}: ${val ?? 0}건`}</p>
+          <p>{`${label}: ${valNum}건`}</p>
         </div>
       );
     }
@@ -84,7 +85,7 @@ const KeywordChart: React.FC = () => {
               height={60}
             />
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} />} />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {keywordAgg.map((entry, idx) => (
                 <Cell key={`cell-${idx}`} fill={getKeywordColor(entry.name)} />

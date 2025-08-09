@@ -446,15 +446,38 @@ export default function AdminDataTable() {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
 
+    const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+        if (field === 'startDate') {
+            setStartDate(value);
+            if (endDate && endDate < value) {
+                setEndDate(value);
+            }
+        } else if (field === 'endDate') {
+            if (value < startDate) {
+                return;
+            }
+            setEndDate(value);
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
                 <div className="date-search-section">
-                    <input type="date" className="date-picker" value={startDate}
-                           onChange={e => setStartDate(e.target.value)}/>
+                    <input
+                        type="date"
+                        className="date-picker"
+                        value={startDate}
+                        onChange={e => handleDateChange('startDate', e.target.value)}
+                    />
                     <span>~</span>
-                    <input type="date" className="date-picker" value={endDate}
-                           onChange={e => setEndDate(e.target.value)}/>
+                    <input
+                        type="date"
+                        className="date-picker"
+                        value={endDate}
+                        onChange={e => handleDateChange('endDate', e.target.value)}
+                        min={startDate}
+                    />
                     <CustomSearch
                         onSearch={handleSearch}
                     />
