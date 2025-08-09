@@ -1,6 +1,4 @@
 // src/constants/dummydata/DummyAnalyze.ts
-// [FIX] 파일 내 JSX 사용 없음 → .tsx가 아닌 .ts 사용을 권장합니다.
-
 import {
   FeedbackTrendData,
   FeedbackPeriod,
@@ -15,7 +13,7 @@ import {
   SatisfactionData,
 } from '@/types/analyze';
 
-// ===== 라벨/키 매핑 (UI에서 한글 라벨 ↔ 내부 키 일관성)
+/** UI 표시 라벨 ↔ 내부 키 매핑 */
 export const GRANULARITY_LABELS: Record<'hourly'|'daily'|'weekly'|'monthly', FeedbackPeriod> = {
   hourly:  '시간별 보기',
   daily:   '일별 보기',
@@ -29,7 +27,7 @@ export const periodOptions: FeedbackPeriod[] = [
   GRANULARITY_LABELS.monthly,
 ];
 
-// ===== 시드 고정 난수 (더미 값이 랜덤이되 렌더마다 바뀌지 않도록)
+/** 시드 고정 난수 생성기 (렌더마다 값 변경 방지) */
 function createSeededRng(seed = 20250810) {
   let s = seed >>> 0;
   return () => {
@@ -37,9 +35,9 @@ function createSeededRng(seed = 20250810) {
     return s / 0xffffffff;
   };
 }
-const rnd   = createSeededRng();
+const rnd = createSeededRng();
 
-// [ADD] 날짜를 로컬 타임존 기준 YYYY-MM-DD로 안전하게 포맷
+/** 날짜를 YYYY-MM-DD 포맷(로컬 타임존)으로 변환 */
 function formatDateLocal(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -47,14 +45,13 @@ function formatDateLocal(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-// [ADD] 범위 방어: start > end면 스왑
+/** 시작/종료일이 역순이면 교환 */
 function normalizeDateRange(startDate: string, endDate: string): [Date, Date] {
   const s = new Date(startDate);
   const e = new Date(endDate);
   return s <= e ? [s, e] : [e, s];
 }
 
-// ===== 연도별 월간 트렌드 
 export const feedbackTrendData2025: FeedbackTrendData[] = [
   { month: 1, count: 5 }, { month: 2, count: 8 }, { month: 3, count: 12 },
   { month: 4, count: 7 }, { month: 5, count: 15 }, { month: 6, count: 22 },
@@ -78,13 +75,11 @@ export const feedbackDataByYear: Record<number, FeedbackTrendData[]> = {
   2024: feedbackTrendData2024,
   2025: feedbackTrendData2025,
 };
-// [ADD] as const로 고정
 export const availableYears = [2023, 2024, 2025] as const;
 
-// ===== 일/주/시간 단위 더미
 export const generateDailyData = (year: number, month: number): DailyFeedbackData[] => {
-  const dim = new Date(year, month, 0).getDate(); // month는 1~12 가정
-  const base = Math.floor(rnd() * 5) + 3; // 3~7
+  const dim = new Date(year, month, 0).getDate();
+  const base = Math.floor(rnd() * 5) + 3;
   return Array.from({ length: dim }, (_, i) => {
     const day = i + 1;
     const weekday = new Date(year, month - 1, day).getDay();
@@ -101,15 +96,14 @@ export const generateWeeklyData = (year: number, month: number): WeeklyFeedbackD
   const start = new Date(year, month - 1, 1);
   const end   = new Date(year, month, 0);
   const firstWeekStart = new Date(start);
-  firstWeekStart.setDate(start.getDate() - start.getDay()); // Sun 기준
+  firstWeekStart.setDate(start.getDate() - start.getDay());
   const weeks: WeeklyFeedbackData[] = [];
   let idx = 1;
   for (let d = new Date(firstWeekStart); d <= end; d.setDate(d.getDate() + 7)) {
     const weekStart = new Date(d);
     const weekEnd = new Date(d); weekEnd.setDate(weekEnd.getDate() + 6);
-    const overlap = (weekStart <= end && weekEnd >= start);
-    if (overlap) {
-      const base = Math.floor(rnd() * 20) + 30; // 30~49
+    if (weekStart <= end && weekEnd >= start) {
+      const base = Math.floor(rnd() * 20) + 30;
       const count = base + Math.floor(rnd() * 30);
       weeks.push({ week: idx++, count });
     }
@@ -133,7 +127,6 @@ export const generateHourlyData = (year: number, month: number, day: number): Ho
   });
 };
 
-// [ADD] 시간별 만족도 더미 생성기: 특정 날짜에 대해 0~23시의 만족/불만족을 생성
 export const generateHourlySatisfactionData = (
   year: number,
   month: number,
@@ -143,7 +136,6 @@ export const generateHourlySatisfactionData = (
   const isWeekend = dow === 0 || dow === 6;
 
   return Array.from({ length: 24 }, (_, hour) => {
-    // 기존 generateHourlyData와 같은 시간대 패턴으로 total 구성
     let total = 0;
     if (isWeekend) {
       total = (hour >= 10 && hour <= 22) ? Math.floor(rnd() * 8) + 2 : Math.floor(rnd() * 3);
@@ -152,35 +144,26 @@ export const generateHourlySatisfactionData = (
       else if (hour >= 19 && hour <= 22) total = Math.floor(rnd() * 8) + 3;
       else total = Math.floor(rnd() * 3);
     }
-
-    // 만족 비율: 평일 0.75~0.85, 주말은 약간 상향
     const baseRatio = 0.75 + rnd() * 0.1;
     const ratio = isWeekend ? Math.min(baseRatio + 0.05, 0.9) : baseRatio;
-
     const sat = Math.floor(total * ratio);
     const unsat = total - sat;
     return { hour, sat, unsat };
   });
 };
 
-// 호환용 즉시 생성 샘플
 export const dailyFeedbackData:  DailyFeedbackData[]  = generateDailyData(2025, 7);
 export const weeklyFeedbackData: WeeklyFeedbackData[] = generateWeeklyData(2025, 7);
 export const hourlyFeedbackData: HourlyFeedbackData[] = generateHourlyData(2025, 7, 15);
 
-// ======== 피드백 유형(도넛) 더미/집계
 export const generateDailyFeedbackTypeData = (startDate: string, endDate: string): DailyFeedbackTypeData[] => {
-  // [ADD] 역순 입력 방어
   const [start, end] = normalizeDateRange(startDate, endDate);
-
   const rows: DailyFeedbackTypeData[] = [];
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    // [FIX] UTC 의존 제거: 로컬 기준 날짜 문자열 생성
     const dateStr = formatDateLocal(d);
-
     const dow = d.getDay(); const isWeekend = dow === 0 || dow === 6;
     const baseMin = 1, baseMax = 8, span = baseMax - baseMin;
-    const k = isWeekend ? 0.3 : 1.0; // 주말 낮춤
+    const k = isWeekend ? 0.3 : 1.0;
     const w = {
       '오래된 정보': 1.2 + rnd() * 0.6,
       '질문 의도 파악 실패': 0.9 + rnd() * 0.4,
@@ -212,34 +195,26 @@ export const aggregateFeedbackTypeData = (startDate: string, endDate: string): F
   });
   const sum = Object.values(totals).reduce((s, v) => s + v, 0) || 1;
   return Object.entries(totals)
-  .map(([type, count]) => ({
-    name: type,             // [FIX] FeedbackTypeData에 맞춰 name 추가
-    value: count,           // [FIX] count → value 변경
-    percentage: Math.round((count / sum) * 100),
-    color: '#000',
-  })).sort((a, b) => b.value - a.value);
+    .map(([type, count]) => ({
+      name: type,
+      value: count,
+      percentage: Math.round((count / sum) * 100),
+      color: '#000',
+    }))
+    .sort((a, b) => b.value - a.value);
 };
 
-// ======== 키워드(막대) 10종 더미/집계
-// 키워드 목록(10개)
 export const KEYWORDS_10 = ['휴가','야근','사직서','회의','교육','복지','인사','출장','채용','보너스'] as const;
-// [ADD] 키워드 이름 유니온 타입
 type KeywordName = typeof KEYWORDS_10[number];
 
 export const generateDailyKeywordData = (startDate: string, endDate: string): DailyKeywordData[] => {
-  // [ADD] 역순 입력 방어
   const [start, end] = normalizeDateRange(startDate, endDate);
-
   const rows: DailyKeywordData[] = [];
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    // [FIX] 로컬 기준 날짜 포맷 사용
     const dateStr = formatDateLocal(d);
-
     const dow = d.getDay(); const isWeekend = dow === 0 || dow === 6;
     const baseMin = 2, baseMax = 12, span = baseMax - baseMin;
-    const k = isWeekend ? 0.4 : 1.0; // 주말 낮춤
-
-    // 키워드별 가중치: 업무성 키워드는 평일 우세, 개인성 키워드는 주말도 소폭 유지
+    const k = isWeekend ? 0.4 : 1.0;
     const weights: Record<KeywordName, number> = {
       휴가: 0.9 + rnd() * 0.5,
       야근: (isWeekend ? 0.2 + rnd() * 0.2 : 0.9 + rnd() * 0.4),
@@ -252,8 +227,6 @@ export const generateDailyKeywordData = (startDate: string, endDate: string): Da
       채용: 0.6 + rnd() * 0.8,
       보너스: 0.6 + rnd() * 0.6,
     };
-
-    // [FIX] any 제거: 키워드별 정적 타입 맵
     const obj: Record<KeywordName, number> = {
       휴가: 0, 야근: 0, 사직서: 0, 회의: 0, 교육: 0,
       복지: 0, 인사: 0, 출장: 0, 채용: 0, 보너스: 0,
@@ -261,7 +234,6 @@ export const generateDailyKeywordData = (startDate: string, endDate: string): Da
     KEYWORDS_10.forEach(kv => {
       obj[kv] = Math.floor((baseMin + rnd() * span) * weights[kv] * k);
     });
-
     rows.push({ date: dateStr, keywords: obj });
   }
   return rows;
@@ -269,41 +241,30 @@ export const generateDailyKeywordData = (startDate: string, endDate: string): Da
 
 export const aggregateKeywordData = (startDate: string, endDate: string): KeywordData[] => {
   const daily = generateDailyKeywordData(startDate, endDate);
-
-  // [FIX] any 제거: 합계도 정적 타입
   const totals: Record<KeywordName, number> = {
     휴가: 0, 야근: 0, 사직서: 0, 회의: 0, 교육: 0,
     복지: 0, 인사: 0, 출장: 0, 채용: 0, 보너스: 0,
   };
-
   daily.forEach(day => {
     KEYWORDS_10.forEach(k => { totals[k] += day.keywords[k] ?? 0; });
   });
-
   const sum = (Object.values(totals) as number[]).reduce((s, v) => s + v, 0) || 1;
-
-  // 10개 전부 반환(막대그래프)
   return KEYWORDS_10.map(name => ({
-      name,
-      value: totals[name],
-      percentage: Math.round((totals[name] / sum) * 100),
-      color: '#000', // 실제 바 색상은 컴포넌트에서 매핑
+    name,
+    value: totals[name],
+    percentage: Math.round((totals[name] / sum) * 100),
+    color: '#000',
   })).sort((a, b) => b.value - a.value);
 };
 
-// ======== 만족도(기존 유지)
 export const generateDailySatisfactionData = (startDate: string, endDate: string): DailySatisfactionData[] => {
-  // [ADD] 역순 입력 방어
   const [start, end] = normalizeDateRange(startDate, endDate);
-
   const rows: DailySatisfactionData[] = [];
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    // [FIX] 로컬 기준 날짜 포맷 사용
     const dateStr = formatDateLocal(d);
-
     const dow = d.getDay(); const isWeekend = dow === 0 || dow === 6;
-    const baseRatio = 0.75 + rnd() * 0.1; // 75~85%
-    const total = Math.floor(rnd() * 20 + 10); // 10~30
+    const baseRatio = 0.75 + rnd() * 0.1;
+    const total = Math.floor(rnd() * 20 + 10);
     const ratio = isWeekend ? Math.min(baseRatio + 0.1, 0.9) : baseRatio;
     const satisfied = Math.floor(total * ratio);
     const unsatisfied = total - satisfied;

@@ -61,7 +61,7 @@ const FeedbackTypeChart: React.FC = () => {
     return { lines, full };
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const renderLabelWithLeader = (props: any) => {
     const { cx, cy, midAngle, outerRadius, percent, payload } = props;
     const ratio = percent * 100;
@@ -110,8 +110,7 @@ const FeedbackTypeChart: React.FC = () => {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name: string; value: number; percentage: number }[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
