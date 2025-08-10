@@ -1,3 +1,4 @@
+// 관리자 계정이 사용하는 데이터셋 관리 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import CustomSearch from "@/components/customSearch/CustomSearch";
@@ -11,7 +12,6 @@ import {
     ColumnDef
 } from "@tanstack/react-table";
 import React from "react";
-import ModalDataTrigger from "@/components/utils/ModalTrigger/ModalDataTrigger";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
@@ -36,6 +36,7 @@ import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
 import { useModalMessage } from "@/hooks/useModalMessage";
+import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 export default function AdminDataTable() {
     const modalMessage = useModalMessage();
@@ -86,14 +87,18 @@ export default function AdminDataTable() {
             setLoading(true);
             try {
                 const folders = await fetchFoldersByCompany();
-                setData(folders.map((folder: any, idx: number) => ({
-                    id: folder.folder_id.toString(),
-                    no: idx + 1,
-                    registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
-                    updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
-                    folderName: folder.name,
-                    subRows: undefined
-                })));
+                setData(
+                    folders
+                        .map((folder: any, idx: number) => ({
+                            id: folder.folder_id.toString(),
+                            no: idx + 1,
+                            registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                            updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                            folderName: folder.name,
+                            subRows: undefined
+                        }))
+                        .sort((a, b) => b.no - a.no)
+                );
             } catch (error) {
                 setData([]);
             } finally {
@@ -115,13 +120,15 @@ export default function AdminDataTable() {
         setSearchValue(search);
     };
     const filteredData = useMemo(() => {
-        return data.filter(row => {
-            const matchesFolder = searchValue === "" || row.folderName.includes(searchValue);
-            const updated = row.updatedAt.replace(/\//g, "-");
-            const afterStart = !startDate || updated >= startDate;
-            const beforeEnd = !endDate || updated <= endDate;
-            return matchesFolder && afterStart && beforeEnd;
-        });
+        return data
+            .sort((a, b) => b.no - a.no)
+            .filter(row => {
+                const matchesFolder = searchValue === "" || row.folderName.includes(searchValue);
+                const updated = row.updatedAt.replace(/\//g, "-");
+                const afterStart = !startDate || updated >= startDate;
+                const beforeEnd = !endDate || updated <= endDate;
+                return matchesFolder && afterStart && beforeEnd;
+            });
     }, [data, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
@@ -279,9 +286,9 @@ export default function AdminDataTable() {
                 }));
             }
 
-            modalMessage.showSuccess('문서가 성공적으로 삭제되었습니다.');
+            modalMessage.showSuccess('삭제 완료', '문서가 성공적으로 삭제되었습니다.');
         } catch (error) {
-            modalMessage.showError('문서 삭제에 실패했습니다.');
+            modalMessage.showError('삭제 실패', '문서 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -304,9 +311,10 @@ export default function AdminDataTable() {
                 subRows: undefined
             })));
 
+            modalMessage.showSuccess('폴더 생성 완료', '폴더가 성공적으로 생성되었습니다.');
             return true;
         } catch (error) {
-            modalMessage.showError('폴더 생성에 실패했습니다.');
+            modalMessage.showError('폴더 생성 실패', '폴더 생성에 실패했습니다.');
             throw error;
         }
     };
@@ -334,10 +342,10 @@ export default function AdminDataTable() {
                 [selectedFolderId]: updatedDocuments || []
             }));
 
-            modalMessage.showSuccess('데이터셋이 성공적으로 업로드되었습니다.');
+            modalMessage.showSuccess('업로드 완료', '데이터셋이 성공적으로 업로드되었습니다.');
             return result;
         } catch (error) {
-            modalMessage.showError('데이터셋 업로드에 실패했습니다.');
+            modalMessage.showError('업로드 실패', '데이터셋 업로드에 실패했습니다.');
             throw error;
         }
     };
@@ -384,9 +392,9 @@ export default function AdminDataTable() {
                 return newFolderDocuments;
             });
 
-            modalMessage.showSuccess(`${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
+            modalMessage.showSuccess('삭제 완료', `${selectedFolderIds.length}개의 폴더가 성공적으로 삭제되었습니다.`);
         } catch (error) {
-            modalMessage.showError('폴더 삭제에 실패했습니다.');
+            modalMessage.showError('삭제 실패', '폴더 삭제에 실패했습니다.');
         } finally {
             setLoading(false);
             setOpenTopRowDeleteModal(false);
@@ -404,9 +412,9 @@ export default function AdminDataTable() {
                 [folderId]: updatedDocuments || []
             }));
 
-            modalMessage.showSuccess('메인 데이터셋이 성공적으로 변경되었습니다.');
+            modalMessage.showSuccess('변경 완료', '메인 데이터셋이 성공적으로 변경되었습니다.');
         } catch (error) {
-            modalMessage.showError('메인 데이터셋 변경에 실패했습니다.');
+            modalMessage.showError('변경 실패', '메인 데이터셋 변경에 실패했습니다.');
         } finally {
             setLoading(false);
         }
@@ -428,9 +436,10 @@ export default function AdminDataTable() {
                 }));
             }
 
-            modalMessage.showSuccess('데이터셋 이름이 성공적으로 변경되었습니다.');
+            modalMessage.showSuccess('이름 변경 완료', '데이터셋 이름이 성공적으로 변경되었습니다.');
             return true;
         } catch (error) {
+            modalMessage.showError('이름 변경 실패', '데이터셋 이름 변경에 실패했습니다.');
             throw error;
         }
     };
@@ -446,29 +455,50 @@ export default function AdminDataTable() {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
 
+    const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+        if (field === 'startDate') {
+            setStartDate(value);
+            if (endDate && endDate < value) {
+                setEndDate(value);
+            }
+        } else if (field === 'endDate') {
+            if (value < startDate) {
+                return;
+            }
+            setEndDate(value);
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
                 <div className="date-search-section">
-                    <input type="date" className="date-picker" value={startDate}
-                           onChange={e => setStartDate(e.target.value)}/>
+                    <input
+                        type="date"
+                        className="date-picker"
+                        value={startDate}
+                        onChange={e => handleDateChange('startDate', e.target.value)}
+                    />
                     <span>~</span>
-                    <input type="date" className="date-picker" value={endDate}
-                           onChange={e => setEndDate(e.target.value)}/>
+                    <input
+                        type="date"
+                        className="date-picker"
+                        value={endDate}
+                        onChange={e => handleDateChange('endDate', e.target.value)}
+                        min={startDate}
+                    />
                     <CustomSearch
                         onSearch={handleSearch}
                     />
                 </div>
                 <div className="action-buttons">
-                    <button className="button is-link is-light" onClick={() => setOpenFolderModal(true)}>
+                    <button className="create-folder" onClick={() => setOpenFolderModal(true)}>
                         <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
                         폴더 생성
                     </button>
-                    <button className="button is-danger is-outlined" onClick={() => setOpenTopRowDeleteModal(true)}>
+                    <button className="delete-folder" onClick={() => setOpenTopRowDeleteModal(true)}>
+                        <FontAwesomeIcon icon={faTimes} style={{ width: 20, height: 20, marginRight: 10 }} />
                         <span>폴더 삭제</span>
-                        <span className="icon is-small">
-                        <i className="fas fa-times"></i>
-                        </span>
                     </button>
                 </div>
             </div>
@@ -529,11 +559,11 @@ export default function AdminDataTable() {
                                                                 <th>사용현황</th>
                                                                 <th>No.</th>
                                                                 <th>버전 등록일</th>
-                                                                <th>데이터셋명</th>
+                                                                <th>파일명</th>
+                                                                <th>파일명 수정</th>
                                                                 <th>버전</th>
                                                                 <th>변경사항</th>
                                                                 <th>미리보기</th>
-                                                                <th>정보 수정</th>
                                                                 <th>삭제</th>
                                                             </tr>
                                                             </thead>
@@ -558,6 +588,18 @@ export default function AdminDataTable() {
                                                                         <td>{idx + 1}</td>
                                                                         <td>{doc.created_at?.slice(0, 10).replace(/-/g, '/') || ""}</td>
                                                                         <td>{doc.title}</td>
+                                                                        <td>
+                                                                            <button className="edit-icon">
+                                                                                <FontAwesomeIcon icon={faPen}
+                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
+                                                                                                 style={{
+                                                                                                     color: '#232D64',
+                                                                                                     cursor: 'pointer',
+                                                                                                     width: '14px',
+                                                                                                     height: '14px'
+                                                                                                 }}/>
+                                                                            </button>
+                                                                        </td>
                                                                         <td>{doc.version}</td>
                                                                         <td>
                                                                             <ModalCommitTrigger
@@ -571,18 +613,6 @@ export default function AdminDataTable() {
                                                                                 onClick={() => handleOpenFile(doc.url)}
                                                                             >
                                                                                 미리보기
-                                                                            </button>
-                                                                        </td>
-                                                                        <td>
-                                                                            <button className="edit-icon">
-                                                                                <FontAwesomeIcon icon={faPen}
-                                                                                                 onClick={() => handleEditClick(doc.doc_id, doc.title, folderId)}
-                                                                                                 style={{
-                                                                                                     color: '#232D64',
-                                                                                                     cursor: 'pointer',
-                                                                                                     width: '14px',
-                                                                                                     height: '14px'
-                                                                                                 }}/>
                                                                             </button>
                                                                         </td>
                                                                         <td>
@@ -615,7 +645,6 @@ export default function AdminDataTable() {
                         </tbody>
                     </table>
                 )}
-                {/* pagination-footer 제거, Pagination 중앙 배치 */}
                 <div style={{display: "flex", justifyContent: "center", margin: "24px 0"}}>
                     <Pagination
                         currentPage={currentPage + 1}
@@ -624,21 +653,40 @@ export default function AdminDataTable() {
                     />
                 </div>
             </div>
-            {/* ModalDefault를 직접 사용 */}
             {modalMessage.openSuccessModal && (
                 <ModalDefault
                     type="default"
-                    label="완료"
+                    label={
+                        modalMessage.successTitle && modalMessage.successTitle !== "성공"
+                            ? modalMessage.successTitle
+                            : "작업 완료"
+                    }
+                    description={
+                        modalMessage.successDescription
+                            ? modalMessage.successDescription
+                            : modalMessage.successTitle && modalMessage.successTitle !== "성공"
+                                ? ""
+                                : "작업이 성공적으로 처리되었습니다."
+                    }
                     onClose={modalMessage.closeSuccess}
-                    errorMessages={[modalMessage.successMessage]}
                 />
             )}
             {modalMessage.openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label="오류"
+                    label={
+                        modalMessage.errorTitle && modalMessage.errorTitle !== "오류"
+                            ? modalMessage.errorTitle
+                            : "오류"
+                    }
+                    description={
+                        modalMessage.errorDescription
+                            ? modalMessage.errorDescription
+                            : modalMessage.errorTitle && modalMessage.errorTitle !== "오류"
+                                ? ""
+                                : "작업 처리 중 오류가 발생했습니다."
+                    }
                     onClose={modalMessage.closeError}
-                    errorMessages={[modalMessage.errorMessage]}
                 />
             )}
             {openDeleteModal &&

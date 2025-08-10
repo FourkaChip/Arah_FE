@@ -30,6 +30,7 @@ export interface ModalWindowProps {
     onClose: () => void;
     onSubmit?: () => void;
     errorMessages?: string[];
+    description?: string; // 설명을 위한 필드 추가
 }
 
 // ModalConfirmButtonProps는 모달에서 확인 버튼에 사용되는 속성 타입입니다.

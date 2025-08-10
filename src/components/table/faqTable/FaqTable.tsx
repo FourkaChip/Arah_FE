@@ -36,9 +36,11 @@ export default function FaqAdminTable() {
 
     const {
         openSuccessModal,
-        successMessage,
+        successTitle,
+        successDescription,
         openErrorModal,
-        errorMessage,
+        errorTitle,
+        errorDescription,
         showSuccess,
         showError,
         closeSuccess,
@@ -76,14 +78,18 @@ export default function FaqAdminTable() {
         setLoading(true);
         fetchAdminFaqList()
             .then((data) => {
-                setFaqData(data.map((faq: any, idx: number) => ({
-                    id: faq.faq_id,
-                    no: idx + 1,
-                    tag: faq.tag_name || "",
-                    registeredAt: faq.created_at?.slice(0, 10) || "",
-                    question: faq.question,
-                    answer: faq.answer,
-                })));
+                setFaqData(
+                    data
+                        .map((faq: any, idx: number) => ({
+                            id: faq.faq_id,
+                            no: idx + 1,
+                            tag: faq.tag_name || "",
+                            registeredAt: faq.created_at?.slice(0, 10) || "",
+                            question: faq.question,
+                            answer: faq.answer,
+                        }))
+                        .sort((a, b) => b.no - a.no)
+                );
             })
             .finally(() => setLoading(false));
     }, [companyId]);
@@ -93,20 +99,22 @@ export default function FaqAdminTable() {
     };
 
     const filteredData = useMemo(() => {
-        return faqData.filter(row => {
-            const isTagAll = selectedTag === 'all';
-            const tagMatch = isTagAll || row.tag === selectedTag;
-            const matches =
-                searchValue === "" ||
-                row.question.includes(searchValue) ||
-                row.answer.includes(searchValue);
+        return faqData
+            .sort((a, b) => b.no - a.no)
+            .filter(row => {
+                const isTagAll = selectedTag === 'all';
+                const tagMatch = isTagAll || row.tag === selectedTag;
+                const matches =
+                    searchValue === "" ||
+                    row.question.includes(searchValue) ||
+                    row.answer.includes(searchValue);
 
-            const registered = row.registeredAt.replace(/\//g, "-");
-            const afterStart = !startDate || registered >= startDate;
-            const beforeEnd = !endDate || registered <= endDate;
+                const registered = row.registeredAt.replace(/\//g, "-");
+                const afterStart = !startDate || registered >= startDate;
+                const beforeEnd = !endDate || registered <= endDate;
 
-            return tagMatch && matches && afterStart && beforeEnd;
-        });
+                return tagMatch && matches && afterStart && beforeEnd;
+            });
     }, [faqData, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
@@ -117,39 +125,6 @@ export default function FaqAdminTable() {
     const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
 
     const columns = useMemo<ColumnDef<RowData>[]>(() => [
-        // {
-        //     id: "select",
-        //     header: () => (
-        //         <input
-        //             type="checkbox"
-        //             ref={checkboxRef}
-        //             onChange={(e) => {
-        //                 const checked = e.target.checked;
-        //                 const newSelections: Record<number, boolean> = {};
-        //                 paginatedData.forEach((row) => {
-        //                     newSelections[row.id] = checked;
-        //                 });
-        //                 setSelectedRowIds(newSelections);
-        //             }}
-        //             checked={
-        //                 paginatedData.length > 0 &&
-        //                 paginatedData.every((row) => selectedRowIds[row.id])
-        //             }
-        //         />
-        //     ),
-        //     cell: ({row}) => (
-        //         <input
-        //             type="checkbox"
-        //             checked={selectedRowIds[row.original.id]}
-        //             onChange={(e) =>
-        //                 setSelectedRowIds((prev) => ({
-        //                     ...prev,
-        //                     [row.original.id]: e.target.checked,
-        //                 }))
-        //             }
-        //         />
-        //     ),
-        // },
         {
             accessorKey: "no",
             header: "No.",
@@ -260,9 +235,9 @@ export default function FaqAdminTable() {
                 question: faq.question,
                 answer: faq.answer,
             })));
-            showSuccess("FAQ가 성공적으로 삭제되었습니다.");
+            showSuccess("삭제 완료", "FAQ가 성공적으로 삭제되었습니다.");
         } catch (e) {
-            showError("FAQ 삭제에 실패했습니다.");
+            showError("삭제 실패", "FAQ 삭제에 실패했습니다.");
         } finally {
             setLoading(false);
             setOpenDeleteModal(false);
@@ -278,7 +253,7 @@ export default function FaqAdminTable() {
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {
-                showError("선택한 태그가 존재하지 않습니다.");
+                showError("등록 실패", "선택한 태그가 존재하지 않습니다.");
                 return;
             }
             await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
@@ -291,9 +266,9 @@ export default function FaqAdminTable() {
                 question: faq.question,
                 answer: faq.answer,
             })));
-            showSuccess("FAQ가 성공적으로 수정되었습니다.");
+            showSuccess("수정 완료", "FAQ가 성공적으로 수정되었습니다.");
         } catch (e) {
-            showError("FAQ 수정에 실패했습니다.");
+            showError("수정 실패", "FAQ 수정에 실패했습니다.");
         } finally {
             setLoading(false);
             setOpenFaqModal(false);
@@ -417,14 +392,16 @@ export default function FaqAdminTable() {
             {openSuccessModal && (
                 <ModalDefault
                     type="default"
-                    label={successMessage}
+                    label={successTitle}
+                    description={successDescription}
                     onClose={closeSuccess}
                 />
             )}
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorMessage}
+                    label={errorTitle}
+                    description={errorDescription}
                     onClose={closeError}
                 />
             )}

@@ -2,39 +2,46 @@ import { useState } from 'react';
 
 export const useModalMessage = () => {
     const [openSuccessModal, setOpenSuccessModal] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
+    const [successTitle, setSuccessTitle] = useState('');
+    const [successDescription, setSuccessDescription] = useState('');
     const [openErrorModal, setOpenErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorTitle, setErrorTitle] = useState('');
+    const [errorDescription, setErrorDescription] = useState('');
 
-    const showSuccess = (message: string) => {
-        setSuccessMessage(message);
+    const showSuccess = (title: string, description?: string) => {
+        setSuccessTitle(title || '성공');
+        setSuccessDescription(description || '');
         setOpenSuccessModal(true);
     };
 
-    const showError = (message: string) => {
-        setErrorMessage(message);
+    const showError = (title: string, description?: string) => {
+        setErrorTitle(title || '오류');
+        setErrorDescription(description || '');
         setOpenErrorModal(true);
     };
 
     const closeSuccess = () => {
         setOpenSuccessModal(false);
-        setSuccessMessage('');
+        setSuccessTitle('');
+        setSuccessDescription('');
     };
 
     const closeError = () => {
         setOpenErrorModal(false);
-        setErrorMessage('');
+        setErrorTitle('');
+        setErrorDescription('');
     };
 
     return {
         openSuccessModal,
-        successMessage,
+        successTitle,
+        successDescription,
         openErrorModal,
-        errorMessage,
+        errorTitle,
+        errorDescription,
         showSuccess,
         showError,
         closeSuccess,
         closeError,
     };
 };
-

@@ -20,6 +20,7 @@ import {saveRefreshToken} from "@/utils/tokenStorage";
 import {useMutation} from '@tanstack/react-query';
 import {useRouter} from 'next/navigation';
 import {fetchCompanyToken, registerCompanyToken} from "@/api/master/deptFetch";
+import {toast} from "react-hot-toast";
 
 export default function LoginForm() {
     const pathname = usePathname();
@@ -142,11 +143,9 @@ export default function LoginForm() {
         },
     });
 
-    // 인증 에러 처리 함수 추가
     const handleVerifyError = (error: any) => {
         const messages: string[] = [];
 
-        // 403 에러 응답에서 error 객체의 value들만 추출
         if (error.response?.data?.error) {
             const errorObj = error.response.data.error;
 
@@ -156,15 +155,12 @@ export default function LoginForm() {
                 }
             });
         }
-        // response가 있지만 data.error가 없는 경우
         else if (error.response?.data?.message) {
             messages.push(error.response.data.message);
         }
-        // error가 Error 객체인 경우
         else if (error instanceof Error) {
             messages.push(error.message);
         }
-        // 기본 에러 메시지
         else {
             messages.push('인증 처리 중 오류가 발생했습니다.');
         }
@@ -310,6 +306,7 @@ export default function LoginForm() {
                         if (verifyToken) {
                             sendMasterVerifyCode(verifyToken)
                                 .then(() => {
+                                    toast.success("인증코드가 재전송되었습니다.");
                                 })
                                 .catch(() => {
                                     setErrorMessages(['인증코드 재전송에 실패했습니다. 다시 로그인해주세요.']);

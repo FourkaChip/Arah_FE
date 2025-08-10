@@ -1,3 +1,4 @@
+// 피드백 페이지에 사용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import { useRouter } from "next/navigation";
@@ -33,7 +34,6 @@ export default function FaqAdminTable() {
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
 
-    // 데이터 로드
     useEffect(() => {
         const loadFeedbackData = async () => {
             try {
@@ -60,24 +60,23 @@ export default function FaqAdminTable() {
     };
 
     const filteredData = useMemo(() => {
-        return data.filter(row => {
-            // 태그 필터 (chat_type 사용)
-            const isTagAll = selectedTag === 'all';
-            const tagMatch = isTagAll || row.chat_type === selectedTag;
+        return data
+            .sort((a, b) => b.feedback_id - a.feedback_id)
+            .filter(row => {
+                const isTagAll = selectedTag === 'all';
+                const tagMatch = isTagAll || row.chat_type === selectedTag;
 
-            // 검색어 필터
-            const matches = searchValue === "" ||
-                row.chat_type.includes(searchValue) ||
-                row.question.includes(searchValue) ||
-                row.answer.includes(searchValue);
+                const matches = searchValue === "" ||
+                    row.chat_type.includes(searchValue) ||
+                    row.question.includes(searchValue) ||
+                    row.answer.includes(searchValue);
 
-            // 날짜 필터 (created_at 사용)
-            const createdDate = new Date(row.created_at).toISOString().split('T')[0];
-            const afterStart = !startDate || createdDate >= startDate;
-            const beforeEnd = !endDate || createdDate <= endDate;
+                const createdDate = new Date(row.created_at).toISOString().split('T')[0];
+                const afterStart = !startDate || createdDate >= startDate;
+                const beforeEnd = !endDate || createdDate <= endDate;
 
-            return tagMatch && matches && afterStart && beforeEnd;
-        });
+                return tagMatch && matches && afterStart && beforeEnd;
+            });
     }, [data, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(

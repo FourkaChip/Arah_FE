@@ -15,9 +15,11 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
     const [companyId, setCompanyId] = useState<number>(1);
     const {
         openSuccessModal,
-        successMessage,
+        successTitle,
+        successDescription,
         openErrorModal,
-        errorMessage,
+        errorTitle,
+        errorDescription,
         showSuccess,
         showError,
         closeSuccess,
@@ -44,15 +46,15 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
             const tagObj = tags.find((tag: any) => tag.name === data.category);
             const tag_id = tagObj ? tagObj.tag_id : null;
             if (!tag_id) {
-                showError("선택한 태그가 존재하지 않습니다.");
+                showError("등록 실패", "선택한 태그가 존재하지 않습니다.");
                 return;
             }
             await fetchAddAdminFaq(companyId, data.question, data.answer, tag_id);
-            showSuccess("FAQ가 성공적으로 등록되었습니다.");
+            showSuccess("업로드 완료", "FAQ가 성공적으로 등록되었습니다.");
             if (onAdded) onAdded();
             handleClose();
         } catch (e) {
-            showError("FAQ 등록에 실패했습니다.");
+            showError("등록 실패", "FAQ 등록에 실패했습니다.");
         }
     };
 
@@ -70,14 +72,16 @@ export default function ModalFAQTrigger({onAdded}: {onAdded?: () => void}) {
             {openSuccessModal && (
                 <ModalDefault
                     type="default"
-                    label={successMessage}
+                    label={successTitle}
+                    description={successDescription}
                     onClose={closeSuccess}
                 />
             )}
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorMessage}
+                    label={errorTitle}
+                    description={errorDescription}
                     onClose={closeError}
                 />
             )}

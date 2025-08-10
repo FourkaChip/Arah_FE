@@ -6,7 +6,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { FeedbackPeriod } from '@/types/analyze';
 import {
   feedbackDataByYear,
@@ -255,7 +256,7 @@ const FeedbackLineChart: React.FC = () => {
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipContentProps<ValueType, NameType>) => {
     if (!active || !payload || !payload.length) return null;
     const title =
       selectedPeriod === '월별 보기' ? `${label}월` :
@@ -351,7 +352,7 @@ const FeedbackLineChart: React.FC = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey={xKey} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} />} />
             <Legend />
             <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
             <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
