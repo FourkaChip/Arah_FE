@@ -24,17 +24,17 @@
 
 // 페이지 제목 스타일
 .admin-main-title {
-  font-size: 1.9375rem; // 31px
+  font-size: 1.9375rem;
   font-weight: bold;
   color: var(--ara-primary-color);
-  margin: 0 0 1.25rem 0; // 20px
+  margin: 0 0 1.25rem 0;
 }
 
 // 페이지 설명 스타일
 .admin-main-description {
   color: var(--ara-text-gray);
-  font-size: 0.875rem; // 14px
-  margin: 1.25rem 0 0 0.625rem; // 20px 0 0 10px
+  font-size: 0.875rem;
+  margin: 1.25rem 0 0 0.625rem;
   line-height: 1.6;
 
   p {

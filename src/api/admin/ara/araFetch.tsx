@@ -1,4 +1,4 @@
-// src/api/admin/araFetch.tsx
+// 챗봇 설정 관련 API 연결 함수들입니다.
 
 import { authorizedFetch } from "@/api/auth/authorizedFetch";
 import type { SliderSettings } from "@/types/slider";

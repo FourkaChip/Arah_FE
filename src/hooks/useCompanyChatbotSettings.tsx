@@ -1,4 +1,4 @@
-// src/hooks/useCompanyChatbotSettings.tsx
+// 챗봇 슬라이더 값 수정과 관련된 훅입니다.
 import { useState, useEffect, useCallback } from "react";
 import {
   getCompanyChatbotSettings,
@@ -12,7 +12,6 @@ export function useCompanyChatbotSettings() {
     style: 5,
   });
 
-  // 초기 조회
   useEffect(() => {
     getCompanyChatbotSettings()
       .then(setSettings)
@@ -21,7 +20,6 @@ export function useCompanyChatbotSettings() {
       });
   }, []);
 
-  // 로컬 상태 변경 핸들러
   const handleChange = useCallback(
     (field: "similarity" | "style") =>
       (value: number) => {

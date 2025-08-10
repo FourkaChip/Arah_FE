@@ -2,9 +2,9 @@
    레이아웃 컨테이너: 전체 페이지 구조 설정
 ───────────────────────────── */
 .layout-container {
-    display: flex;            // 플렉스 레이아웃으로 사이드바 + 메인 분할
-    min-height: 100vh;        // 화면 전체 높이 확보
-    width: 100%;              // 컨테이너 전체 너비 설정
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
   }
   
   /* ─────────────────────────────
@@ -23,13 +23,13 @@
      고정 사이드바 영역
   ───────────────────────────── */
   .sidebar-wrapper {
-    width: 250px;             // 사이드바 너비 고정
-    min-width: 250px;         // 사이드바 최소 너비 유지
-    height: calc(100vh - 70px);            // 뷰포트 전체 높이
-    position: fixed;          // 화면에 고정 (스크롤 영향 없음)
+    width: 250px;
+    min-width: 250px;
+    height: calc(100vh - 70px);
+    position: fixed;
     left: 0;
     top: 70px;
-    z-index: 1000;            // 다른 콘텐츠보다 위에 배치
+    z-index: 1000;
   }
   
   /* ─────────────────────────────

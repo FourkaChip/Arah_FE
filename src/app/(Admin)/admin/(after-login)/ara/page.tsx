@@ -1,4 +1,4 @@
-// src/app/(Admin)/admin/(after-login)/ara/page.tsx
+// 챗봇 설정 페이지입니다.
 'use client';
 import { Toaster } from 'react-hot-toast';
 import ChatbotSlider from "@/components/slider/ChatbotSlider";
