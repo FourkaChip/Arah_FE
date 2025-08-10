@@ -1,3 +1,4 @@
+// 관리자 계정이 사용하는 데이터셋 관리 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
 import CustomSearch from "@/components/customSearch/CustomSearch";
@@ -86,14 +87,18 @@ export default function AdminDataTable() {
             setLoading(true);
             try {
                 const folders = await fetchFoldersByCompany();
-                setData(folders.map((folder: any, idx: number) => ({
-                    id: folder.folder_id.toString(),
-                    no: idx + 1,
-                    registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
-                    updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
-                    folderName: folder.name,
-                    subRows: undefined
-                })));
+                setData(
+                    folders
+                        .map((folder: any, idx: number) => ({
+                            id: folder.folder_id.toString(),
+                            no: idx + 1,
+                            registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                            updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                            folderName: folder.name,
+                            subRows: undefined
+                        }))
+                        .sort((a, b) => b.no - a.no)
+                );
             } catch (error) {
                 setData([]);
             } finally {
@@ -115,13 +120,15 @@ export default function AdminDataTable() {
         setSearchValue(search);
     };
     const filteredData = useMemo(() => {
-        return data.filter(row => {
-            const matchesFolder = searchValue === "" || row.folderName.includes(searchValue);
-            const updated = row.updatedAt.replace(/\//g, "-");
-            const afterStart = !startDate || updated >= startDate;
-            const beforeEnd = !endDate || updated <= endDate;
-            return matchesFolder && afterStart && beforeEnd;
-        });
+        return data
+            .sort((a, b) => b.no - a.no)
+            .filter(row => {
+                const matchesFolder = searchValue === "" || row.folderName.includes(searchValue);
+                const updated = row.updatedAt.replace(/\//g, "-");
+                const afterStart = !startDate || updated >= startDate;
+                const beforeEnd = !endDate || updated <= endDate;
+                return matchesFolder && afterStart && beforeEnd;
+            });
     }, [data, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
