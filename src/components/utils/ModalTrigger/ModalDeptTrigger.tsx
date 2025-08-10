@@ -7,10 +7,8 @@ import './ModalDeptTrigger.scss';
 import Image from 'next/image';
 
 export default function ModalDeptTrigger({buttonText}: { buttonText: string }) {
-    // 모달 열림 상태
     const [open, setOpen] = useState(false);
 
-    // 모달 열기/닫기 핸들러를 useCallback으로 메모이제이션
     const handleOpen = useCallback(() => setOpen(true), []);
     const handleClose = useCallback(() => setOpen(false), []);
 

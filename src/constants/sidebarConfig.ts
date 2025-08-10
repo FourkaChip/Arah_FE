@@ -19,8 +19,8 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
 
 // 마스터용 메뉴 구성
 export const MASTER_MENU_ITEMS: MenuItem[] = [
-    {id: 'admin-manage', label: '관리자 관리', icon: 'fa-solid fa-users-gear'},
     {id: 'company-config', label: '기업 설정', icon: 'fa-solid fa-gear'},
+    {id: 'admin-manage', label: '관리자 관리', icon: 'fa-solid fa-users-gear'},
 ];
 
 // 메뉴 ID와 실제 경로 매핑

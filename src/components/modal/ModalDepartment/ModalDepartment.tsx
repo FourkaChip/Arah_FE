@@ -30,8 +30,9 @@ export default function ModalDepartment({
     const queryClient = useQueryClient();
 
     const initializedFromDefaultUser = useRef(false);
+    const didLoadCurrentUser = useRef(false);
+    const didLoadDept = useRef(false);
 
-    // useCallback으로 함수들을 메모이제이션하여 불필요한 리렌더링 방지
     const handleErrorMessage = useCallback((message: string, error?: unknown) => {
         setErrorMsg(message);
     }, []);
@@ -48,7 +49,6 @@ export default function ModalDepartment({
         );
     }, []);
 
-    // fetchUserInfo 함수도 useCallback으로 최적화
     const fetchUserInfo = useCallback(async (email: string) => {
         if (currentUserCompanyId === null) {
             handleErrorMessage('회사 정보를 가져올 수 없습니다. 다시 로그인해 주세요.');
@@ -106,7 +106,11 @@ export default function ModalDepartment({
             );
             setStep('select');
             setInitialLoading(false);
-        } else if (!defaultUser) {
+            return;
+        }
+
+        if (!defaultUser && !didLoadCurrentUser.current) {
+            didLoadCurrentUser.current = true;
             const loadCurrentUserInfo = async () => {
                 setInitialLoading(true);
                 try {
@@ -126,9 +130,9 @@ export default function ModalDepartment({
         }
     }, [defaultUser, handleErrorMessage]);
 
-    // 부서 목록 로드를 별도 useEffect로 분리
     useEffect(() => {
-        if (step === 'select') {
+        if (step === 'select' && !didLoadDept.current) {
+            didLoadDept.current = true;
             fetchDepartmentList()
                 .then(setDepartmentList)
                 .catch(() => setDepartmentList([]));

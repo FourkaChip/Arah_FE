@@ -51,7 +51,10 @@ export default function MasterAdminTable() {
 
     const {data: adminRows = [], isLoading, error} = useQuery<AdminRowType[]>({
         queryKey: ['adminList'],
-        queryFn: fetchAdminList
+        queryFn: fetchAdminList,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        staleTime: 30_000,
     });
 
     useEffect(() => {
@@ -356,6 +359,7 @@ export default function MasterAdminTable() {
                 </div>
                 {openDeptModal && selectedAdmin && (
                     <ModalDepartment
+                        key={selectedAdmin.email || selectedAdmin.name}
                         onClose={() => {
                             setOpenDeptModal(false);
                             setSelectedAdmin(null);

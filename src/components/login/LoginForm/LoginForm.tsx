@@ -132,7 +132,7 @@ export default function LoginForm() {
                 if (!token) {
                     setTimeout(() => setShowTokenModal(true), 200);
                 } else {
-                    router.push('/master/manage');
+                    router.push('/master/dept');
                 }
             } catch {
                 setTimeout(() => setShowTokenModal(true), 200);
