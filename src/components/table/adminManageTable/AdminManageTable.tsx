@@ -180,10 +180,6 @@ export default function MasterAdminTable() {
                     header: "직급",
                 },
                 {
-                    accessorKey: "userId",
-                    header: "사용자ID",
-                },
-                {
                     accessorKey: "name",
                     header: "사용자명",
                 },
