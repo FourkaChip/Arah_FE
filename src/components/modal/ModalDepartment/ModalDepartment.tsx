@@ -30,6 +30,10 @@ export default function ModalDepartment({
     const queryClient = useQueryClient();
 
     const initializedFromDefaultUser = useRef(false);
+    // Guard to ensure current user info loads only once per modal open
+    const didLoadCurrentUser = useRef(false);
+    // (Optional hardening) Guard to ensure department list loads only once per modal open
+    const didLoadDept = useRef(false);
 
     // useCallback으로 함수들을 메모이제이션하여 불필요한 리렌더링 방지
     const handleErrorMessage = useCallback((message: string, error?: unknown) => {
@@ -95,6 +99,7 @@ export default function ModalDepartment({
     }, [emailInput, loading, currentUserCompanyId, fetchUserInfo]);
 
     useEffect(() => {
+        // 1) 열릴 때 행에서 전달된 defaultUser가 있으면 그 값으로 단 한 번 초기화
         if (defaultUser && !initializedFromDefaultUser.current) {
             initializedFromDefaultUser.current = true;
 
@@ -106,7 +111,12 @@ export default function ModalDepartment({
             );
             setStep('select');
             setInitialLoading(false);
-        } else if (!defaultUser) {
+            return; // 더 진행하지 않음
+        }
+
+        // 2) defaultUser가 없을 때 현재 사용자 회사정보는 모달 생애주기 당 1회만 로드
+        if (!defaultUser && !didLoadCurrentUser.current) {
+            didLoadCurrentUser.current = true;
             const loadCurrentUserInfo = async () => {
                 setInitialLoading(true);
                 try {
@@ -128,7 +138,8 @@ export default function ModalDepartment({
 
     // 부서 목록 로드를 별도 useEffect로 분리
     useEffect(() => {
-        if (step === 'select') {
+        if (step === 'select' && !didLoadDept.current) {
+            didLoadDept.current = true;
             fetchDepartmentList()
                 .then(setDepartmentList)
                 .catch(() => setDepartmentList([]));

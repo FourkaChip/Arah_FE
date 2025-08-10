@@ -87,7 +87,7 @@ export const fetchCurrentUserInfo = async () => {
 
     userInfoPromise = (async () => {
         try {
-            const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
+            const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/me`, {
                 method: 'GET',
             });
 

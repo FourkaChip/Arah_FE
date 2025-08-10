@@ -144,7 +144,7 @@ export const fetchAdminList = async (): Promise<CombinedAdminInfo[]> => {
 
 // 관리자 부서 등록(업데이트) API 함수입니다.
 export const assignAdminRole = async (payload: { departmentIds: number[]; userId: number }[]) => {
-    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/admin/departments`, {
+    const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/admins/departments`, {
         method: 'PUT',
         body: JSON.stringify(payload),
     });
