@@ -6,7 +6,7 @@ import {authorizedFetch} from "@/api/auth/authorizedFetch";
 let unlikeFeedbackCache: { [companyId: number]: any[] } = {};
 let unlikeFeedbackPromises: { [companyId: number]: Promise<any[]> | null } = {};
 let unlikeFeedbackCacheTime: { [companyId: number]: number } = {};
-const UNLIKE_FEEDBACK_CACHE_DURATION = 2 * 60 * 1000; // 2분
+const UNLIKE_FEEDBACK_CACHE_DURATION = 2 * 60 * 1000;
 
 // 회사별 싫어요 피드백 목록 조회 함수입니다.
 export const fetchUnlikeFeedbackList = async (company_id: number) => {
@@ -160,6 +160,19 @@ export const createFeedback = async (feedbackData: {
         }
     );
     if (!res.ok) throw new Error('피드백 생성 실패');
+    const data = await res.json();
+    return data.result;
+};
+
+// 피드백 삭제 함수입니다.
+export const deleteFeedback = async (feedback_id: number) => {
+    const res = await authorizedFetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/delete/${feedback_id}`,
+        {
+            method: 'DELETE',
+        }
+    );
+    if (!res.ok) throw new Error('피드백 삭제 실패');
     const data = await res.json();
     return data.result;
 };

@@ -16,11 +16,14 @@ import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import { FeedbackRowData } from "@/types/dataset";
 import {faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons/faUpRightFromSquare";
 import Pagination from "@/components/customPagination/Pagination";
-import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache} from "@/api/admin/feedback/feedbackFetch";
+import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache, deleteFeedback} from "@/api/admin/feedback/feedbackFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
+import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function FaqAdminTable() {
+    const modalMessage = useModalMessage();
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
     const router = useRouter();
 
     const checkboxRef = useRef<HTMLInputElement>(null);
@@ -140,10 +143,13 @@ export default function FaqAdminTable() {
         {
             id: "delete",
             header: "삭제",
-            cell: () => (
+            cell: ({row}) => (
                 <button className="delete-icon">
                     <FontAwesomeIcon icon={faTrash}
-                                     onClick={() => setOpenDeleteModal(true)}
+                                     onClick={() => {
+                                         setDeleteTargetId(row.original.feedback_id);
+                                         setOpenDeleteModal(true);
+                                     }}
                                      style={{
                                          color: 'red',
                                          cursor: 'pointer',
@@ -181,6 +187,32 @@ export default function FaqAdminTable() {
     }, [paginatedData, selectedRowIds]);
 
     const pageCount = Math.ceil(filteredData.length / pageSize);
+
+    const handleDeleteFeedback = async () => {
+        if (deleteTargetId === null) return;
+
+        setLoading(true);
+        try {
+            await deleteFeedback(deleteTargetId);
+
+            const userInfo = await fetchCurrentUserInfo();
+            clearUnlikeFeedbackCache(userInfo.companyId);
+            const feedbackList = await fetchUnlikeFeedbackList(userInfo.companyId);
+            const dataWithId = feedbackList.map(item => ({
+                ...item,
+                id: item.feedback_id
+            }));
+            setData(dataWithId);
+
+            modalMessage.showSuccess('삭제 완료', '피드백이 성공적으로 삭제되었습니다.');
+        } catch (error) {
+            modalMessage.showError('삭제 실패', '피드백 삭제에 실패했습니다.');
+        } finally {
+            setLoading(false);
+            setOpenDeleteModal(false);
+            setDeleteTargetId(null);
+        }
+    };
 
     if (loading) {
         return <div>로딩 중...</div>;
@@ -247,8 +279,32 @@ export default function FaqAdminTable() {
                     />
                 </div>
             </div>
+            {modalMessage.openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={modalMessage.successTitle}
+                    description={modalMessage.successDescription}
+                    onClose={modalMessage.closeSuccess}
+                />
+            )}
+            {modalMessage.openErrorModal && (
+                <ModalDefault
+                    type="default"
+                    label={modalMessage.errorTitle}
+                    description={modalMessage.errorDescription}
+                    onClose={modalMessage.closeError}
+                />
+            )}
             {openDeleteModal &&
-                <ModalDefault type="delete-data" label="삭제하시겠습니까?" onClose={() => setOpenDeleteModal(false)}/>}
+                <ModalDefault
+                    type="delete-data"
+                    label="삭제하시겠습니까?"
+                    onClose={() => {
+                        setOpenDeleteModal(false);
+                        setDeleteTargetId(null);
+                    }}
+                    onSubmit={handleDeleteFeedback}
+                />}
         </>
     );
 }
