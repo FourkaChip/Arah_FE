@@ -7,6 +7,7 @@ import {ModalInputProps} from "@/types/modals";
 import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
 import {useQueryClient} from '@tanstack/react-query';
+import {toast, Toaster} from 'react-hot-toast';
 
 export default function ModalInput({
                                        modalType,
@@ -60,11 +61,15 @@ export default function ModalInput({
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-    const handleResendCode = () => {
+    const handleResendCode = async () => {
         if (onResendCode) {
-            onResendCode();
-            setTimeLeft(300);
-            setIsTimerActive(true);
+            try {
+                onResendCode();
+                setTimeLeft(300);
+                setIsTimerActive(true);
+            } catch {
+                toast.error('인증코드 재전송에 실패했습니다.');
+            }
         }
     };
 
@@ -287,6 +292,7 @@ export default function ModalInput({
 
     return (
         <>
+            <Toaster position="top-right"/>
             <ModalLayout
                 title={title || config.title}
                 description={config.description}
