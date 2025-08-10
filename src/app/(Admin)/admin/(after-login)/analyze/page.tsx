@@ -1,4 +1,4 @@
-// src/app/(Admin)/admin/(after-login)/analyze/page.tsx
+// 질문 및 피드백과 관련된 통계 페이지입니다.
 'use client';
 
 import dynamic from 'next/dynamic';
