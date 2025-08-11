@@ -27,7 +27,11 @@ export default function AnalysisPage() {
 
         <div className="analyze-grid">
           <section className="grid-item line-full">
-            <FeedbackLineChart />
+            {companyId != null ? (
+              <FeedbackLineChart companyId={companyId} />
+            ) : (
+              <p>회사 정보를 불러오는 중...</p>
+            )}
           </section>
 
           <section className="grid-item donut-left">
@@ -35,7 +39,7 @@ export default function AnalysisPage() {
           </section>
 
           <section className="grid-item donut-right">
-            {companyId != null ? ( // ✅ 0 허용
+            {companyId != null ? (
               <SatisfactionChart companyId={companyId} />
             ) : (
               <p>회사 정보를 불러오는 중...</p>

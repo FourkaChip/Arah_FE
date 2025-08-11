@@ -1,7 +1,7 @@
 // src/components/analyze/FeedbackLineChart.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
@@ -38,10 +38,9 @@ type MonthlySatPoint = { month: number; sat: number; unsat: number };
 type HourlySatPoint = { hour: number; sat: number; unsat: number };
 type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
 
-import { useAnalysisCompanyId } from '@/hooks/useAnalysisCompanyId';
+type FeedbackLineChartProps = { companyId: number | null };
 
-const FeedbackLineChart: React.FC = () => {
-  const companyId = useAnalysisCompanyId();
+const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
   const [currentYear, setCurrentYear] = useState<number>(2024);
   const [currentMonth, setCurrentMonth] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<number>(1);
@@ -81,28 +80,49 @@ const FeedbackLineChart: React.FC = () => {
 
   // API 데이터 fetch
   useEffect(() => {
-    if (!companyId) return;
+    if (companyId == null) return;
     setLoading(true);
     setError(null);
-    let ac = new AbortController();
+    const ac = new AbortController();
     const fetchData = async () => {
       try {
+        let result: any[] = [];
         if (selectedPeriod === '시간별 보기') {
           const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-          const result = await fetchFeedbackHourlyCount({ date, companyId, signal: ac.signal });
-          // TODO: result 변환 필요 (result 구조 예시 필요)
-          setData([]); // 변환 후 실제 데이터로 변경
+          result = await fetchFeedbackHourlyCount({ date, companyId, signal: ac.signal });
+          const chartData = Array.from({ length: 24 }, (_, hour) => {
+            const found = result.find((d: any) => d.hour === hour);
+            return {
+              hour,
+              sat: found ? found.like_count : 0,
+              unsat: found ? found.unlike_count : 0,
+            };
+          });
+          setData(chartData);
         } else if (selectedPeriod === '일별 보기') {
-          const result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
-          setData([]); // 변환 후 실제 데이터로 변경
+          result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+          const resultMap = new Map(result.map((d: any) => [d.day, d]));
+          const chartData = Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1;
+            const found = resultMap.get(day);
+            return {
+              day,
+              sat: found ? found.like_count : 0,
+              unsat: found ? found.unlike_count : 0,
+            };
+          });
+          setData(chartData);
         } else if (selectedPeriod === '주별 보기') {
-          const result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
-          setData([]); // 변환 후 실제 데이터로 변경
+          result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          const chartData = result.map((d: any) => ({ week: d.week, sat: d.like_count, unsat: d.unlike_count }));
+          setData(chartData);
         } else if (selectedPeriod === '월별 보기') {
-          const result = await fetchFeedbackMonthlyCount({ year: selectedYear, companyId, signal: ac.signal });
-          setData([]); // 변환 후 실제 데이터로 변경
+          result = await fetchFeedbackMonthlyCount({ year: selectedYear, companyId, signal: ac.signal });
+          const chartData = result.map((d: any) => ({ month: d.month, sat: d.like_count, unsat: d.unlike_count }));
+          setData(chartData);
         }
-      } catch (err) {
+      } catch (err: any) {
         setError(typeof err?.message === 'string' ? err.message : '요청 실패');
       } finally {
         setLoading(false);
@@ -296,6 +316,8 @@ const FeedbackLineChart: React.FC = () => {
           <p>불러오는 중…</p>
         ) : error ? (
           <p className="error">{error}</p>
+        ) : data.length === 0 ? (
+          <p className="empty">데이터가 없습니다.</p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
