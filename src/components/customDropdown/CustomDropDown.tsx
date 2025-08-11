@@ -18,7 +18,7 @@ export default function CustomDropDown({
     const [showInputModal, setShowInputModal] = useState(false);
     const {
         openErrorModal,
-        errorMessage,
+        errorDescription,
         showError,
         closeError,
     } = useModalMessage();
@@ -95,7 +95,7 @@ export default function CustomDropDown({
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorMessage}
+                    label={errorDescription}
                     onClose={closeError}
                 />
             )}
