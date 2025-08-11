@@ -12,9 +12,17 @@ export function useCompanyChatbotSettings() {
     style: 5,
   });
 
+  const [originalSettings, setOriginalSettings] = useState<SliderSettings>({
+    similarity: 5,
+    style: 5,
+  });
+
   useEffect(() => {
     getCompanyChatbotSettings()
-      .then(setSettings)
+      .then((data) => {
+        setSettings(data);
+        setOriginalSettings(data);
+      })
       .catch((err) => {
         throw err;
       });
@@ -28,19 +36,26 @@ export function useCompanyChatbotSettings() {
     []
   );
 
-  // 변경 완료 시 서버 업데이트
   const handleAfterChange = useCallback(
     (field: "similarity" | "style") =>
       async (value: number) => {
-        const updated = { ...settings, [field]: value } as SliderSettings;
+        if (originalSettings[field] === value) {
+          const error = new Error('NO_CHANGE');
+          throw error;
+        }
+
+        const updated = { ...originalSettings, [field]: value } as SliderSettings;
 
         try {
           await updateCompanyChatbotSettings(updated);
+          setOriginalSettings((prev) => ({ ...prev, [field]: value }));
+          setSettings((prev) => ({ ...prev, [field]: value }));
         } catch (err) {
+          setSettings(originalSettings);
           throw err;
         }
       },
-    [settings]
+    [originalSettings]
   );
 
   return {
