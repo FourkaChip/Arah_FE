@@ -12,9 +12,10 @@ import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {
     masterLogin,
     confirmMasterVerifyCode,
-    sendMasterVerifyCode
+    sendMasterVerifyCode,
+    clearMasterLoginCache
 } from '@/api/auth/master';
-import {adminLogin} from '@/api/auth/admin';
+import {adminLogin, clearAdminLoginCache} from '@/api/auth/admin';
 import {useAuthStore} from "@/store/auth.store";
 import {saveRefreshToken} from "@/utils/tokenStorage";
 import {useMutation} from '@tanstack/react-query';
@@ -76,6 +77,7 @@ export default function LoginForm() {
         },
         onError: (error: any) => {
             setPasswordError(true);
+            clearMasterLoginCache();
             handleLoginError(error);
         },
     });
@@ -86,10 +88,12 @@ export default function LoginForm() {
             setPasswordError(false);
             useAuthStore.getState().setAccessToken(accessToken);
             saveRefreshToken(refreshToken);
+            clearAdminLoginCache();
             router.push('/admin/manage');
         },
         onError: (error: any) => {
             setPasswordError(true);
+            clearAdminLoginCache();
             handleLoginError(error);
         },
     });
@@ -99,24 +103,24 @@ export default function LoginForm() {
 
         if (error.response?.data?.error) {
             const errorObj = error.response.data.error;
-
-            Object.values(errorObj).forEach((message: any) => {
-                if (typeof message === 'string') {
-                    messages.push(message);
-                }
-            });
-        }
-        else if (error.response?.data?.message) {
-            messages.push(error.response.data.message);
-        }
-        else if (error instanceof Error) {
-            messages.push(error.message);
-        }
-        else {
-            messages.push('로그인 처리 중 오류가 발생했습니다.');
+            const errorValues = Object.values(errorObj);
+            const lastErrorValue = errorValues[errorValues.length - 1];
+            if (typeof lastErrorValue === 'string') {
+                messages.push(lastErrorValue);
+            }
         }
 
-        setErrorMessages(messages.length > 0 ? [messages[0]] : ['로그인 처리 중 오류가 발생했습니다.']);
+        if (messages.length === 0) {
+            if (error.response?.data?.message) {
+                messages.push(error.response.data.message);
+            } else if (error instanceof Error) {
+                messages.push(error.message);
+            } else {
+                messages.push('로그인 처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        setErrorMessages(messages);
         setShowErrorModal(true);
     };
 
@@ -148,24 +152,24 @@ export default function LoginForm() {
 
         if (error.response?.data?.error) {
             const errorObj = error.response.data.error;
-
-            Object.values(errorObj).forEach((message: any) => {
-                if (typeof message === 'string') {
-                    messages.push(message);
-                }
-            });
-        }
-        else if (error.response?.data?.message) {
-            messages.push(error.response.data.message);
-        }
-        else if (error instanceof Error) {
-            messages.push(error.message);
-        }
-        else {
-            messages.push('인증 처리 중 오류가 발생했습니다.');
+            const errorValues = Object.values(errorObj);
+            const lastErrorValue = errorValues[errorValues.length - 1];
+            if (typeof lastErrorValue === 'string') {
+                messages.push(lastErrorValue);
+            }
         }
 
-        setErrorMessages(messages.length > 0 ? [messages[0]] : ['인증 처리 중 오류가 발생했습니다.']);
+        if (messages.length === 0) {
+            if (error.response?.data?.message) {
+                messages.push(error.response.data.message);
+            } else if (error instanceof Error) {
+                messages.push(error.message);
+            } else {
+                messages.push('인증 처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        setErrorMessages(messages);
         setShowErrorModal(true);
     };
 
@@ -175,8 +179,23 @@ export default function LoginForm() {
             setShowTokenModal(false);
             router.push('/master/manage');
             return true;
-        } catch (e: any) {
-            setErrorMessages(['토큰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.']);
+        } catch (error: any) {
+            const messages: string[] = [];
+
+            if (error.response?.data?.error) {
+                const errorObj = error.response.data.error;
+                const errorValues = Object.values(errorObj);
+                const lastErrorValue = errorValues[errorValues.length - 1];
+                if (typeof lastErrorValue === 'string') {
+                    messages.push(lastErrorValue);
+                }
+            }
+
+            if (messages.length === 0) {
+                messages.push('토큰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.');
+            }
+
+            setErrorMessages(messages);
             setShowErrorModal(true);
             return false;
         }
@@ -245,6 +264,7 @@ export default function LoginForm() {
                         className="login-form-input"
                         onChange={(e) => setEmail(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        onInvalid={(e) => e.preventDefault()}
                     />
                 </label>
 
@@ -256,16 +276,16 @@ export default function LoginForm() {
                         type="password"
                         placeholder="비밀번호를 입력해 주세요."
                         value={password}
-                        className={`login-form-input ${passwordError ? 'is-error' : ''}`}
+                        className={`login-form-input`}
                         onChange={(e) => {
                             setPassword(e.target.value);
                             setPasswordError(false);
                         }}
                         onKeyDown={handleKeyDown}
                     />
-                    {passwordError && (
-                        <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>
-                    )}
+                    {/*{passwordError && (*/}
+                    {/*    <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>*/}
+                    {/*)}*/}
                 </label>
                 <p className="login-form-missing">
                     비밀번호를 잊으셨다면?{' '}
@@ -308,8 +328,23 @@ export default function LoginForm() {
                                 .then(() => {
                                     toast.success("인증코드가 재전송되었습니다.");
                                 })
-                                .catch(() => {
-                                    setErrorMessages(['인증코드 재전송에 실패했습니다. 다시 로그인해주세요.']);
+                                .catch((error) => {
+                                    const messages: string[] = [];
+
+                                    if (error.response?.data?.error) {
+                                        const errorObj = error.response.data.error;
+                                        const errorValues = Object.values(errorObj);
+                                        const lastErrorValue = errorValues[errorValues.length - 1];
+                                        if (typeof lastErrorValue === 'string') {
+                                            messages.push(lastErrorValue);
+                                        }
+                                    }
+
+                                    if (messages.length === 0) {
+                                        messages.push('인증코드 재전송에 실패했습니다. 다시 로그인해주세요.');
+                                    }
+
+                                    setErrorMessages(messages);
                                     setShowErrorModal(true);
                                 });
                         }

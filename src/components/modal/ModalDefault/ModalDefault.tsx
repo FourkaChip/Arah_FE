@@ -24,7 +24,7 @@ export default function ModalDefault({
                 fallbackDescription = errorMessages[0];
             } else if (label === '토큰 재등록') {
                 fallbackDescription = '토큰 재등록이 완료되었습니다.';
-            } else if (label === '삭제 완료') {
+            } else if (label === '��제 완료') {
                 fallbackDescription = '성공적으로 삭제되었습니다.';
             } else if (label === '업로드 완료') {
                 fallbackDescription = '데이터셋이 성공적으로 업로드되었습니다.';
