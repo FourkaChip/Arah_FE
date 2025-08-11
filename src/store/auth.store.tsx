@@ -1,3 +1,4 @@
+//store/auth.store.tsx
 // 로그인 auth 상태관리를 위한 zustand 스토어 파일입니다.
 import {create} from 'zustand';
 import {saveAccessToken, getAccessToken, removeAccessToken} from '@/utils/tokenStorage';

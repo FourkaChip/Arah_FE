@@ -1,29 +1,94 @@
-// src/components/analyze/SatisfactionChart.tsx
-'use client';
 
-import React, { useState, useMemo } from 'react';
+
+'use client';
+console.log('SatisfactionChart 최상단 렌더링');
+
+import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { DateRange } from '@/types/analyze';
-import { aggregateSatisfactionData } from '@/constants/dummydata/DummyAnalyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
-import {
-  TYPE_COLOR,
-  MIN_LABEL_PERCENT,
-} from '@/constants/analyzeConfig';
+import { TYPE_COLOR, MIN_LABEL_PERCENT } from '@/constants/analyzeConfig';
+import { fetchSatisfactionRaw, type SatisfactionRaw, convertSatisfactionResultToRows } from '@/api/admin/analyze/analyzeFetch';
+import { authorizedFetch } from '@/api/auth/authorizedFetch';
 import './AnalyzeChart.scss';
 
-const SatisfactionChart: React.FC = () => {
+// companyId prop 제거
+type Props = {};
+
+const EMPTY_ROWS: SatisfactionRaw[] = [
+  { type: '만족', value: 0, percentage: 0 },
+  { type: '불만족', value: 0, percentage: 0 },
+];
+
+const SatisfactionChart: React.FC<Props> = () => {
+  const [companyId, setCompanyId] = useState<number | null>(null);
   const initialRange = useDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRange>(initialRange);
-
-  const satisfactionData = useMemo(
-    () => aggregateSatisfactionData(dateRange.startDate, dateRange.endDate),
-    [dateRange.startDate, dateRange.endDate]
-  );
+  const [data, setData] = useState<SatisfactionRaw[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDateChange = (field: keyof DateRange, value: string) => {
-    setDateRange(prev => ({ ...prev, [field]: value }));
+    setDateRange(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'startDate' && next.endDate && value > next.endDate) next.endDate = value;
+      return next;
+    });
   };
+
+  // 회사 정보 먼저 요청
+  useEffect(() => {
+    console.log('[SatisfactionChart] 렌더링됨');
+    console.log('[SatisfactionChart] API BASE URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+    const ac = new AbortController();
+    setLoading(true);
+    setError(null);
+    authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/me`, { method: 'GET', signal: ac.signal })
+      .then(res => res.json())
+      .then(json => {
+        console.log('회사 정보 응답:', json);
+        const id = json?.result?.companyId;
+        if (typeof id === 'number') {
+          setCompanyId(id);
+        } else {
+          setError('회사 정보를 불러올 수 없습니다.');
+        }
+      })
+      .catch(err => {
+        console.error('회사 정보 요청 에러:', err);
+        setError(typeof err?.message === 'string' ? err.message : '회사 정보 요청 실패');
+      })
+      .finally(() => setLoading(false));
+    return () => ac.abort();
+  }, []);
+
+  useEffect(() => {
+    if (companyId !== null) {
+      console.log('SatisfactionChart companyId:', companyId);
+    }
+  }, [companyId]);
+
+  // companyId가 있을 때 만족도 API 요청
+  useEffect(() => {
+    if (companyId == null || !dateRange.startDate || !dateRange.endDate) return;
+    let ac = new AbortController();
+    setLoading(true);
+    setError(null);
+    fetchSatisfactionRaw({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      companyId,
+      signal: ac.signal,
+    })
+      .then(result => setData(convertSatisfactionResultToRows(result)))
+      .catch(err => {
+        if (err?.name !== 'AbortError') {
+          setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+        }
+      })
+      .finally(() => setLoading(false));
+    return () => ac.abort();
+  }, [companyId, dateRange.startDate, dateRange.endDate]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderLabelWithLeader = (props: any) => {
@@ -33,16 +98,14 @@ const SatisfactionChart: React.FC = () => {
 
     const RADIAN = Math.PI / 180;
     const cos = Math.cos(-midAngle * RADIAN);
-    const sin = Math.sin(-midAngle * RADIAN);
-
     const startR = outerRadius + 6;
     const midR = outerRadius + 22;
     const endOffset = 24;
 
     const sx = cx + startR * cos;
-    const sy = cy + startR * sin;
+    const sy = cy + startR * Math.sin(-midAngle * RADIAN);
     const mx = cx + midR * cos;
-    const my = cy + midR * sin;
+    const my = cy + midR * Math.sin(-midAngle * RADIAN);
     const ex = mx + (cos >= 0 ? endOffset : -endOffset);
     const ey = my;
 
@@ -72,15 +135,26 @@ const SatisfactionChart: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+  const d = payload[0].payload as SatisfactionRaw;
       return (
         <div className="tooltip">
-          <p>{`${data.type}: ${data.percentage}% (${data.value}건)`}</p>
+          <p>{`${d.type}: ${d.percentage}% (${d.value}건)`}</p>
         </div>
       );
     }
     return null;
   };
+
+  if (error) {
+    return (
+      <div className="box chartContainer">
+        <div className="chartHeader"><h3 className="chartTitle">만족도</h3></div>
+        <div className="chartWrapper"><p className="error">{error}</p></div>
+      </div>
+    );
+  }
+
+  const chartRows = data.length ? data : EMPTY_ROWS;
 
   return (
     <div className="box chartContainer">
@@ -105,30 +179,34 @@ const SatisfactionChart: React.FC = () => {
       </div>
 
       <div className="chartWrapper">
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={satisfactionData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={0}
-              dataKey="value"
-              labelLine={false}
-              label={renderLabelWithLeader}
-              isAnimationActive={false}
-            >
-              {satisfactionData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={TYPE_COLOR[entry.type as '만족' | '불만족'] || '#888'}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+        {loading ? (
+          <p>불러오는 중…</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartRows}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={0}
+                dataKey="value"
+                labelLine={false}
+                label={renderLabelWithLeader}
+                isAnimationActive={false}
+              >
+                {chartRows.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={TYPE_COLOR[entry.type as '만족' | '불만족'] || '#888'}
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
