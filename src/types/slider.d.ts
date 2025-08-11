@@ -7,6 +7,7 @@ export interface ChatbotSliderProps {
   leftLabel: string;
   rightLabel: string;
   tips: readonly string[];
+  originalValue: number;
 }
 
 // 슬라이더 설정 타입

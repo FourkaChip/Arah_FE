@@ -39,11 +39,6 @@ export function useCompanyChatbotSettings() {
   const handleAfterChange = useCallback(
     (field: "similarity" | "style") =>
       async (value: number) => {
-        if (originalSettings[field] === value) {
-          const error = new Error('NO_CHANGE');
-          throw error;
-        }
-
         const updated = { ...originalSettings, [field]: value } as SliderSettings;
 
         try {
@@ -60,6 +55,7 @@ export function useCompanyChatbotSettings() {
 
   return {
     settings,
+    originalSettings,
     onSimilarityChange: handleChange("similarity"),
     onSimilarityComplete: handleAfterChange("similarity"),
     onStyleChange: handleChange("style"),

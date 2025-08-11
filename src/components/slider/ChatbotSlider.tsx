@@ -15,6 +15,7 @@ export default function ChatbotSlider({
                                           leftLabel,
                                           rightLabel,
                                           tips,
+                                          originalValue,
                                       }: ChatbotSliderProps) {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toastIdRef = useRef<string | null>(null);
@@ -67,6 +68,11 @@ export default function ChatbotSlider({
             const num = typeof v === 'number' ? v : v[0];
             const final = num === 0 ? SLIDER_CONFIG.SELECTABLE_MIN : num;
 
+            if (originalValue === final) {
+                toast.success(`${label}이 이미 적용된 값입니다.`);
+                return;
+            }
+
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
             }
@@ -89,17 +95,13 @@ export default function ChatbotSlider({
                     if (toastIdRef.current) {
                         toast.dismiss(toastIdRef.current);
                     }
-                    if ((err as any).message === 'NO_CHANGE') {
-                        toast.success(`${label}이 이미 적용된 값입니다.`);
-                    } else {
-                        toast.error(`${label} 저장에 실패했습니다.`);
-                    }
+                    toast.error(`${label} 저장에 실패했습니다.`);
                 } finally {
                     toastIdRef.current = null;
                 }
             }, 2000);
         },
-        [onChangeComplete, label]
+        [onChangeComplete, label, originalValue]
     );
 
     useEffect(() => {
