@@ -8,6 +8,8 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
 import {useQueryClient} from '@tanstack/react-query';
 import {toast, Toaster} from 'react-hot-toast';
+import LoadingSpinner from '@/components/spinner/Spinner';
+import SpinnerOverlay from '@/components/spinner/SpinnerOverlay';
 
 export default function ModalInput({
                                        modalType,
@@ -17,7 +19,8 @@ export default function ModalInput({
                                        onResendCode,
                                        onVerifyError,
                                        error: externalError,
-                                       defaultValue = ''
+                                       defaultValue = '',
+                                       disabled = false // disabled prop 추가
                                    }: ModalInputProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -290,8 +293,12 @@ export default function ModalInput({
         onClose();
     };
 
+    const isVerifyLoading = modalType === 'auth' && disabled;
+
     return (
         <>
+            {isVerifyLoading && <SpinnerOverlay message="인증 중..." zIndex={10000} />}
+
             <Toaster position="top-right"/>
             <ModalLayout
                 title={title || config.title}
@@ -302,6 +309,7 @@ export default function ModalInput({
                         type={config.buttonType as 'default' | 'delete-data'}
                         label={loading ? '처리중...' : config.buttonLabel}
                         onClick={handleSubmit}
+                        disabled={isVerifyLoading}
                     />
                 }
                 onClose={onClose}
@@ -319,7 +327,7 @@ export default function ModalInput({
                                 setErrorMsg(undefined);
                             }}
                             onKeyDown={handleKeyDown}
-                            disabled={modalType === 'auth' && timeLeft === 0}
+                            disabled={modalType === 'auth' && (timeLeft === 0 || isVerifyLoading)}
                         />
                         {modalType === 'auth' && (
                             <span className={`timer-display ${timeLeft === 0 ? 'expired' : ''}`}>
@@ -343,11 +351,14 @@ export default function ModalInput({
                             {config.subText}
                             <a
                                 onClick={() => {
-                                    if (modalType === 'auth') {
+                                    if (modalType === 'auth' && !isVerifyLoading) {
                                         handleResendCode();
                                     }
                                 }}
-                                style={{cursor: 'pointer'}}
+                                style={{
+                                    cursor: isVerifyLoading ? 'not-allowed' : 'pointer',
+                                    opacity: isVerifyLoading ? 0.5 : 1
+                                }}
                             >
                                 {config.subLinkText}
                             </a>

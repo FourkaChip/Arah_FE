@@ -22,6 +22,7 @@ import {useMutation} from '@tanstack/react-query';
 import {useRouter} from 'next/navigation';
 import {fetchCompanyToken, registerCompanyToken} from "@/api/master/deptFetch";
 import {toast} from "react-hot-toast";
+import LoadingSpinner from '@/components/spinner/Spinner';
 
 export default function LoginForm() {
     const pathname = usePathname();
@@ -221,8 +222,36 @@ export default function LoginForm() {
         }
     };
 
+    const isLoading = masterLoginMutation.isPending || adminLoginMutation.isPending || verifyMutation.isPending;
+
     return (
         <>
+            {isLoading && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        padding: '2rem'
+                    }}>
+                        <LoadingSpinner />
+                        <p style={{textAlign: 'center', marginTop: '1rem', fontSize: '14px', color: '#666'}}>
+                            로그인 중...
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <form className="login-form" onSubmit={handleFormSubmit}>
                 {pathname === '/master/login' && (
                     <label className="login-form-label">
@@ -313,8 +342,12 @@ export default function LoginForm() {
                         <a href="/admin/login">관리자 계정으로 로그인하기</a>
                     </div>
                 )}
-                <LoginButton label="로그인" onClick={handleLogin}/>
+                <LoginButton
+                    label="로그인"
+                    onClick={handleLogin}
+                />
             </form>
+
             {showModal && (
                 <ModalInput
                     modalType="auth"
@@ -322,6 +355,7 @@ export default function LoginForm() {
                     description="등록된 이메일로 전송된 인증코드를 입력해 주세요."
                     onClose={() => setShowModal(false)}
                     onSubmit={(code: string) => verifyMutation.mutate(code)}
+                    disabled={verifyMutation.isPending}
                     onResendCode={() => {
                         if (verifyToken) {
                             sendMasterVerifyCode(verifyToken)
@@ -352,6 +386,7 @@ export default function LoginForm() {
                     onVerifyError={handleVerifyError}
                 />
             )}
+
             {showPassword && (
                 <ModalInputFilled
                     type="password-lost"
