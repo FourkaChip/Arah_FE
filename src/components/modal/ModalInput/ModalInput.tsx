@@ -9,6 +9,7 @@ import {useRouter} from "next/navigation";
 import {useQueryClient} from '@tanstack/react-query';
 import {toast, Toaster} from 'react-hot-toast';
 import LoadingSpinner from '@/components/spinner/Spinner';
+import SpinnerOverlay from '@/components/spinner/SpinnerOverlay';
 
 export default function ModalInput({
                                        modalType,
@@ -296,31 +297,7 @@ export default function ModalInput({
 
     return (
         <>
-            {isVerifyLoading && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 10000
-                }}>
-                    <div style={{
-                        backgroundColor: 'white',
-                        borderRadius: '8px',
-                        padding: '2rem'
-                    }}>
-                        <LoadingSpinner />
-                        <p style={{textAlign: 'center', marginTop: '1rem', fontSize: '14px', color: '#666'}}>
-                            인증 중...
-                        </p>
-                    </div>
-                </div>
-            )}
+            {isVerifyLoading && <SpinnerOverlay message="인증 중..." zIndex={10000} />}
 
             <Toaster position="top-right"/>
             <ModalLayout

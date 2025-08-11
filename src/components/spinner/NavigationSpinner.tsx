@@ -2,39 +2,16 @@
 "use client";
 import React from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
-import LoadingSpinner from '@/components/spinner/Spinner';
+import SpinnerOverlay from './SpinnerOverlay';
 
 const NavigationSpinner = () => {
-  const { isNavigating } = useNavigation();
+  const { isNavigating, isPageLoading } = useNavigation();
 
-  if (!isNavigating) return null;
+  if (!isNavigating && !isPageLoading) return null;
 
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 9999
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '2rem'
-      }}>
-        <LoadingSpinner />
-        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '14px', color: '#666' }}>
-          페이지 이동 중...
-        </p>
-      </div>
-    </div>
-  );
+  const message = isPageLoading ? '페이지 로딩 중...' : '페이지 이동 중...';
+
+  return <SpinnerOverlay message={message} />;
 };
 
 export default NavigationSpinner;
-
