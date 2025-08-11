@@ -1,3 +1,76 @@
+// 시간별 피드백 수 조회
+export async function fetchFeedbackHourlyCount({ date, companyId, signal }: { date: string; companyId: number; signal?: AbortSignal }) {
+  const qs = new URLSearchParams({
+    date,
+    company_id: String(companyId),
+  });
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/hourly_count?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  return json?.result ?? json;
+}
+
+// 일별 피드백 수 조회
+export async function fetchFeedbackDailyCount({ year, month, companyId, signal }: { year: number; month: number; companyId: number; signal?: AbortSignal }) {
+  const qs = new URLSearchParams({
+    year: String(year),
+    month: String(month),
+    company_id: String(companyId),
+  });
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/daily_count?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  return json?.result ?? json;
+}
+
+// 주별 피드백 수 조회
+export async function fetchFeedbackWeeklyCount({ year, month, companyId, signal }: { year: number; month: number; companyId: number; signal?: AbortSignal }) {
+  const qs = new URLSearchParams({
+    year: String(year),
+    month: String(month),
+    company_id: String(companyId),
+  });
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/weekly_count?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  return json?.result ?? json;
+}
+
+// 월별 피드백 수 조회
+export async function fetchFeedbackMonthlyCount({ year, companyId, signal }: { year: number; companyId: number; signal?: AbortSignal }) {
+  const qs = new URLSearchParams({
+    year: String(year),
+    company_id: String(companyId),
+  });
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/monthly_count?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  return json?.result ?? json;
+}
 import { getValidAccessToken } from '@/utils/tokenStorage';
 import { decodeJwtRole } from '@/utils/decodeJwtRole';
 

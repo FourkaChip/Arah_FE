@@ -12,16 +12,14 @@ import { fetchSatisfactionRaw, type SatisfactionRaw, convertSatisfactionResultTo
 import { authorizedFetch } from '@/api/auth/authorizedFetch';
 import './AnalyzeChart.scss';
 
-// companyId prop 제거
-type Props = {};
+type Props = { companyId: number | null };
 
 const EMPTY_ROWS: SatisfactionRaw[] = [
   { type: '만족', value: 0, percentage: 0 },
   { type: '불만족', value: 0, percentage: 0 },
 ];
 
-const SatisfactionChart: React.FC<Props> = () => {
-  const [companyId, setCompanyId] = useState<number | null>(null);
+const SatisfactionChart: React.FC<Props> = ({ companyId }) => {
   const initialRange = useDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRange>(initialRange);
   const [data, setData] = useState<SatisfactionRaw[]>([]);
@@ -36,31 +34,7 @@ const SatisfactionChart: React.FC<Props> = () => {
     });
   };
 
-  // 회사 정보 먼저 요청
-  useEffect(() => {
-    console.log('[SatisfactionChart] 렌더링됨');
-    console.log('[SatisfactionChart] API BASE URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
-    const ac = new AbortController();
-    setLoading(true);
-    setError(null);
-    authorizedFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/info/me`, { method: 'GET', signal: ac.signal })
-      .then(res => res.json())
-      .then(json => {
-        console.log('회사 정보 응답:', json);
-        const id = json?.result?.companyId;
-        if (typeof id === 'number') {
-          setCompanyId(id);
-        } else {
-          setError('회사 정보를 불러올 수 없습니다.');
-        }
-      })
-      .catch(err => {
-        console.error('회사 정보 요청 에러:', err);
-        setError(typeof err?.message === 'string' ? err.message : '회사 정보 요청 실패');
-      })
-      .finally(() => setLoading(false));
-    return () => ac.abort();
-  }, []);
+  // ...기존 코드 유지...
 
   useEffect(() => {
     if (companyId !== null) {

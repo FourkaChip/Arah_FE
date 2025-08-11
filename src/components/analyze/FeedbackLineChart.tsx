@@ -10,11 +10,14 @@ import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { FeedbackPeriod } from '@/types/analyze';
 import {
-  feedbackDataByYear,
   availableYears,
-  generateDailySatisfactionData,
-  generateHourlySatisfactionData,
 } from '@/constants/dummydata/DummyAnalyze';
+import {
+  fetchFeedbackHourlyCount,
+  fetchFeedbackDailyCount,
+  fetchFeedbackWeeklyCount,
+  fetchFeedbackMonthlyCount,
+} from '@/api/admin/analyze/analyzeFetch';
 import {
   SATIS_COLOR,
   UNSAT_COLOR,
@@ -35,7 +38,10 @@ type MonthlySatPoint = { month: number; sat: number; unsat: number };
 type HourlySatPoint = { hour: number; sat: number; unsat: number };
 type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
 
+import { useAnalysisCompanyId } from '@/hooks/useAnalysisCompanyId';
+
 const FeedbackLineChart: React.FC = () => {
+  const companyId = useAnalysisCompanyId();
   const [currentYear, setCurrentYear] = useState<number>(2024);
   const [currentMonth, setCurrentMonth] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<number>(1);
@@ -44,6 +50,9 @@ const FeedbackLineChart: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<FeedbackPeriod>('일별 보기');
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [data, setData] = useState<SatPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -70,102 +79,38 @@ const FeedbackLineChart: React.FC = () => {
     }
   };
 
-  const { data, xKey } = useMemo(() => {
-    switch (selectedPeriod) {
-      case '월별 보기': {
-        const capMonth = (y: number, m: number) =>
-          selectedYear === currentYear ? Math.min(m, currentMonth) : m;
-
-        const months = feedbackDataByYear[selectedYear]?.map((d) => d.month) ?? [];
-        const upTo = capMonth(selectedYear, months.length ? Math.max(...months) : 12);
-
-        const arr: MonthlySatPoint[] = [];
-        for (let m = 1; m <= upTo; m++) {
-          const { start, end } = monthRange(selectedYear, m);
-          const daily = generateDailySatisfactionData(start, end);
-          let sat = 0, unsat = 0;
-          daily.forEach((d) => {
-            sat += d.satisfaction['만족'];
-            unsat += d.satisfaction['불만족'];
-          });
-          arr.push({ month: m, sat, unsat });
+  // API 데이터 fetch
+  useEffect(() => {
+    if (!companyId) return;
+    setLoading(true);
+    setError(null);
+    let ac = new AbortController();
+    const fetchData = async () => {
+      try {
+        if (selectedPeriod === '시간별 보기') {
+          const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+          const result = await fetchFeedbackHourlyCount({ date, companyId, signal: ac.signal });
+          // TODO: result 변환 필요 (result 구조 예시 필요)
+          setData([]); // 변환 후 실제 데이터로 변경
+        } else if (selectedPeriod === '일별 보기') {
+          const result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          setData([]); // 변환 후 실제 데이터로 변경
+        } else if (selectedPeriod === '주별 보기') {
+          const result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          setData([]); // 변환 후 실제 데이터로 변경
+        } else if (selectedPeriod === '월별 보기') {
+          const result = await fetchFeedbackMonthlyCount({ year: selectedYear, companyId, signal: ac.signal });
+          setData([]); // 변환 후 실제 데이터로 변경
         }
-        return { data: arr as SatPoint[], xKey: 'month' as const };
+      } catch (err) {
+        setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+      } finally {
+        setLoading(false);
       }
-
-      case '일별 보기': {
-        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-        const maxDay =
-          selectedYear === currentYear && selectedMonth === currentMonth
-            ? currentDay
-            : daysInMonth;
-
-        const { start, end } = monthRange(selectedYear, selectedMonth);
-        const daily = generateDailySatisfactionData(start, end);
-        const mapped: DailySatPoint[] = daily
-          .map((d) => {
-            const day = Number(d.date.split('-')[2]);
-            return {
-              day,
-              sat: d.satisfaction['만족'],
-              unsat: d.satisfaction['불만족'],
-            };
-          })
-          .filter((p) => p.day <= maxDay);
-
-        return { data: mapped as SatPoint[], xKey: 'day' as const };
-      }
-
-      case '주별 보기': {
-        const { start, end } = monthRange(selectedYear, selectedMonth);
-        const daily = generateDailySatisfactionData(start, end);
-        const bucket = new Map<number, { sat: number; unsat: number }>();
-
-        daily.forEach((d) => {
-          const day = Number(d.date.split('-')[2]);
-          const week = Math.ceil(day / 7);
-          const prev = bucket.get(week) ?? { sat: 0, unsat: 0 };
-          prev.sat += d.satisfaction['만족'];
-          prev.unsat += d.satisfaction['불만족'];
-          bucket.set(week, prev);
-        });
-
-        const maxWeek =
-          selectedYear === currentYear && selectedMonth === currentMonth
-            ? Math.ceil(currentDay / 7)
-            : bucket.size;
-
-        const result: WeeklySatPoint[] = Array.from(bucket.entries())
-          .map(([week, v]) => ({ week, sat: v.sat, unsat: v.unsat }))
-          .filter((p) => p.week <= maxWeek)
-          .sort((a, b) => a.week - b.week);
-
-        return { data: result as SatPoint[], xKey: 'week' as const };
-      }
-
-      case '시간별 보기': {
-        const isToday =
-          selectedYear === currentYear &&
-          selectedMonth === currentMonth &&
-          selectedDay === currentDay;
-
-        if (isToday) {
-          return { data: [] as SatPoint[], xKey: 'hour' as const };
-        }
-
-        const hourly: HourlySatPoint[] = generateHourlySatisfactionData(
-          selectedYear, selectedMonth, selectedDay
-        );
-        return { data: hourly as SatPoint[], xKey: 'hour' as const };
-      }
-
-      default:
-        return { data: [] as SatPoint[], xKey: 'day' as const };
-    }
-  }, [
-    selectedPeriod, selectedYear, selectedMonth, selectedDay,
-    currentYear, currentMonth, currentDay,
-  ]);
+    };
+    fetchData();
+    return () => ac.abort();
+  }, [companyId, selectedPeriod, selectedYear, selectedMonth, selectedDay]);
 
   const handlePrev = () => {
     switch (selectedPeriod) {
@@ -347,17 +292,28 @@ const FeedbackLineChart: React.FC = () => {
       </div>
 
       <div className="chartWrapper">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey={xKey} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <Tooltip content={(props) => <CustomTooltip {...props} />} />
-            <Legend />
-            <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
-            <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
-          </LineChart>
-        </ResponsiveContainer>
+        {loading ? (
+          <p>불러오는 중…</p>
+        ) : error ? (
+          <p className="error">{error}</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey={
+                selectedPeriod === '월별 보기' ? 'month' :
+                selectedPeriod === '일별 보기' ? 'day' :
+                selectedPeriod === '주별 보기' ? 'week' :
+                'hour'
+              } axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+              <Tooltip content={(props) => <CustomTooltip {...props} />} />
+              <Legend />
+              <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
+              <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

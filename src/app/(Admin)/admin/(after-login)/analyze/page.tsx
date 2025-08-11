@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import './Analyze.scss';
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useAuthStore } from '@/store/auth.store';
+import { useEffect, useState } from 'react';
+import { getCompanyIdFromToken } from '@/api/admin/analyze/analyzeFetch';
 
 const FeedbackLineChart = dynamic(() => import('@/components/analyze/FeedbackLineChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
 const FeedbackTypeChart = dynamic(() => import('@/components/analyze/FeedbackTypeChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
@@ -11,18 +12,10 @@ const KeywordChart = dynamic(() => import('@/components/analyze/KeywordChart'), 
 const SatisfactionChart = dynamic(() => import('@/components/analyze/SatisfactionChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
 
 export default function AnalysisPage() {
-  const rawCompanyId = useAuthStore(s =>
-    s.user?.companyId ?? s.user?.company?.id ?? s.user?.company_id
-  );
-
-  // 디버깅용 콘솔 로그 추가
-  console.log('rawCompanyId:', rawCompanyId);
-  const companyId: number | null =
-    typeof rawCompanyId === 'number'
-      ? rawCompanyId
-      : rawCompanyId != null && rawCompanyId !== ''
-        ? Number(rawCompanyId)
-        : null;
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  useEffect(() => {
+    getCompanyIdFromToken().then(id => setCompanyId(id ?? null));
+  }, []);
   console.log('companyId:', companyId);
 
   return (
