@@ -3,25 +3,59 @@
 import {CombinedAdminInfo} from "@/types/tables";
 import {authorizedFetch} from "@/api/auth/authorizedFetch";
 
+let masterLoginCache: { [key: string]: any } = {};
+let masterLoginPromises: { [key: string]: Promise<any> | null } = {};
+let masterLoginCacheTime: { [key: string]: number } = {};
+const MASTER_LOGIN_CACHE_DURATION = 30 * 1000;
+
 // 마스터 로그인 함수입니다.
 export const masterLogin = async (email: string, password: string, companyName: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password, companyName}),
-    });
+    const cacheKey = `${email}:${password}:${companyName}`;
+    const now = Date.now();
 
-    if (!res.ok) {
-        if (res.status === 400) {
-            const errorData = await res.json();
-            const error = new Error('로그인 실패');
-            (error as any).response = { data: errorData };
-            throw error;
-        }
-        throw new Error('로그인 실패');
+    if (masterLoginCache[cacheKey] &&
+        (now - (masterLoginCacheTime[cacheKey] || 0)) < MASTER_LOGIN_CACHE_DURATION) {
+        return masterLoginCache[cacheKey];
     }
 
-    return (await res.json()).result;
+    if (masterLoginPromises[cacheKey]) {
+        return masterLoginPromises[cacheKey];
+    }
+
+    masterLoginPromises[cacheKey] = (async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/master/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password, companyName}),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                const error = new Error(errorData.message || '로그인 실패');
+                (error as any).response = { data: errorData };
+
+                delete masterLoginCache[cacheKey];
+                delete masterLoginCacheTime[cacheKey];
+                throw error;
+            }
+
+            const result = (await res.json()).result;
+
+            masterLoginCache[cacheKey] = result;
+            masterLoginCacheTime[cacheKey] = Date.now();
+
+            return result;
+        } catch (error) {
+            delete masterLoginCache[cacheKey];
+            delete masterLoginCacheTime[cacheKey];
+            throw error;
+        } finally {
+            delete masterLoginPromises[cacheKey];
+        }
+    })();
+
+    return masterLoginPromises[cacheKey];
 };
 
 // 마스터 로그인 시 2차 인증을 위한 이메일 전송 함수입니다.
@@ -33,7 +67,12 @@ export const sendMasterVerifyCode = async (verifyToken: string) => {
         },
     });
 
-    if (!res.ok) throw new Error('인증번호 전송 실패');
+    if (!res.ok) {
+        const errorData = await res.json();
+        const error = new Error(errorData.message || '인증번호 전송 실패');
+        (error as any).response = { data: errorData };
+        throw error;
+    }
     return (await res.json()).result;
 };
 
@@ -55,13 +94,10 @@ export const confirmMasterVerifyCode = async ({
     });
 
     if (!res.ok) {
-        if (res.status === 403) {
-            const errorData = await res.json();
-            const error = new Error('인증 실패');
-            (error as any).response = { data: errorData };
-            throw error;
-        }
-        throw new Error('인증 실패');
+        const errorData = await res.json();
+        const error = new Error(errorData.message || '인증 실패');
+        (error as any).response = { data: errorData };
+        throw error;
     }
 
     return (await res.json()).result;
@@ -134,4 +170,10 @@ export const fetchUserInfoByEmail = async (email: string, currentCompanyId?: num
     }
 
     return data.result;
+};
+
+export const clearMasterLoginCache = () => {
+    masterLoginCache = {};
+    masterLoginPromises = {};
+    masterLoginCacheTime = {};
 };

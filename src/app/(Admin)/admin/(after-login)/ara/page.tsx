@@ -11,27 +11,19 @@ import { PAGE_CONTENT } from "@/constants/pageContent";
 export default function ChatbotSettingsPage() {
   const {
     settings,
+    originalSettings,
     onSimilarityChange,
     onSimilarityComplete,
     onStyleChange,
     onStyleComplete,
   } = useCompanyChatbotSettings();
 
-  // ❶ 에러만 다시 던지고, 토스트는 슬라이더에서 모두 처리
   const handleSimilarityComplete = async (value: number) => {
-    try {
-      await onSimilarityComplete(value);
-    } catch (err) {
-      throw err;
-    }
+    await onSimilarityComplete(value);
   };
 
   const handleStyleComplete = async (value: number) => {
-    try {
-      await onStyleComplete(value);
-    } catch (err) {
-      throw err;
-    }
+    await onStyleComplete(value);
   };
 
   return (
@@ -63,6 +55,7 @@ export default function ChatbotSettingsPage() {
             value={settings.similarity}
             onChange={onSimilarityChange}
             onChangeComplete={handleSimilarityComplete}
+            originalValue={originalSettings.similarity}
             label={SLIDER_TEXTS.SIMILARITY.LABEL}
             leftLabel={SLIDER_TEXTS.SIMILARITY.LEFT_LABEL}
             rightLabel={SLIDER_TEXTS.SIMILARITY.RIGHT_LABEL}
@@ -73,6 +66,7 @@ export default function ChatbotSettingsPage() {
             value={settings.style}
             onChange={onStyleChange}
             onChangeComplete={handleStyleComplete}
+            originalValue={originalSettings.style}
             label={SLIDER_TEXTS.STYLE.LABEL}
             leftLabel={SLIDER_TEXTS.STYLE.LEFT_LABEL}
             rightLabel={SLIDER_TEXTS.STYLE.RIGHT_LABEL}
