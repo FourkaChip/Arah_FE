@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { DateRange, SatisfactionRaw } from '@/types/analyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
 import { TYPE_COLOR, MIN_LABEL_PERCENT } from '@/constants/analyzeConfig';
-import { fetchSatisfactionRaw } from '@/api/admin/analyze/analyzeFetch';
+import { fetchSatisfactionRaw, fetchCompanyCreatedAt } from '@/api/admin/analyze/analyzeFetch';
 import { convertSatisfactionResultToRows } from '@/constants/apiUtils';
 import './AnalyzeChart.scss';
 
@@ -23,11 +23,49 @@ const SatisfactionChart: React.FC<Props> = () => {
   const [data, setData] = useState<SatisfactionRaw[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [companyCreatedAt, setCompanyCreatedAt] = useState<string | null>(null);
+
+  // 회사 가입일 조회 및 기본 날짜 범위 조정
+  useEffect(() => {
+    fetchCompanyCreatedAt()
+      .then(createdAt => {
+        setCompanyCreatedAt(createdAt);
+        
+        // 기본 날짜 범위 조정
+        const today = new Date();
+        const oneMonthAgo = new Date(today);
+        oneMonthAgo.setMonth(today.getMonth() - 1);
+        
+        const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
+        const todayStr = today.toISOString().split('T')[0];
+        
+        // 가입일이 한 달 전보다 늦으면 가입일을 시작일로 설정
+        const startDate = createdAt > oneMonthAgoStr ? createdAt : oneMonthAgoStr;
+        
+        setDateRange({
+          startDate,
+          endDate: todayStr,
+        });
+      })
+      .catch(err => {
+        console.error('가입일 조회 실패:', err);
+      });
+  }, []);
 
   const handleDateChange = (field: keyof DateRange, value: string) => {
     setDateRange(prev => {
       const next = { ...prev, [field]: value };
-      if (field === 'startDate' && next.endDate && value > next.endDate) next.endDate = value;
+      
+      // 시작일이 가입일보다 빠르면 가입일로 설정
+      if (field === 'startDate' && companyCreatedAt && value < companyCreatedAt) {
+        next.startDate = companyCreatedAt;
+      }
+      
+      // 시작일이 종료일보다 늦으면 종료일을 시작일로 설정
+      if (field === 'startDate' && next.endDate && next.startDate > next.endDate) {
+        next.endDate = next.startDate;
+      }
+      
       return next;
     });
   };
@@ -145,6 +183,7 @@ const SatisfactionChart: React.FC<Props> = () => {
             value={dateRange.startDate}
             onChange={(e) => handleDateChange('startDate', e.target.value)}
             className="date-picker satisfaction"
+            min={companyCreatedAt || undefined}
           />
           <span>~</span>
           <input
