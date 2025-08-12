@@ -6,6 +6,7 @@ export interface ModalCommitTriggerProps {
 
 // 피드백 데이터의 타입 정의입니다.
 export interface FeedbackRowData {
+    faq_id: number;
     id?: number;
     feedback_id: number;
     chat_id: number;

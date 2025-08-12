@@ -1,6 +1,7 @@
 // FAQ 페이지에 적용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
+import { useSearchParams } from 'next/navigation';
 import CustomSearch from "@/components/customSearch/CustomSearch";
 import './FaqTable.scss';
 import {
@@ -29,6 +30,7 @@ import {fetchCurrentUserInfo} from "@/api/auth/master";
 import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function FaqAdminTable() {
+    const searchParams = useSearchParams();
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openFaqModal, setOpenFaqModal] = useState(false);
     const [editRow, setEditRow] = useState<RowData | null>(null);
@@ -57,6 +59,19 @@ export default function FaqAdminTable() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
+
+    // FAQ 네비게이션 상태 관리
+    const [navigationState, setNavigationState] = useState<{
+        targetFaqId: string | null;
+        targetPage: number | null;
+        rowIndexInPage: string | null;
+        step: 'idle' | 'page-set' | 'expanded' | 'scrolled' | 'completed';
+    }>({
+        targetFaqId: null,
+        targetPage: null,
+        rowIndexInPage: null,
+        step: 'idle'
+    });
 
     const [companyId, setCompanyId] = useState<number>(1);
 
@@ -93,6 +108,97 @@ export default function FaqAdminTable() {
             })
             .finally(() => setLoading(false));
     }, [companyId]);
+
+    // URL 파라미터 처리
+    useEffect(() => {
+        const faqId = searchParams.get('faqId');
+        const shouldExpand = searchParams.get('expanded');
+
+        if (faqId && shouldExpand === 'true' && faqData.length > 0 && navigationState.step === 'idle') {
+            // 타겟 FAQ 찾기
+            const targetFaq = faqData.find(faq => faq.id.toString() === faqId);
+
+            if (targetFaq) {
+                // 전체 데이터에서 바로 위치 계산
+                const sortedData = faqData.sort((a, b) => b.no - a.no);
+                const targetIndex = sortedData.findIndex(faq => faq.id.toString() === faqId);
+
+                if (targetIndex !== -1) {
+                    const targetPage = Math.floor(targetIndex / pageSize);
+                    const rowIndexInPage = targetIndex - (targetPage * pageSize);
+
+                    // 상태 업데이트 및 페이지 이동
+                    setNavigationState({
+                        targetFaqId: faqId,
+                        targetPage,
+                        rowIndexInPage: rowIndexInPage.toString(),
+                        step: 'page-set'
+                    });
+                    setCurrentPage(targetPage);
+                }
+            } else {
+                console.log('해당 faqId를 찾을 수 없습니다:', faqId);
+            }
+        }
+    }, [searchParams, faqData, navigationState.step]);
+
+    // 페이지 이동 완료 후 상세보기 열기
+    useEffect(() => {
+        if (navigationState.step === 'page-set' && navigationState.rowIndexInPage) {
+            const timer = setTimeout(() => {
+                setExpandedRowId(navigationState.rowIndexInPage);
+                setNavigationState(prev => ({
+                    ...prev,
+                    step: 'expanded'
+                }));
+            }, 300); // 페이지 렌더링 대기
+
+            return () => clearTimeout(timer);
+        }
+    }, [navigationState.step, navigationState.rowIndexInPage]);
+
+    // 상세보기 열기 완료 후 스크롤 이동
+    useEffect(() => {
+        if (navigationState.step === 'expanded' && navigationState.targetFaqId) {
+            const timer = setTimeout(() => {
+                const targetRow = document.querySelector(`[data-faq-id="${navigationState.targetFaqId}"]`);
+                if (targetRow) {
+                    targetRow.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+                setNavigationState(prev => ({
+                    ...prev,
+                    step: 'scrolled'
+                }));
+            }, 300); // DOM 업데이트 대기
+
+            return () => clearTimeout(timer);
+        }
+    }, [navigationState.step, navigationState.targetFaqId]);
+
+    // 스크롤 완료 후 URL 정리
+    useEffect(() => {
+        if (navigationState.step === 'scrolled') {
+            const timer = setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('faqId');
+                url.searchParams.delete('expanded');
+                window.history.replaceState({}, '', url.pathname);
+
+                // 네비게이션 완료
+                setNavigationState({
+                    targetFaqId: null,
+                    targetPage: null,
+                    rowIndexInPage: null,
+                    step: 'completed'
+                });
+            }, 1000); // 스크롤 애니메이션 완료 대기
+
+            return () => clearTimeout(timer);
+        }
+    }, [navigationState.step]);
 
     const handleSearch = (search: string) => {
         setSearchValue(search);
@@ -218,7 +324,6 @@ export default function FaqAdminTable() {
         }
     }, [paginatedData, selectedRowIds]);
 
-
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
     const handleDeleteFaq = async () => {
@@ -332,7 +437,10 @@ export default function FaqAdminTable() {
                         ) : (
                             table.getRowModel().rows.map(row => (
                                 <React.Fragment key={row.id}>
-                                    <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
+                                    <tr
+                                        className={expandedRowId === row.id ? "expanded active-row" : ""}
+                                        data-faq-id={row.original.id}
+                                    >
                                         {row.getVisibleCells().map(cell => (
                                             <td key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -128,7 +128,11 @@ export default function FaqAdminTable() {
                     <button className="goto-faq-icon">
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
-                            onClick={() => router.push("/admin/faq")}
+                            onClick={() => {
+                                const faqId = row.original.faq_id;
+                                const url = `/admin/faq?faqId=${faqId}&expanded=true`;
+                                router.push(url);
+                            }}
                             style={{
                                 color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
                                 cursor: 'pointer',
