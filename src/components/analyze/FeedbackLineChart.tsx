@@ -75,15 +75,26 @@ const FeedbackLineChart: React.FC = () => {
     const fetchData = async () => {
       try {
         let result: any[] = [];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        const currentDay = now.getDate();
+        const currentHour = now.getHours();
+
         if (selectedPeriod === '시간별 보기') {
           const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
           result = await fetchFeedbackHourlyCount({ date, signal: ac.signal });
           const chartData = Array.from({ length: 24 }, (_, hour) => {
             const found = result.find((d: any) => d.hour === hour);
+            
+            // 선택된 날짜가 오늘이고, 현재 시간 이후라면 null로 설정
+            const isToday = selectedYear === currentYear && selectedMonth === currentMonth && selectedDay === currentDay;
+            const isFutureHour = isToday && hour > currentHour;
+            
             return {
               hour,
-              sat: found ? found.like_count : 0,
-              unsat: found ? found.unlike_count : 0,
+              sat: isFutureHour ? null : (found ? found.like_count : 0),
+              unsat: isFutureHour ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -96,10 +107,15 @@ const FeedbackLineChart: React.FC = () => {
           const chartData = Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
             const found = resultMap.get(day);
+            
+            // 선택된 년월이 현재 년월이고, 현재 날짜 이후라면 null로 설정
+            const isCurrentMonth = selectedYear === currentYear && selectedMonth === currentMonth;
+            const isFutureDay = isCurrentMonth && day > currentDay;
+            
             return {
               day,
-              sat: found ? found.like_count : 0,
-              unsat: found ? found.unlike_count : 0,
+              sat: isFutureDay ? null : (found ? found.like_count : 0),
+              unsat: isFutureDay ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -116,15 +132,22 @@ const FeedbackLineChart: React.FC = () => {
           const firstWeek = Math.ceil((firstDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
           const lastWeek = Math.ceil((lastDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
           
+          // 현재 주차 계산
+          const currentWeekInMonth = selectedYear === currentYear && selectedMonth === currentMonth 
+            ? Math.ceil((currentDay + firstDayOfMonth.getDay()) / 7) 
+            : Infinity;
+          
           const resultMap = new Map(result.map((d: any) => [d.week, d]));
           const chartData = [];
           
           for (let week = firstWeek; week <= lastWeek; week++) {
             const found = resultMap.get(week);
+            const isFutureWeek = week > currentWeekInMonth;
+            
             chartData.push({
               week,
-              sat: found ? found.like_count : 0,
-              unsat: found ? found.unlike_count : 0,
+              sat: isFutureWeek ? null : (found ? found.like_count : 0),
+              unsat: isFutureWeek ? null : (found ? found.unlike_count : 0),
             });
           }
           if (!ac.signal.aborted) {
@@ -136,10 +159,15 @@ const FeedbackLineChart: React.FC = () => {
           const chartData = Array.from({ length: 12 }, (_, i) => {
             const month = i + 1;
             const found = resultMap.get(month);
+            
+            // 선택된 년도가 현재 년도이고, 현재 월 이후라면 null로 설정
+            const isCurrentYear = selectedYear === currentYear;
+            const isFutureMonth = isCurrentYear && month > currentMonth;
+            
             return {
               month,
-              sat: found ? found.like_count : 0,
-              unsat: found ? found.unlike_count : 0,
+              sat: isFutureMonth ? null : (found ? found.like_count : 0),
+              unsat: isFutureMonth ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -363,8 +391,8 @@ const FeedbackLineChart: React.FC = () => {
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
               <Tooltip content={(props) => <CustomTooltip {...props} />} />
               <Legend />
-              <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
-              <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
+              <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} connectNulls={false} />
+              <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} connectNulls={false} />
             </LineChart>
           </ResponsiveContainer>
         )}
