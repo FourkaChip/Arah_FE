@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { DateRange, SatisfactionRaw } from '@/types/analyze';
-import useDefaultDateRange from '@/hooks/useDefaultDateRange';
 import { TYPE_COLOR, MIN_LABEL_PERCENT } from '@/constants/analyzeConfig';
 import { fetchSatisfactionRaw, fetchCompanyCreatedAt } from '@/api/admin/analyze/analyzeFetch';
 import { convertSatisfactionResultToRows } from '@/constants/apiUtils';
@@ -18,20 +17,22 @@ const EMPTY_ROWS: SatisfactionRaw[] = [
 ];
 
 const SatisfactionChart: React.FC<Props> = () => {
-  const initialRange = useDefaultDateRange();
-  const [dateRange, setDateRange] = useState<DateRange>(initialRange);
+  const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
   const [data, setData] = useState<SatisfactionRaw[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [companyCreatedAt, setCompanyCreatedAt] = useState<string | null>(null);
+  const [isDateRangeInitialized, setIsDateRangeInitialized] = useState(false);
 
-  // 회사 가입일 조회 및 기본 날짜 범위 조정
+  // 회사 가입일 조회 및 기본 날짜 범위 설정
   useEffect(() => {
+    if (isDateRangeInitialized) return;
+    
     fetchCompanyCreatedAt()
       .then(createdAt => {
         setCompanyCreatedAt(createdAt);
         
-        // 기본 날짜 범위 조정
+        // 기본 날짜 범위 설정
         const today = new Date();
         const oneMonthAgo = new Date(today);
         oneMonthAgo.setMonth(today.getMonth() - 1);
@@ -46,11 +47,25 @@ const SatisfactionChart: React.FC<Props> = () => {
           startDate,
           endDate: todayStr,
         });
+        
+        setIsDateRangeInitialized(true);
       })
       .catch(err => {
         console.error('가입일 조회 실패:', err);
+        
+        // 가입일 조회 실패 시 기본 한 달 범위로 설정
+        const today = new Date();
+        const oneMonthAgo = new Date(today);
+        oneMonthAgo.setMonth(today.getMonth() - 1);
+        
+        setDateRange({
+          startDate: oneMonthAgo.toISOString().split('T')[0],
+          endDate: today.toISOString().split('T')[0],
+        });
+        
+        setIsDateRangeInitialized(true);
       });
-  }, []);
+  }, [isDateRangeInitialized]);
 
   const handleDateChange = (field: keyof DateRange, value: string) => {
     setDateRange(prev => {
@@ -93,7 +108,7 @@ const SatisfactionChart: React.FC<Props> = () => {
   }, [dateRange.startDate, dateRange.endDate]);
 
   
-  const renderLabelWithLeader = (props: any) => {
+  const renderLabelWithLeader = (props: any) => { // Recharts에서 제공하는 labelList props 타입이 복잡하므로 any 사용
     const { cx, cy, midAngle, outerRadius, percent, payload } = props;
     const ratio = percent * 100;
 
@@ -142,7 +157,7 @@ const SatisfactionChart: React.FC<Props> = () => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => { // Recharts Tooltip payload 타입이 복잡하므로 any 사용
     if (active && payload && payload.length) {
       const data = payload[0].payload as SatisfactionRaw;
       return (

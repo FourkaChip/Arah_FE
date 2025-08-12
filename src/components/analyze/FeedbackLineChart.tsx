@@ -15,6 +15,7 @@ import {
   fetchFeedbackDailyCount,
   fetchFeedbackWeeklyCount,
   fetchFeedbackMonthlyCount,
+  fetchCompanyCreatedAt,
 } from '@/api/admin/analyze/analyzeFetch';
 import { SATIS_COLOR, UNSAT_COLOR } from '@/constants/analyzeConfig';
 import CustomDropDownForPeriod from '@/components/customDropdown/CustomDropDownForPeriod';
@@ -33,22 +34,53 @@ const FeedbackLineChart: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [companyCreatedAt, setCompanyCreatedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    
-    setCurrentYear(year);
-    setCurrentMonth(month);
-    setCurrentDay(day);
+    const initializeComponent = async () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      
+      setCurrentYear(year);
+      setCurrentMonth(month);
+      setCurrentDay(day);
 
-    setSelectedYear(year);
-    setSelectedMonth(month);
-    setSelectedDay(day);
+      // 가입일 조회
+      try {
+        const createdAt = await fetchCompanyCreatedAt();
+        setCompanyCreatedAt(createdAt);
+        
+        // 가입일 기준으로 초기 날짜 설정
+        const createdDate = new Date(createdAt);
+        const createdYear = createdDate.getFullYear();
+        const createdMonth = createdDate.getMonth() + 1;
+        const createdDay = createdDate.getDate();
+        
+        // 현재 날짜가 가입일보다 이후인지 확인하고 적절한 날짜 설정
+        if (year > createdYear || month > createdMonth || day > createdDay) {
+          setSelectedYear(year);
+          setSelectedMonth(month);
+          setSelectedDay(day);
+        } else {
+          // 가입일로 설정
+          setSelectedYear(createdYear);
+          setSelectedMonth(createdMonth);
+          setSelectedDay(createdDay);
+        }
+      } catch (err) {
+        console.error('가입일 조회 실패:', err);
+        // 가입일 조회 실패 시 현재 날짜로 설정
+        setSelectedYear(year);
+        setSelectedMonth(month);
+        setSelectedDay(day);
+      }
+      
+      setIsInitialized(true);
+    };
     
-    setIsInitialized(true);
+    initializeComponent();
   }, []);
 
   const getDisplayText = () => {
@@ -87,14 +119,19 @@ const FeedbackLineChart: React.FC = () => {
           const chartData = Array.from({ length: 24 }, (_, hour) => {
             const found = result.find((d: any) => d.hour === hour);
             
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const currentDateTime = new Date(selectedYear, selectedMonth - 1, selectedDay, hour);
+            const isBeforeCreatedAt = createdDate && currentDateTime < createdDate;
+            
             // 선택된 날짜가 오늘이고, 현재 시간 이후라면 null로 설정
             const isToday = selectedYear === currentYear && selectedMonth === currentMonth && selectedDay === currentDay;
             const isFutureHour = isToday && hour > currentHour;
             
             return {
               hour,
-              sat: isFutureHour ? null : (found ? found.like_count : 0),
-              unsat: isFutureHour ? null : (found ? found.unlike_count : 0),
+              sat: (isBeforeCreatedAt || isFutureHour) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureHour) ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -108,14 +145,19 @@ const FeedbackLineChart: React.FC = () => {
             const day = i + 1;
             const found = resultMap.get(day);
             
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const currentDate = new Date(selectedYear, selectedMonth - 1, day);
+            const isBeforeCreatedAt = createdDate && currentDate < createdDate;
+            
             // 선택된 년월이 현재 년월이고, 현재 날짜 이후라면 null로 설정
             const isCurrentMonth = selectedYear === currentYear && selectedMonth === currentMonth;
             const isFutureDay = isCurrentMonth && day > currentDay;
             
             return {
               day,
-              sat: isFutureDay ? null : (found ? found.like_count : 0),
-              unsat: isFutureDay ? null : (found ? found.unlike_count : 0),
+              sat: (isBeforeCreatedAt || isFutureDay) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureDay) ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -137,17 +179,27 @@ const FeedbackLineChart: React.FC = () => {
             ? Math.ceil((currentDay + firstDayOfMonth.getDay()) / 7) 
             : Infinity;
           
+          // 가입일 주차 계산
+          const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+          const createdWeekInMonth = createdDate && selectedYear === createdDate.getFullYear() && selectedMonth === (createdDate.getMonth() + 1)
+            ? Math.ceil((createdDate.getDate() + firstDayOfMonth.getDay()) / 7)
+            : 0;
+          
           const resultMap = new Map(result.map((d: any) => [d.week, d]));
           const chartData = [];
           
           for (let week = firstWeek; week <= lastWeek; week++) {
             const found = resultMap.get(week);
             const isFutureWeek = week > currentWeekInMonth;
+            const isBeforeCreatedWeek = createdDate && 
+              (selectedYear < createdDate.getFullYear() || 
+               (selectedYear === createdDate.getFullYear() && selectedMonth < createdDate.getMonth() + 1) ||
+               (selectedYear === createdDate.getFullYear() && selectedMonth === createdDate.getMonth() + 1 && week < createdWeekInMonth));
             
             chartData.push({
               week,
-              sat: isFutureWeek ? null : (found ? found.like_count : 0),
-              unsat: isFutureWeek ? null : (found ? found.unlike_count : 0),
+              sat: (isBeforeCreatedWeek || isFutureWeek) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedWeek || isFutureWeek) ? null : (found ? found.unlike_count : 0),
             });
           }
           if (!ac.signal.aborted) {
@@ -160,14 +212,20 @@ const FeedbackLineChart: React.FC = () => {
             const month = i + 1;
             const found = resultMap.get(month);
             
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const isBeforeCreatedAt = createdDate && 
+              (selectedYear < createdDate.getFullYear() ||
+               (selectedYear === createdDate.getFullYear() && month < createdDate.getMonth() + 1));
+            
             // 선택된 년도가 현재 년도이고, 현재 월 이후라면 null로 설정
             const isCurrentYear = selectedYear === currentYear;
             const isFutureMonth = isCurrentYear && month > currentMonth;
             
             return {
               month,
-              sat: isFutureMonth ? null : (found ? found.like_count : 0),
-              unsat: isFutureMonth ? null : (found ? found.unlike_count : 0),
+              sat: (isBeforeCreatedAt || isFutureMonth) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureMonth) ? null : (found ? found.unlike_count : 0),
             };
           });
           if (!ac.signal.aborted) {
@@ -190,34 +248,50 @@ const FeedbackLineChart: React.FC = () => {
     };
     fetchData();
     return () => ac.abort();
-  }, [isInitialized, selectedPeriod, selectedYear, selectedMonth, selectedDay]);
+  }, [isInitialized, selectedPeriod, selectedYear, selectedMonth, selectedDay, companyCreatedAt]);
 
   const handlePrev = () => {
+    if (!companyCreatedAt) return;
+    
+    const createdDate = new Date(companyCreatedAt);
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth() + 1;
+    const createdDay = createdDate.getDate();
+    
     switch (selectedPeriod) {
       case '월별 보기':
-        if (selectedYear > Math.min(...availableYears)) setSelectedYear(selectedYear - 1);
+        if (selectedYear > createdYear) setSelectedYear(selectedYear - 1);
         break;
       case '일별 보기':
       case '주별 보기':
-        if (selectedMonth > 1) setSelectedMonth(selectedMonth - 1);
-        else if (selectedYear > Math.min(...availableYears)) {
+        if (selectedMonth > 1) {
+          setSelectedMonth(selectedMonth - 1);
+        } else if (selectedYear > createdYear) {
           setSelectedYear(selectedYear - 1);
           setSelectedMonth(12);
         }
         break;
       case '시간별 보기':
-        if (selectedDay > 1) setSelectedDay(selectedDay - 1);
-        else {
-          if (selectedMonth > 1) {
-            const prevMonth = selectedMonth - 1;
-            const daysInPrevMonth = new Date(selectedYear, prevMonth, 0).getDate();
+        if (selectedDay > 1) {
+          // 같은 월에서 하루 이전이 가입일보다 이후인지 확인
+          const prevDay = selectedDay - 1;
+          if (selectedYear > createdYear || selectedMonth > createdMonth || 
+              (selectedYear === createdYear && selectedMonth === createdMonth && prevDay >= createdDay)) {
+            setSelectedDay(prevDay);
+          }
+        } else if (selectedMonth > 1) {
+          const prevMonth = selectedMonth - 1;
+          const daysInPrevMonth = new Date(selectedYear, prevMonth, 0).getDate();
+          // 이전 월의 마지막 날이 가입일보다 이후인지 확인
+          if (selectedYear > createdYear || prevMonth > createdMonth ||
+              (selectedYear === createdYear && prevMonth === createdMonth && daysInPrevMonth >= createdDay)) {
             setSelectedMonth(prevMonth);
             setSelectedDay(daysInPrevMonth);
-          } else if (selectedYear > Math.min(...availableYears)) {
-            setSelectedYear(selectedYear - 1);
-            setSelectedMonth(12);
-            setSelectedDay(31);
           }
+        } else if (selectedYear > createdYear) {
+          setSelectedYear(selectedYear - 1);
+          setSelectedMonth(12);
+          setSelectedDay(31);
         }
         break;
     }
@@ -302,14 +376,26 @@ const FeedbackLineChart: React.FC = () => {
   };
 
   const isPrevDisabled = () => {
+    if (!companyCreatedAt) return false;
+    
+    const createdDate = new Date(companyCreatedAt);
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth() + 1;
+    const createdDay = createdDate.getDate();
+    
     switch (selectedPeriod) {
       case '월별 보기':
-        return selectedYear <= Math.min(...availableYears);
+        return selectedYear <= createdYear;
       case '일별 보기':
       case '주별 보기':
-        return selectedYear <= Math.min(...availableYears) && selectedMonth <= 1;
+        if (selectedYear < createdYear) return true;
+        if (selectedYear === createdYear && selectedMonth <= createdMonth) return true;
+        return false;
       case '시간별 보기':
-        return selectedYear <= Math.min(...availableYears) && selectedMonth <= 1 && selectedDay <= 1;
+        if (selectedYear < createdYear) return true;
+        if (selectedYear === createdYear && selectedMonth < createdMonth) return true;
+        if (selectedYear === createdYear && selectedMonth === createdMonth && selectedDay <= createdDay) return true;
+        return false;
       default:
         return false;
     }
@@ -391,8 +477,32 @@ const FeedbackLineChart: React.FC = () => {
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
               <Tooltip content={(props) => <CustomTooltip {...props} />} />
               <Legend />
-              <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} connectNulls={false} />
-              <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} connectNulls={false} />
+              <Line 
+                type="monotone" 
+                name="만족" 
+                dataKey="sat" 
+                stroke={SATIS_COLOR} 
+                strokeWidth={4} 
+                dot={(() => {
+                  const validSatDataPoints = data.filter(d => d.sat !== null && d.sat !== undefined);
+                  return validSatDataPoints.length === 1 ? { r: 4, fill: SATIS_COLOR } : false;
+                })()} 
+                activeDot={{ r: 6, fill: SATIS_COLOR }} 
+                connectNulls={false} 
+              />
+              <Line 
+                type="monotone" 
+                name="불만족" 
+                dataKey="unsat" 
+                stroke={UNSAT_COLOR} 
+                strokeWidth={4} 
+                dot={(() => {
+                  const validUnsatDataPoints = data.filter(d => d.unsat !== null && d.unsat !== undefined);
+                  return validUnsatDataPoints.length === 1 ? { r: 4, fill: UNSAT_COLOR } : false;
+                })()} 
+                activeDot={{ r: 6, fill: UNSAT_COLOR }} 
+                connectNulls={false} 
+              />
             </LineChart>
           </ResponsiveContainer>
         )}
