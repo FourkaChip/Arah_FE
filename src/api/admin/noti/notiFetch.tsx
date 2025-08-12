@@ -223,7 +223,36 @@ export const markNotificationAsRead = async (
     return data;
 };
 
-// SSE 구독을 위한 EventSource 생성 함수 (토큰은 별도로 처리 필요)
+// SSE 구독을 위한 fetch 기반 함수 (인증 헤더 포함)
+export const createNotificationSSEWithAuth = async (lastEventId?: number): Promise<Response> => {
+    const { getValidAccessToken } = await import('@/utils/tokenStorage');
+    const token = await getValidAccessToken();
+    if (!token) throw new Error('인증 토큰이 없습니다.');
+
+    const params = new URLSearchParams({ token });
+    if (lastEventId) params.append('lastEventId', String(lastEventId));
+
+    const response = await fetch(
+        `${NOTI_API_BASE_URL}/api/notifications/subscribe?${params}`,
+        {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'text/event-stream'
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response;
+};
+
+// 기존 EventSource 기반 함수는 유지 (fallback용)
 export const createNotificationSSE = async (lastEventId?: number): Promise<EventSource> => {
     const { getValidAccessToken } = await import('@/utils/tokenStorage');
     const token = await getValidAccessToken();

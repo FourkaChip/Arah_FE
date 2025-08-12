@@ -24,6 +24,7 @@ import {
     NotificationContextType,
     NotificationProviderProps
 } from '@/types/notification';
+import { useNotificationSSE } from '@/hooks/useNotificationSSE';
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -72,10 +73,67 @@ export function NotificationProvider({
     const [totalPages, setTotalPages] = useState(1);
     const [hasNext, setHasNext] = useState(false);
 
-    // 가장 최근 요청만 반영되도록 가드
     const latestReqRef = useRef(0);
 
-    // ��정 페이지 데이터 로드 (페이지 이동 시 1회 호출)
+    // 새 알림 수신 핸들러
+    const handleNewNotification = useCallback((serverNotification: ServerNotificationItem) => {
+        console.log('실시간 알림 수신:', serverNotification);
+
+        setUnreadCount(prev => prev + 1);
+
+        if ((filters.tab === '전체' || filters.tab === '읽지 않음') && currentPage === 1) {
+            const newNotification = transformServerDataToClient(serverNotification);
+
+            setNotifications(prev => {
+                const exists = prev.some(item => item.id === newNotification.id);
+                if (exists) return prev;
+
+                const updated = [newNotification, ...prev].slice(0, itemsPerPage);
+                return updated;
+            });
+        }
+
+        clearNotificationCache();
+        showNotificationToast?.(serverNotification);
+    }, [filters.tab, currentPage, itemsPerPage]);
+
+    // SSE 연결 설정
+    const { isConnected, connectionError, reconnect } = useNotificationSSE({
+        onNewNotification: handleNewNotification,
+        onError: (error) => {
+            console.error('SSE 연결 에러:', error);
+        },
+        onConnectionOpen: () => {
+            console.log('실시간 알림 연결됨');
+        },
+        onConnectionClose: () => {
+            console.log('실시간 알림 연결 종료');
+        },
+        autoReconnect: true,
+        reconnectInterval: 5000
+    });
+
+    // 토스트 알림 표시 함수
+    const showNotificationToast = useCallback((notification: ServerNotificationItem) => {
+        if (Notification.permission === 'granted') {
+            new Notification(`${notification.content.department}에서 알림`, {
+                body: notification.content.description,
+                icon: '/favicon.ico',
+                tag: `notification-${notification.id}`
+            });
+        }
+    }, []);
+
+    // 브라우저 알림 권한 요청
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                console.log('알림 권한:', permission);
+            });
+        }
+    }, []);
+
+    // 페이지 데이터 로드 (페이지 이동 시 1회 호출)
     const loadPageData = useCallback(
         async (page: number) => {
             setIsLoading(true);
@@ -215,6 +273,12 @@ export function NotificationProvider({
     return (
         <NotificationContext.Provider value={contextValue}>
             {children}
+            {connectionError && (
+                <div className="sse-error-banner">
+                    실시간 알림 연결에 문제가 있습니다.
+                    <button onClick={reconnect}>재연결</button>
+                </div>
+            )}
         </NotificationContext.Provider>
     );
 }
