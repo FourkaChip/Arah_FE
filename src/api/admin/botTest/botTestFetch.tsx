@@ -24,7 +24,7 @@ export const sendChatMessage = async (message: string): Promise<string> => {
       throw new Error('인증 토큰이 없습니다.');
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/chats`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/chats`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
