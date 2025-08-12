@@ -1,7 +1,5 @@
-
-
+//src/components/analyze/SatisfactionChart.tsx
 'use client';
-console.log('SatisfactionChart 최상단 렌더링');
 
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -12,7 +10,7 @@ import { fetchSatisfactionRaw } from '@/api/admin/analyze/analyzeFetch';
 import { convertSatisfactionResultToRows } from '@/constants/apiUtils';
 import './AnalyzeChart.scss';
 
-type Props = Record<string, never>; // 빈 props
+type Props = Record<string, never>;
 
 const EMPTY_ROWS: SatisfactionRaw[] = [
   { type: '만족', value: 0, percentage: 50 },
@@ -34,14 +32,12 @@ const SatisfactionChart: React.FC<Props> = () => {
     });
   };
 
-  // ...기존 코드 유지...
-
-  // 만족도 API 요청
   useEffect(() => {
     if (!dateRange.startDate || !dateRange.endDate) return;
     const ac = new AbortController();
     setLoading(true);
     setError(null);
+    
     fetchSatisfactionRaw({
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -54,19 +50,18 @@ const SatisfactionChart: React.FC<Props> = () => {
         }
       })
       .finally(() => setLoading(false));
+      
     return () => ac.abort();
   }, [dateRange.startDate, dateRange.endDate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const renderLabelWithLeader = (props: any) => {
     const { cx, cy, midAngle, outerRadius, percent, payload } = props;
     const ratio = percent * 100;
 
-    // payload에서 원본 데이터의 실제 percentage 값을 찾기
     const originalData = chartRows.find(row => row.type === payload.type);
     const actualPercentage = originalData ? originalData.percentage : Math.round(ratio);
     
-    // 실제 percentage가 0%이거나 일반적인 MIN_LABEL_PERCENT 조건을 만족하면 표시
     if (actualPercentage === 0 || ratio >= MIN_LABEL_PERCENT) {
       // 라벨 표시 로직 계속 진행
     } else {
@@ -109,7 +104,6 @@ const SatisfactionChart: React.FC<Props> = () => {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as SatisfactionRaw;
@@ -133,13 +127,12 @@ const SatisfactionChart: React.FC<Props> = () => {
 
   const chartRows = data.length ? data : EMPTY_ROWS;
 
-  // 시각적 차트 데이터 처리
   const totalValue = chartRows.reduce((sum, row) => sum + row.value, 0);
   const visualChartRows = totalValue === 0 
-    ? chartRows.map(row => ({ ...row, value: 1 })) // 둘 다 0인 경우: 균등 표시를 위해 1로 설정
+    ? chartRows.map(row => ({ ...row, value: 1 }))
     : chartRows.map(row => ({
         ...row, 
-        value: row.value === 0 ? 0.01 : row.value // 0인 경우 아주 작은 값으로 설정 (라벨 표시용)
+        value: row.value === 0 ? 0.01 : row.value
       }));
 
   return (
