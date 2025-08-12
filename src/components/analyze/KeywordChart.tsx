@@ -203,7 +203,11 @@ const KeywordChart: React.FC = () => {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={keywordData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+            <BarChart 
+              data={keywordData} 
+              margin={{ top: 20, right: 20, left: 20, bottom: 60 }}
+              barCategoryGap="20%"
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
                 dataKey="name"
@@ -216,7 +220,7 @@ const KeywordChart: React.FC = () => {
               />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
               <Tooltip content={(props) => <CustomTooltip {...props} />} />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
                 {keywordData.map((entry, idx) => (
                   <Cell key={`cell-${idx}`} fill={getKeywordColor(idx)} />
                 ))}
