@@ -29,15 +29,6 @@ export interface NotificationState {
 export const NOTIFICATION_TABS: readonly NotificationTab[] = ['전체', '읽음', '읽지 않음'] as const;
 export const NOTIFICATION_CATEGORIES: readonly CategoryFilter[] = ['전체', 'QnA', 'Feedback'] as const;
 
-export interface OptionType {
-  value: string;
-  label: string;
-}
-
-export interface Props {
-  onChange: (value: string) => void;
-}
-
 export interface NotificationProps {
   itemsPerPage?: number;
   className?: string;
@@ -63,12 +54,11 @@ export interface NotificationContextType {
   totalPages: number;
   unreadCount: number;
 
-  // 액션
   handleTabChange: (tab: NotificationTab) => void;
-  handleCategoryChange: (category: string) => void;
   handlePageChange: (page: number) => void;
   handleItemClick: (id: string) => void;
   handleMarkAllAsRead: () => void;
+  refreshModalData?: () => Promise<void>; // 모달용 새로고침 함수 추가
 }
 
 export interface NotificationProviderProps {
@@ -91,9 +81,7 @@ export interface UseNotificationsReturn {
   totalPages: number;
   unreadCount: number;
 
-  // 액션
   handleTabChange: (tab: NotificationTab) => void;
-  handleCategoryChange: (category: string) => void;
   handlePageChange: (page: number) => void;
   handleItemClick: (id: string) => void;
   handleMarkAllAsRead: () => void;

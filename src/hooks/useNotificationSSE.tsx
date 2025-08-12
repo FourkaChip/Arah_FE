@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { ServerNotificationItem } from '@/api/admin/noti/notiFetch';
 import { getValidAccessToken } from '@/utils/tokenStorage';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 interface SSENotificationData {
     id: number;
@@ -24,186 +25,242 @@ interface UseNotificationSSEProps {
     reconnectInterval?: number;
 }
 
+// 전역 단일 인스턴스 관리
+let globalSSEInstance: EventSourcePolyfill | null = null;
+let globalConnectionAttempts = 0;
+const MAX_CONNECTION_ATTEMPTS = 1;
+
 export const useNotificationSSE = ({
     onNewNotification,
     onError,
     onConnectionOpen,
     onConnectionClose,
     autoReconnect = true,
-    reconnectInterval = 5000
+    reconnectInterval = 5000,
 }: UseNotificationSSEProps = {}) => {
-    const abortControllerRef = useRef<AbortController | null>(null);
-    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const esRef = useRef<EventSourcePolyfill | null>(null);
+    const connectingRef = useRef(false);
     const lastEventIdRef = useRef<number | undefined>(undefined);
+    const mountedRef = useRef(true);
+    const hasConnectedRef = useRef(false);
+
     const [isConnected, setIsConnected] = useState(false);
     const [connectionError, setConnectionError] = useState<string | null>(null);
 
     const cleanup = useCallback(() => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-            abortControllerRef.current = null;
+        try {
+            if (esRef.current && esRef.current === globalSSEInstance) {
+                console.log('🔌 SSE 연결 정리');
+                esRef.current.close();
+                globalSSEInstance = null;
+            }
+        } catch {}
+        esRef.current = null;
+        connectingRef.current = false;
+        globalConnectionAttempts = 0;
+        if (mountedRef.current) {
+            setIsConnected(false);
         }
-        if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current);
-            reconnectTimeoutRef.current = null;
-        }
-        setIsConnected(false);
     }, []);
 
     const connect = useCallback(async () => {
-        try {
-            cleanup();
-            setConnectionError(null);
+        // 이미 연결 시도 중이거나 최대 시도 횟수 초과
+        if (connectingRef.current || globalConnectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
+            console.log('🚫 SSE 연결 중복 시도 방지 - connectingRef:', connectingRef.current, 'attempts:', globalConnectionAttempts);
+            return;
+        }
 
-            const token = await getValidAccessToken();
-            if (!token) {
-                throw new Error('인증 토큰이 없습니다.');
-            }
-
-            const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_NOTI_API_BASE_URL;
-            const params = new URLSearchParams({ token });
-            if (lastEventIdRef.current) {
-                params.append('lastEventId', lastEventIdRef.current.toString());
-            }
-
-            const abortController = new AbortController();
-            abortControllerRef.current = abortController;
-
-            const response = await fetch(
-                `${NOTI_API_BASE_URL}/api/notifications/subscribe?${params}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/event-stream',
-                        'Cache-Control': 'no-cache',
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'text/event-stream'
-                    },
-                    signal: abortController.signal
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            if (!response.body) {
-                throw new Error('Response body is null');
-            }
-
-            console.log('SSE 연결 성공');
+        // 기존 연결이 살아있으면 재사용
+        if (globalSSEInstance && globalSSEInstance.readyState === EventSourcePolyfill.OPEN) {
+            console.log('♻️ 기존 SSE 연결 재사용');
+            esRef.current = globalSSEInstance;
             setIsConnected(true);
             setConnectionError(null);
             onConnectionOpen?.();
+            return;
+        }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+        // 컴포넌트가 언마운트된 경우 연결하지 않음
+        if (!mountedRef.current) {
+            console.log('🚫 컴포넌트 언마운트됨 - SSE 연결 중단');
+            return;
+        }
 
-            try {
-                while (true) {
-                    const { done, value } = await reader.read();
+        connectingRef.current = true;
+        globalConnectionAttempts += 1;
+        setConnectionError(null);
 
-                    if (done) {
-                        console.log('SSE 스트림 종료');
-                        setIsConnected(false);
-                        onConnectionClose?.();
-                        break;
-                    }
+        console.log(`🔄 SSE 연결 시도 #${globalConnectionAttempts}`);
 
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n');
+        try {
+            const token = await getValidAccessToken();
+            if (!token) throw new Error('인증 토큰이 없습니다.');
 
-                    for (const line of lines) {
-                        if (line.startsWith('id:')) {
-                            const eventId = line.substring(3).trim();
-                            lastEventIdRef.current = parseInt(eventId) || undefined;
-                        } else if (line.startsWith('event:')) {
-                            // event 타입 확인 (notification인지)
-                        } else if (line.startsWith('data:')) {
-                            try {
-                                const dataJson = line.substring(5).trim();
-                                if (dataJson) {
-                                    const data: SSENotificationData = JSON.parse(dataJson);
+            const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_NOTI_API_BASE_URL;
+            if (!NOTI_API_BASE_URL) throw new Error('NOTI API URL이 설정되지 않았습니다.');
 
-                                    const serverNotification: ServerNotificationItem = {
-                                        id: data.id,
-                                        createdAt: new Date().toISOString(),
-                                        senderId: data.senderId,
-                                        receiverId: data.receiverId,
-                                        type: data.type,
-                                        isRead: false,
-                                        content: data.content
-                                    };
-
-                                    console.log('새 알림 수신:', serverNotification);
-                                    onNewNotification?.(serverNotification);
-                                }
-                            } catch (parseError) {
-                                console.error('알림 데이터 파싱 실패:', parseError);
-                            }
-                        }
-                    }
-                }
-            } catch (streamError) {
-                if (streamError instanceof Error && streamError.name === 'AbortError') {
-                    console.log('SSE 연결이 수동으로 중단됨');
-                } else {
-                    throw streamError;
-                }
-            } finally {
-                reader.releaseLock();
+            const params = new URLSearchParams({ token });
+            if (lastEventIdRef.current) {
+                params.append('lastEventId', String(lastEventIdRef.current));
             }
+
+            const headers: Record<string, string> = {
+                Accept: 'text/event-stream',
+                Authorization: `Bearer ${token}`,
+            };
+
+            const es = new EventSourcePolyfill(
+                `${NOTI_API_BASE_URL}/api/notifications/subscribe?${params}`,
+                {
+                    headers,
+                    withCredentials: false,
+                    heartbeatTimeout: 45_000,
+                }
+            );
+
+            esRef.current = es;
+            globalSSEInstance = es;
+
+            es.onopen = (event: Event) => {
+                console.log('✅ SSE 연결 성공');
+                connectingRef.current = false;
+                hasConnectedRef.current = true;
+                if (mountedRef.current) {
+                    setIsConnected(true);
+                    setConnectionError(null);
+                    onConnectionOpen?.();
+                }
+            };
+
+            es.addEventListener('notification', (event: any) => {
+                if (!mountedRef.current) return;
+
+                if (event.lastEventId) {
+                    const parsed = Number(event.lastEventId);
+                    if (!Number.isNaN(parsed)) lastEventIdRef.current = parsed;
+                }
+
+                try {
+                    const data: SSENotificationData = JSON.parse(event.data);
+                    const serverNotification: ServerNotificationItem = {
+                        id: data.id,
+                        createdAt: new Date().toISOString(),
+                        senderId: data.senderId,
+                        receiverId: data.receiverId,
+                        type: data.type,
+                        isRead: false,
+                        content: data.content,
+                    };
+                    onNewNotification?.(serverNotification);
+                } catch (err) {
+                    console.error('❌ 알림 데이터 파싱 실패:', err);
+                }
+            });
+
+            es.onmessage = (event: MessageEvent) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.success === false && data.code && data.message) {
+                        console.error('❌ 서버 에러:', data.message);
+                        if (mountedRef.current) {
+                            setConnectionError(`서버 에러: ${data.message}`);
+                        }
+                        es.close();
+                        return;
+                    }
+                } catch (err) {
+                    // JSON이 아닌 메시지는 무시
+                }
+            };
+
+            es.onerror = (event: Event) => {
+                console.error('❌ SSE 연결 에러');
+                connectingRef.current = false;
+                if (mountedRef.current) {
+                    setIsConnected(false);
+                    setConnectionError('연결 오류');
+                    onError?.(event);
+                }
+
+                // 자동 재연결 비활성화 - 수동으로만 재연결
+                if (!autoReconnect) {
+                    es.close();
+                    globalSSEInstance = null;
+                    globalConnectionAttempts = 0;
+                }
+            };
 
         } catch (error) {
-            console.error('SSE 연결 실패:', error);
-            setIsConnected(false);
-            setConnectionError(error instanceof Error ? error.message : '연결 실패');
-            onError?.(error as Event);
-
-            if (autoReconnect && !abortControllerRef.current?.signal.aborted) {
-                reconnectTimeoutRef.current = setTimeout(() => {
-                    console.log('SSE 재연결 시도...');
-                    connect();
-                }, reconnectInterval);
+            console.error('❌ SSE 연결 초기화 실패:', error);
+            connectingRef.current = false;
+            globalConnectionAttempts = 0;
+            if (mountedRef.current) {
+                setIsConnected(false);
+                setConnectionError(error instanceof Error ? error.message : '연결 실패');
+                onError?.(error as unknown as Event);
             }
         }
-    }, [onNewNotification, onError, onConnectionOpen, onConnectionClose, autoReconnect, reconnectInterval, cleanup]);
+    }, [onNewNotification, onError, onConnectionOpen, autoReconnect]);
 
     const disconnect = useCallback(() => {
+        console.log('🔌 SSE 수동 연결 해제');
         cleanup();
         onConnectionClose?.();
     }, [cleanup, onConnectionClose]);
 
     const reconnect = useCallback(() => {
+        console.log('🔄 SSE 수동 재연결');
+        cleanup();
+        // 재연결 시 시도 횟수 리셋
+        globalConnectionAttempts = 0;
         connect();
-    }, [connect]);
+    }, [cleanup, connect]);
 
+    // 컴포넌트 마운트 시 한 번만 연결
     useEffect(() => {
-        connect();
+        mountedRef.current = true;
+
+        // 이미 연결을 시도했거나 성공한 경우 중복 방지
+        if (!hasConnectedRef.current && globalConnectionAttempts === 0) {
+            console.log('🚀 최초 SSE 연결 시도');
+            connect();
+        } else if (globalSSEInstance && globalSSEInstance.readyState === EventSourcePolyfill.OPEN) {
+            console.log('♻️ 기존 연결 재사용');
+            esRef.current = globalSSEInstance;
+            setIsConnected(true);
+        }
 
         return () => {
-            cleanup();
+            console.log('🧹 컴포넌트 언마운트 - SSE 정리');
+            mountedRef.current = false;
+            // cleanup(); // 글로벌 인스턴스는 유지
         };
-    }, []);
+    }, []); // 빈 dependency array로 한 번만 실행
 
+    // 페이지 가시성 변경 시에도 중복 연결 방지
     useEffect(() => {
         const handleVisibilityChange = () => {
-            if (!document.hidden && !isConnected && autoReconnect) {
-                connect();
+            if (!document.hidden && !isConnected && !connectingRef.current && mountedRef.current) {
+                // 일정 시간 후에만 재연결 시도
+                setTimeout(() => {
+                    if (globalConnectionAttempts === 0) {
+                        console.log('👁️ 페이지 가시성 변경으로 인한 재연결');
+                        connect();
+                    }
+                }, 1000);
             }
         };
-
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [isConnected, autoReconnect, connect]);
+    }, [isConnected, connect]);
 
     return {
         isConnected,
         connectionError,
         connect,
         disconnect,
-        reconnect
+        reconnect,
     };
 };

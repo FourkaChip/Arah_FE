@@ -23,6 +23,7 @@
     "@tanstack/react-table": "^8.21.3",
     "bulma": "^1.0.4",
     "dayjs": "^1.11.13",
+    "event-source-polyfill": "^1.0.31",
     "next": "^14.2.30",
     "rc-slider": "^11.1.8",
     "react": "^18.2.0",

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import CustomDropDownForNoti from "@/components/customDropdown/CustomDropDownForNoti";
 import NotiTabs from "@/components/tabs/NotiTabs";
 import Pagination from "@/components/customPagination/Pagination";
 import NotificationList from './NotificationList';
@@ -23,11 +22,18 @@ export default function Notification({
     totalPages,
     unreadCount,
     handleTabChange,
-    handleCategoryChange,
     handlePageChange,
     handleItemClick,
     handleMarkAllAsRead,
   } = useNotificationContext();
+
+  // 실제 읽지 않은 알림 개수 계산
+  const actualUnreadCount = React.useMemo(() => {
+    return paginatedNotifications.filter(n => !n.isRead).length;
+  }, [paginatedNotifications]);
+
+  // 모두 읽음 버튼 활성화 조건
+  const isMarkAllReadDisabled = actualUnreadCount === 0 && unreadCount === 0;
 
   return (
     <div className={`notification-container ${className}`}>
@@ -35,7 +41,6 @@ export default function Notification({
       <div className="noti-filter-section">
         <div className="filter-controls">
           <div className="filter-left">
-            <CustomDropDownForNoti onChange={handleCategoryChange} />
             <NotiTabs
               tabs={NOTIFICATION_TABS}
               defaultActiveTab="전체"
@@ -44,7 +49,10 @@ export default function Notification({
             />
           </div>
           <div className="filter-right">
-            <MarkAllReadButton onClick={handleMarkAllAsRead} />
+            <MarkAllReadButton
+              onClick={handleMarkAllAsRead}
+              disabled={isMarkAllReadDisabled}
+            />
           </div>
         </div>
       </div>
