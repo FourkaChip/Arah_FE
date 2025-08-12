@@ -60,7 +60,7 @@ export default function FaqAdminTable() {
     const [endDate, setEndDate] = useState("");
     const [selectedTag, setSelectedTag] = useState('all');
 
-    // 🎯 FAQ 네비게이션 상태 관리
+    // FAQ 네비게이션 상태 관리
     const [navigationState, setNavigationState] = useState<{
         targetFaqId: string | null;
         targetPage: number | null;
@@ -109,7 +109,7 @@ export default function FaqAdminTable() {
             .finally(() => setLoading(false));
     }, [companyId]);
 
-    // 🎯 URL 파라미터 처리 (초기 설정만)
+    // URL 파라미터 처리
     useEffect(() => {
         const faqId = searchParams.get('faqId');
         const shouldExpand = searchParams.get('expanded');
@@ -127,7 +127,7 @@ export default function FaqAdminTable() {
                     const targetPage = Math.floor(targetIndex / pageSize);
                     const rowIndexInPage = targetIndex - (targetPage * pageSize);
 
-                    // 🎯 상태 업데이트 및 페이지 이동
+                    // 상태 업데이트 및 페이지 이동
                     setNavigationState({
                         targetFaqId: faqId,
                         targetPage,
@@ -142,7 +142,7 @@ export default function FaqAdminTable() {
         }
     }, [searchParams, faqData, navigationState.step]);
 
-    // 🎯 페이지 이동 완료 후 상세보기 열기
+    // 페이지 이동 완료 후 상세보기 열기
     useEffect(() => {
         if (navigationState.step === 'page-set' && navigationState.rowIndexInPage) {
             const timer = setTimeout(() => {
@@ -157,7 +157,7 @@ export default function FaqAdminTable() {
         }
     }, [navigationState.step, navigationState.rowIndexInPage]);
 
-    // 🎯 상세보기 열기 완료 후 스크롤 이동
+    // 상세보기 열기 완료 후 스크롤 이동
     useEffect(() => {
         if (navigationState.step === 'expanded' && navigationState.targetFaqId) {
             const timer = setTimeout(() => {
@@ -178,7 +178,7 @@ export default function FaqAdminTable() {
         }
     }, [navigationState.step, navigationState.targetFaqId]);
 
-    // 🎯 스크롤 완료 후 URL 정리
+    // 스크롤 완료 후 URL 정리
     useEffect(() => {
         if (navigationState.step === 'scrolled') {
             const timer = setTimeout(() => {
