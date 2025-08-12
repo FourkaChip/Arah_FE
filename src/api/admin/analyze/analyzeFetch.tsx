@@ -67,16 +67,6 @@ export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number
   const json = await res.json();
   return json?.result ?? json;
 }
-import { getValidAccessToken } from '@/utils/tokenStorage';
-import { decodeJwtRole } from '@/utils/decodeJwtRole';
-
-// accessToken에서 companyId를 추출하는 함수
-export async function getCompanyIdFromToken(): Promise<number | undefined> {
-  const token = await getValidAccessToken();
-  if (!token) return undefined;
-  const payload = decodeJwtRole(token);
-  return payload?.company_id as number | undefined;
-}
 // src/api/admin/analyze/analyzeFetch.ts
 import { authorizedFetch } from '@/api/auth/authorizedFetch';
 

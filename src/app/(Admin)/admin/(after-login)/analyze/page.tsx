@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import './Analyze.scss';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useEffect, useState } from 'react';
-import { getCompanyIdFromToken } from '@/api/admin/analyze/analyzeFetch';
+import { getValidAccessToken } from '@/utils/tokenStorage';
 
 const FeedbackLineChart = dynamic(() => import('@/components/analyze/FeedbackLineChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
 const FeedbackTypeChart = dynamic(() => import('@/components/analyze/FeedbackTypeChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
@@ -16,8 +16,8 @@ export default function AnalysisPage() {
   
   useEffect(() => {
     // 토큰이 유효한지 확인
-    getCompanyIdFromToken().then(id => {
-      setIsAuthenticated(id != null);
+    getValidAccessToken().then(token => {
+      setIsAuthenticated(token != null);
     });
   }, []);
 
