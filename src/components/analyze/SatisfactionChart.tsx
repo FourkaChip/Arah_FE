@@ -9,17 +9,16 @@ import { DateRange } from '@/types/analyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
 import { TYPE_COLOR, MIN_LABEL_PERCENT } from '@/constants/analyzeConfig';
 import { fetchSatisfactionRaw, type SatisfactionRaw, convertSatisfactionResultToRows } from '@/api/admin/analyze/analyzeFetch';
-import { authorizedFetch } from '@/api/auth/authorizedFetch';
 import './AnalyzeChart.scss';
 
-type Props = { companyId: number | null };
+type Props = Record<string, never>; // 빈 props
 
 const EMPTY_ROWS: SatisfactionRaw[] = [
   { type: '만족', value: 0, percentage: 0 },
   { type: '불만족', value: 0, percentage: 0 },
 ];
 
-const SatisfactionChart: React.FC<Props> = ({ companyId }) => {
+const SatisfactionChart: React.FC<Props> = () => {
   const initialRange = useDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRange>(initialRange);
   const [data, setData] = useState<SatisfactionRaw[]>([]);
@@ -36,22 +35,15 @@ const SatisfactionChart: React.FC<Props> = ({ companyId }) => {
 
   // ...기존 코드 유지...
 
+  // 만족도 API 요청
   useEffect(() => {
-    if (companyId !== null) {
-      console.log('SatisfactionChart companyId:', companyId);
-    }
-  }, [companyId]);
-
-  // companyId가 있을 때 만족도 API 요청
-  useEffect(() => {
-    if (companyId == null || !dateRange.startDate || !dateRange.endDate) return;
-    let ac = new AbortController();
+    if (!dateRange.startDate || !dateRange.endDate) return;
+    const ac = new AbortController();
     setLoading(true);
     setError(null);
     fetchSatisfactionRaw({
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
-      companyId,
       signal: ac.signal,
     })
       .then(result => setData(convertSatisfactionResultToRows(result)))
@@ -62,7 +54,7 @@ const SatisfactionChart: React.FC<Props> = ({ companyId }) => {
       })
       .finally(() => setLoading(false));
     return () => ac.abort();
-  }, [companyId, dateRange.startDate, dateRange.endDate]);
+  }, [dateRange.startDate, dateRange.endDate]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderLabelWithLeader = (props: any) => {

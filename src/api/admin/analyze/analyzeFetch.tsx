@@ -1,8 +1,7 @@
 // 시간별 피드백 수 조회
-export async function fetchFeedbackHourlyCount({ date, companyId, signal }: { date: string; companyId: number; signal?: AbortSignal }) {
+export async function fetchFeedbackHourlyCount({ date, signal }: { date: string; signal?: AbortSignal }) {
   const qs = new URLSearchParams({
     date,
-    company_id: String(companyId),
   });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/hourly_count?${qs}`,
@@ -17,11 +16,10 @@ export async function fetchFeedbackHourlyCount({ date, companyId, signal }: { da
 }
 
 // 일별 피드백 수 조회
-export async function fetchFeedbackDailyCount({ year, month, companyId, signal }: { year: number; month: number; companyId: number; signal?: AbortSignal }) {
+export async function fetchFeedbackDailyCount({ year, month, signal }: { year: number; month: number; signal?: AbortSignal }) {
   const qs = new URLSearchParams({
     year: String(year),
     month: String(month),
-    company_id: String(companyId),
   });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/daily_count?${qs}`,
@@ -36,11 +34,10 @@ export async function fetchFeedbackDailyCount({ year, month, companyId, signal }
 }
 
 // 주별 피드백 수 조회
-export async function fetchFeedbackWeeklyCount({ year, month, companyId, signal }: { year: number; month: number; companyId: number; signal?: AbortSignal }) {
+export async function fetchFeedbackWeeklyCount({ year, month, signal }: { year: number; month: number; signal?: AbortSignal }) {
   const qs = new URLSearchParams({
     year: String(year),
     month: String(month),
-    company_id: String(companyId),
   });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/weekly_count?${qs}`,
@@ -55,10 +52,9 @@ export async function fetchFeedbackWeeklyCount({ year, month, companyId, signal 
 }
 
 // 월별 피드백 수 조회
-export async function fetchFeedbackMonthlyCount({ year, companyId, signal }: { year: number; companyId: number; signal?: AbortSignal }) {
+export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number; signal?: AbortSignal }) {
   const qs = new URLSearchParams({
     year: String(year),
-    company_id: String(companyId),
   });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/monthly_count?${qs}`,
@@ -79,7 +75,7 @@ export async function getCompanyIdFromToken(): Promise<number | undefined> {
   const token = await getValidAccessToken();
   if (!token) return undefined;
   const payload = decodeJwtRole(token);
-  return payload?.company_id;
+  return payload?.company_id as number | undefined;
 }
 // src/api/admin/analyze/analyzeFetch.ts
 import { authorizedFetch } from '@/api/auth/authorizedFetch';
@@ -105,7 +101,6 @@ export function convertSatisfactionResultToRows(result: {
 type FetchParams = {
   startDate: string;
   endDate: string;
-  companyId: number;
   signal?: AbortSignal;
 };
 
@@ -120,11 +115,9 @@ export type SatisfactionApiResult = {
 export async function fetchSatisfactionRaw({
   startDate,
   endDate,
-  companyId,
   signal,
 }: FetchParams): Promise<SatisfactionApiResult> {
   const qs = new URLSearchParams({
-    company_id: String(companyId),
     start_date: startDate,
     end_date: endDate,
   });

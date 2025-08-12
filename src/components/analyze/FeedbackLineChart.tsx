@@ -38,9 +38,9 @@ type MonthlySatPoint = { month: number; sat: number; unsat: number };
 type HourlySatPoint = { hour: number; sat: number; unsat: number };
 type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
 
-type FeedbackLineChartProps = { companyId: number | null };
+type FeedbackLineChartProps = Record<string, never>; // 빈 props
 
-const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
+const FeedbackLineChart: React.FC<FeedbackLineChartProps> = () => {
   const [currentYear, setCurrentYear] = useState<number>(2024);
   const [currentMonth, setCurrentMonth] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<number>(1);
@@ -80,7 +80,6 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
 
   // API 데이터 fetch
   useEffect(() => {
-    if (companyId == null) return;
     setLoading(true);
     setError(null);
     const ac = new AbortController();
@@ -89,7 +88,7 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
         let result: any[] = [];
         if (selectedPeriod === '시간별 보기') {
           const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-          result = await fetchFeedbackHourlyCount({ date, companyId, signal: ac.signal });
+          result = await fetchFeedbackHourlyCount({ date, signal: ac.signal });
           const chartData = Array.from({ length: 24 }, (_, hour) => {
             const found = result.find((d: any) => d.hour === hour);
             return {
@@ -100,7 +99,7 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
           });
           setData(chartData);
         } else if (selectedPeriod === '일별 보기') {
-          result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
           const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
           const resultMap = new Map(result.map((d: any) => [d.day, d]));
           const chartData = Array.from({ length: daysInMonth }, (_, i) => {
@@ -114,7 +113,7 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
           });
           setData(chartData);
         } else if (selectedPeriod === '주별 보기') {
-          result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
+          result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
           
           // 해당 월의 실제 주차 수 계산
           const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
@@ -137,7 +136,7 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
           }
           setData(chartData);
         } else if (selectedPeriod === '월별 보기') {
-          result = await fetchFeedbackMonthlyCount({ year: selectedYear, companyId, signal: ac.signal });
+          result = await fetchFeedbackMonthlyCount({ year: selectedYear, signal: ac.signal });
           const chartData = result.map((d: any) => ({ month: d.month, sat: d.like_count, unsat: d.unlike_count }));
           setData(chartData);
         }
@@ -149,7 +148,7 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
     };
     fetchData();
     return () => ac.abort();
-  }, [companyId, selectedPeriod, selectedYear, selectedMonth, selectedDay]);
+  }, [selectedPeriod, selectedYear, selectedMonth, selectedDay]);
 
   const handlePrev = () => {
     switch (selectedPeriod) {

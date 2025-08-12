@@ -12,11 +12,14 @@ const KeywordChart = dynamic(() => import('@/components/analyze/KeywordChart'), 
 const SatisfactionChart = dynamic(() => import('@/components/analyze/SatisfactionChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
 
 export default function AnalysisPage() {
-  const [companyId, setCompanyId] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
   useEffect(() => {
-    getCompanyIdFromToken().then(id => setCompanyId(id ?? null));
+    // 토큰이 유효한지 확인
+    getCompanyIdFromToken().then(id => {
+      setIsAuthenticated(id != null);
+    });
   }, []);
-  console.log('companyId:', companyId);
 
   return (
     <ProtectedRoute allowedRoles={['ADMIN']}>
@@ -27,27 +30,35 @@ export default function AnalysisPage() {
 
         <div className="analyze-grid">
           <section className="grid-item line-full">
-            {companyId != null ? (
-              <FeedbackLineChart companyId={companyId} />
+            {isAuthenticated ? (
+              <FeedbackLineChart />
             ) : (
-              <p>회사 정보를 불러오는 중...</p>
+              <p>인증 정보를 확인하는 중...</p>
             )}
           </section>
 
           <section className="grid-item donut-left">
-            <FeedbackTypeChart />
+            {isAuthenticated ? (
+              <FeedbackTypeChart />
+            ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
           </section>
 
           <section className="grid-item donut-right">
-            {companyId != null ? (
-              <SatisfactionChart companyId={companyId} />
+            {isAuthenticated ? (
+              <SatisfactionChart />
             ) : (
-              <p>회사 정보를 불러오는 중...</p>
+              <p>인증 정보를 확인하는 중...</p>
             )}
           </section>
 
           <section className="grid-item keyword-full">
-            <KeywordChart />
+            {isAuthenticated ? (
+              <KeywordChart />
+            ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
           </section>
         </div>
       </div>
