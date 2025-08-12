@@ -115,7 +115,26 @@ const FeedbackLineChart: React.FC<FeedbackLineChartProps> = ({ companyId }) => {
           setData(chartData);
         } else if (selectedPeriod === '주별 보기') {
           result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, companyId, signal: ac.signal });
-          const chartData = result.map((d: any) => ({ week: d.week, sat: d.like_count, unsat: d.unlike_count }));
+          
+          // 해당 월의 실제 주차 수 계산
+          const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
+          const lastDayOfMonth = new Date(selectedYear, selectedMonth, 0);
+          
+          // 첫 번째 날의 주차 계산 (일요일을 주의 시작으로 가정)
+          const firstWeek = Math.ceil((firstDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
+          const lastWeek = Math.ceil((lastDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
+          
+          const resultMap = new Map(result.map((d: any) => [d.week, d]));
+          const chartData = [];
+          
+          for (let week = firstWeek; week <= lastWeek; week++) {
+            const found = resultMap.get(week);
+            chartData.push({
+              week,
+              sat: found ? found.like_count : 0,
+              unsat: found ? found.unlike_count : 0,
+            });
+          }
           setData(chartData);
         } else if (selectedPeriod === '월별 보기') {
           result = await fetchFeedbackMonthlyCount({ year: selectedYear, companyId, signal: ac.signal });
