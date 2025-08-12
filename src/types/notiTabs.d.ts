@@ -1,4 +1,4 @@
-import { NotificationTab } from './notification';
+import {NotificationTab} from './notification';
 
 export interface NotiTabsProps {
     tabs: readonly NotificationTab[];
