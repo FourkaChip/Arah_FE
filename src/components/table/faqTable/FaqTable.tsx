@@ -1,6 +1,7 @@
 // FAQ 페이지에 적용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
+import { useSearchParams } from 'next/navigation';
 import CustomSearch from "@/components/customSearch/CustomSearch";
 import './FaqTable.scss';
 import {
@@ -29,6 +30,7 @@ import {fetchCurrentUserInfo} from "@/api/auth/master";
 import {useModalMessage} from "@/hooks/useModalMessage";
 
 export default function FaqAdminTable() {
+    const searchParams = useSearchParams();
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openFaqModal, setOpenFaqModal] = useState(false);
     const [editRow, setEditRow] = useState<RowData | null>(null);
@@ -93,6 +95,53 @@ export default function FaqAdminTable() {
             })
             .finally(() => setLoading(false));
     }, [companyId]);
+
+    useEffect(() => {
+        const faqId = searchParams.get('faqId');
+        const shouldExpand = searchParams.get('expanded');
+
+        if (faqId && shouldExpand === 'true' && faqData.length > 0) {
+
+            // 타겟 FAQ 찾기
+            const targetFaq = faqData.find(faq => faq.id.toString() === faqId);
+
+            if (targetFaq) {
+                // 전체 데이터에서 바로 위치 계산
+                const sortedData = faqData.sort((a, b) => b.no - a.no);
+                const targetIndex = sortedData.findIndex(faq => faq.id.toString() === faqId);
+
+                if (targetIndex !== -1) {
+                    const targetPage = Math.floor(targetIndex / pageSize);
+                    const rowIndexInPage = targetIndex - (targetPage * pageSize);
+                    // 페이지 이동
+                    setCurrentPage(targetPage);
+                    // 상세보기 열기
+                    setTimeout(() => {
+                        setExpandedRowId(rowIndexInPage.toString());
+                        // 스크롤 이동
+                        setTimeout(() => {
+                            const targetRow = document.querySelector(`[data-faq-id="${targetFaq.id}"]`);
+                            if (targetRow) {
+                                targetRow.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }
+                        }, 200);
+                        // URL 정리
+                        setTimeout(() => {
+                            const url = new URL(window.location.href);
+                            url.searchParams.delete('faqId');
+                            url.searchParams.delete('expanded');
+                            window.history.replaceState({}, '', url.pathname);
+                        }, 1000);
+                    }, 500);
+                }
+            } else {
+                console.log('해당 faqId를 찾을 수 없습니다:', faqId);
+            }
+        }
+    }, [searchParams, faqData]);
 
     const handleSearch = (search: string) => {
         setSearchValue(search);
@@ -218,7 +267,6 @@ export default function FaqAdminTable() {
         }
     }, [paginatedData, selectedRowIds]);
 
-
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
     const handleDeleteFaq = async () => {
@@ -332,7 +380,10 @@ export default function FaqAdminTable() {
                         ) : (
                             table.getRowModel().rows.map(row => (
                                 <React.Fragment key={row.id}>
-                                    <tr className={expandedRowId === row.id ? "expanded active-row" : ""}>
+                                    <tr
+                                        className={expandedRowId === row.id ? "expanded active-row" : ""}
+                                        data-faq-id={row.original.id}
+                                    >
                                         {row.getVisibleCells().map(cell => (
                                             <td key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

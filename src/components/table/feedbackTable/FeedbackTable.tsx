@@ -128,7 +128,13 @@ export default function FaqAdminTable() {
                     <button className="goto-faq-icon">
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
-                            onClick={() => router.push("/admin/faq")}
+                            onClick={() => {
+                                // to Do : 추후 값 받아오는 것으로 수정할 예정
+                                // 하드코딩된 faq_id = 13 사용
+                                const hardcodedFaqId = 13;
+                                const url = `/admin/faq?faqId=${hardcodedFaqId}&expanded=true`;
+                                router.push(url);
+                            }}
                             style={{
                                 color: expandedRowId === row.id ? '#FFFFFF' : '#232D64',
                                 cursor: 'pointer',
