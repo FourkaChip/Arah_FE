@@ -199,6 +199,7 @@ const SatisfactionChart: React.FC<Props> = () => {
             onChange={(e) => handleDateChange('startDate', e.target.value)}
             className="date-picker satisfaction"
             min={companyCreatedAt || undefined}
+            max={new Date().toISOString().split('T')[0]}
           />
           <span>~</span>
           <input
@@ -207,6 +208,7 @@ const SatisfactionChart: React.FC<Props> = () => {
             onChange={(e) => handleDateChange('endDate', e.target.value)}
             className="date-picker satisfaction"
             min={dateRange.startDate}
+            max={new Date().toISOString().split('T')[0]}
           />
         </div>
       </div>

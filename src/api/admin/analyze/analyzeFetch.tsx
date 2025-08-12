@@ -1,5 +1,7 @@
 // src/api/admin/analyze/analyzeFetch.tsx
 import { authorizedFetch } from '@/api/auth/authorizedFetch';
+import { decodeJwtRole } from '@/utils/decodeJwtRole';
+import { getAccessToken } from '@/utils/tokenStorage';
 import type { SatisfactionApiResult } from '@/types/analyze';
 
 // 회사 가입일 캐시
@@ -115,6 +117,49 @@ export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number
     const text = await res.text().catch(() => '');
     throw new Error(text || `HTTP ${res.status}`);
   }
+  const json = await res.json();
+  return json?.result ?? json;
+}
+
+// 키워드 TOP 10 조회
+export async function fetchTopKeywords({
+  startDate,
+  endDate,
+  signal,
+}: {
+  startDate: string;
+  endDate: string;
+  signal?: AbortSignal;
+}) {
+  // 토큰에서 company_id 추출
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다.');
+  }
+  
+  const payload = decodeJwtRole(token);
+  const companyId = payload?.company_id;
+  
+  if (!companyId) {
+    throw new Error('회사 정보를 찾을 수 없습니다.');
+  }
+
+  const qs = new URLSearchParams({
+    company_id: String(companyId),
+    start_date: startDate,
+    end_date: endDate,
+  });
+
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/top?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
   const json = await res.json();
   return json?.result ?? json;
 }
