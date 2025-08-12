@@ -1,4 +1,3 @@
-"use client";
 import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
@@ -18,7 +17,7 @@ export default function CustomDropDown({
     const [showInputModal, setShowInputModal] = useState(false);
     const {
         openErrorModal,
-        errorMessage,
+        errorDescription,
         showError,
         closeError,
     } = useModalMessage();
@@ -95,7 +94,7 @@ export default function CustomDropDown({
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorMessage}
+                    label={errorDescription}
                     onClose={closeError}
                 />
             )}

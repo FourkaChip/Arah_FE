@@ -1,4 +1,3 @@
-"use client";
 import {useState, useEffect} from 'react';
 import './ModalInput.scss';
 import '@/components/modal/ModalLayout.scss';
@@ -20,7 +19,7 @@ export default function ModalInput({
                                        onVerifyError,
                                        error: externalError,
                                        defaultValue = '',
-                                       disabled = false // disabled prop 추가
+                                       disabled = false
                                    }: ModalInputProps) {
     const router = useRouter();
     const queryClient = useQueryClient();

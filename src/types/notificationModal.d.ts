@@ -5,6 +5,7 @@ export interface NotificationModalProps {
     onClose: () => void;
     maxItems?: number;
     buttonRef: React.RefObject<HTMLButtonElement | null>;
+    refreshModalData?: () => Promise<void>;
 }
 
 export interface MarkAllReadButtonProps {

@@ -1,38 +1,50 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { NotiTabsProps } from '@/types/notiTabs';
-import { NotificationTab } from '@/types/notification';
+import React, {useState, useCallback, useEffect} from 'react';
+import {NotiTabsProps} from '@/types/notiTabs';
+import {NotificationTab} from '@/types/notification';
 import './NotiTabs.scss';
 
-export default function NotiTabs({ 
-    tabs, 
-    defaultActiveTab, 
-    onTabChange,
-    className = '',
-    unreadCount = 0
-}: NotiTabsProps) {
+export default function NotiTabs({
+                                     tabs,
+                                     defaultActiveTab,
+                                     onTabChange,
+                                     className = '',
+                                     unreadCount = 0
+                                 }: NotiTabsProps) {
     const [activeTab, setActiveTab] = useState<NotificationTab>(defaultActiveTab || tabs[0]);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    useEffect(() => {
+    }, [unreadCount]);
 
     const handleTabClick = useCallback((tab: NotificationTab) => {
         setActiveTab(tab);
         onTabChange?.(tab);
     }, [onTabChange]);
 
-    const renderTabContent = useCallback((tab: NotificationTab) => (
-        <>
-            {tab}
-            {tab === '읽지 않음' && unreadCount > 0 && (
-                <span className="unread-badge">{unreadCount}</span>
-            )}
-        </>
-    ), [unreadCount]);
+    const renderTabContent = useCallback((tab: NotificationTab) => {
+        const shouldShowBadge = isClient && tab === '읽지 않음' && unreadCount > 0;
+
+        return (
+            <>
+                {tab}
+                {shouldShowBadge && (
+                    <span className="unread-badge">{unreadCount}</span>
+                )}
+            </>
+        );
+    }, [unreadCount, isClient]);
 
     return (
         <div className={`tabs is-medium ${className}`}>
             <ul>
                 {tabs.map((tab) => (
-                    <li 
+                    <li
                         key={tab}
                         className={activeTab === tab ? 'is-active' : ''}
                     >
@@ -44,4 +56,4 @@ export default function NotiTabs({
             </ul>
         </div>
     );
-} 
+}
