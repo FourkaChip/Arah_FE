@@ -1,8 +1,10 @@
+// src/api/admin/analyze/analyzeFetch.tsx
+import { authorizedFetch } from '@/api/auth/authorizedFetch';
+import type { SatisfactionApiResult } from '@/types/analyze';
+
 // 시간별 피드백 수 조회
 export async function fetchFeedbackHourlyCount({ date, signal }: { date: string; signal?: AbortSignal }) {
-  const qs = new URLSearchParams({
-    date,
-  });
+  const qs = new URLSearchParams({ date });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/hourly_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
@@ -53,9 +55,7 @@ export async function fetchFeedbackWeeklyCount({ year, month, signal }: { year: 
 
 // 월별 피드백 수 조회
 export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number; signal?: AbortSignal }) {
-  const qs = new URLSearchParams({
-    year: String(year),
-  });
+  const qs = new URLSearchParams({ year: String(year) });
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/monthly_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
@@ -67,46 +67,17 @@ export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number
   const json = await res.json();
   return json?.result ?? json;
 }
-// src/api/admin/analyze/analyzeFetch.ts
-import { authorizedFetch } from '@/api/auth/authorizedFetch';
 
-export type SatisfactionRaw = {
-  type: '만족' | '불만족';
-  value: number;
-  percentage: number;
-};
-
-export function convertSatisfactionResultToRows(result: {
-  like_count: number;
-  unlike_count: number;
-  like_ratio: number;
-  unlike_ratio: number;
-}): SatisfactionRaw[] {
-  return [
-    { type: '만족', value: result.like_count, percentage: result.like_ratio },
-    { type: '불만족', value: result.unlike_count, percentage: result.unlike_ratio },
-  ];
-}
-
-type FetchParams = {
-  startDate: string;
-  endDate: string;
-  signal?: AbortSignal;
-};
-
-export type SatisfactionApiResult = {
-  like_count: number;
-  unlike_count: number;
-  total_count: number;
-  like_ratio: number;
-  unlike_ratio: number;
-};
-
+// 만족도 비율 조회
 export async function fetchSatisfactionRaw({
   startDate,
   endDate,
   signal,
-}: FetchParams): Promise<SatisfactionApiResult> {
+}: {
+  startDate: string;
+  endDate: string;
+  signal?: AbortSignal;
+}): Promise<SatisfactionApiResult> {
   const qs = new URLSearchParams({
     start_date: startDate,
     end_date: endDate,
@@ -123,6 +94,5 @@ export async function fetchSatisfactionRaw({
   }
 
   const json = await res.json();
-  // 원본 그대로: result가 있으면 result, 없으면 전체 json
   return json?.result ?? json;
 }

@@ -8,39 +8,19 @@ import {
 } from 'recharts';
 import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { FeedbackPeriod } from '@/types/analyze';
-import {
-  availableYears,
-} from '@/constants/dummydata/DummyAnalyze';
+import type { FeedbackPeriod, SatPoint } from '@/types/analyze';
+import { availableYears } from '@/constants/dummydata/DummyAnalyze';
 import {
   fetchFeedbackHourlyCount,
   fetchFeedbackDailyCount,
   fetchFeedbackWeeklyCount,
   fetchFeedbackMonthlyCount,
 } from '@/api/admin/analyze/analyzeFetch';
-import {
-  SATIS_COLOR,
-  UNSAT_COLOR,
-} from '@/constants/analyzeConfig';
+import { SATIS_COLOR, UNSAT_COLOR } from '@/constants/analyzeConfig';
 import CustomDropDownForPeriod from '@/components/customDropdown/CustomDropDownForPeriod';
 import './AnalyzeChart.scss';
 
-const monthRange = (y: number, m: number) => {
-  const start = `${y}-${String(m).padStart(2, '0')}-01`;
-  const endDay = new Date(y, m, 0).getDate();
-  const end = `${y}-${String(m).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
-  return { start, end };
-};
-
-type DailySatPoint = { day: number; sat: number; unsat: number };
-type WeeklySatPoint = { week: number; sat: number; unsat: number };
-type MonthlySatPoint = { month: number; sat: number; unsat: number };
-type HourlySatPoint = { hour: number; sat: number; unsat: number };
-type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
-
-type FeedbackLineChartProps = Record<string, never>; // 빈 props
-
-const FeedbackLineChart: React.FC<FeedbackLineChartProps> = () => {
+const FeedbackLineChart: React.FC = () => {
   const [currentYear, setCurrentYear] = useState<number>(2024);
   const [currentMonth, setCurrentMonth] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<number>(1);

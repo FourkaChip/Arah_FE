@@ -5,10 +5,11 @@ console.log('SatisfactionChart 최상단 렌더링');
 
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { DateRange } from '@/types/analyze';
+import type { DateRange, SatisfactionRaw } from '@/types/analyze';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
 import { TYPE_COLOR, MIN_LABEL_PERCENT } from '@/constants/analyzeConfig';
-import { fetchSatisfactionRaw, type SatisfactionRaw, convertSatisfactionResultToRows } from '@/api/admin/analyze/analyzeFetch';
+import { fetchSatisfactionRaw } from '@/api/admin/analyze/analyzeFetch';
+import { convertSatisfactionResultToRows } from '@/constants/apiUtils';
 import './AnalyzeChart.scss';
 
 type Props = Record<string, never>; // 빈 props
