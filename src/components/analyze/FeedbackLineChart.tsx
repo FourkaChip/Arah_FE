@@ -32,16 +32,23 @@ const FeedbackLineChart: React.FC = () => {
   const [data, setData] = useState<SatPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const now = new Date();
-    setCurrentYear(now.getFullYear());
-    setCurrentMonth(now.getMonth() + 1);
-    setCurrentDay(now.getDate());
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    
+    setCurrentYear(year);
+    setCurrentMonth(month);
+    setCurrentDay(day);
 
-    setSelectedYear(now.getFullYear());
-    setSelectedMonth(now.getMonth() + 1);
-    setSelectedDay(now.getDate());
+    setSelectedYear(year);
+    setSelectedMonth(month);
+    setSelectedDay(day);
+    
+    setIsInitialized(true);
   }, []);
 
   const getDisplayText = () => {
@@ -60,6 +67,8 @@ const FeedbackLineChart: React.FC = () => {
 
   // API 데이터 fetch
   useEffect(() => {
+    if (!isInitialized) return; // 초기화 완료 후에만 API 호출
+    
     setLoading(true);
     setError(null);
     const ac = new AbortController();
@@ -77,7 +86,9 @@ const FeedbackLineChart: React.FC = () => {
               unsat: found ? found.unlike_count : 0,
             };
           });
-          setData(chartData);
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
         } else if (selectedPeriod === '일별 보기') {
           result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
           const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
@@ -91,7 +102,9 @@ const FeedbackLineChart: React.FC = () => {
               unsat: found ? found.unlike_count : 0,
             };
           });
-          setData(chartData);
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
         } else if (selectedPeriod === '주별 보기') {
           result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
           
@@ -114,7 +127,9 @@ const FeedbackLineChart: React.FC = () => {
               unsat: found ? found.unlike_count : 0,
             });
           }
-          setData(chartData);
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
         } else if (selectedPeriod === '월별 보기') {
           result = await fetchFeedbackMonthlyCount({ year: selectedYear, signal: ac.signal });
           const resultMap = new Map(result.map((d: any) => [d.month, d]));
@@ -127,17 +142,27 @@ const FeedbackLineChart: React.FC = () => {
               unsat: found ? found.unlike_count : 0,
             };
           });
-          setData(chartData);
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
         }
       } catch (err: any) {
-        setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+        if (!ac.signal.aborted) {
+          if (err.name === 'AbortError') {
+            console.log('Request was cancelled');
+            return;
+          }
+          setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+        }
       } finally {
-        setLoading(false);
+        if (!ac.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchData();
     return () => ac.abort();
-  }, [selectedPeriod, selectedYear, selectedMonth, selectedDay]);
+  }, [isInitialized, selectedPeriod, selectedYear, selectedMonth, selectedDay]);
 
   const handlePrev = () => {
     switch (selectedPeriod) {
