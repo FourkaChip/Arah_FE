@@ -117,7 +117,16 @@ const FeedbackLineChart: React.FC = () => {
           setData(chartData);
         } else if (selectedPeriod === '월별 보기') {
           result = await fetchFeedbackMonthlyCount({ year: selectedYear, signal: ac.signal });
-          const chartData = result.map((d: any) => ({ month: d.month, sat: d.like_count, unsat: d.unlike_count }));
+          const resultMap = new Map(result.map((d: any) => [d.month, d]));
+          const chartData = Array.from({ length: 12 }, (_, i) => {
+            const month = i + 1;
+            const found = resultMap.get(month);
+            return {
+              month,
+              sat: found ? found.like_count : 0,
+              unsat: found ? found.unlike_count : 0,
+            };
+          });
           setData(chartData);
         }
       } catch (err: any) {

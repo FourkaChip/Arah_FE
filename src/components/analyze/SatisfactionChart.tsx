@@ -15,8 +15,8 @@ import './AnalyzeChart.scss';
 type Props = Record<string, never>; // 빈 props
 
 const EMPTY_ROWS: SatisfactionRaw[] = [
-  { type: '만족', value: 0, percentage: 0 },
-  { type: '불만족', value: 0, percentage: 0 },
+  { type: '만족', value: 0, percentage: 50 },
+  { type: '불만족', value: 0, percentage: 50 },
 ];
 
 const SatisfactionChart: React.FC<Props> = () => {
@@ -61,7 +61,17 @@ const SatisfactionChart: React.FC<Props> = () => {
   const renderLabelWithLeader = (props: any) => {
     const { cx, cy, midAngle, outerRadius, percent, payload } = props;
     const ratio = percent * 100;
-    if (ratio < MIN_LABEL_PERCENT) return null;
+
+    // payload에서 원본 데이터의 실제 percentage 값을 찾기
+    const originalData = chartRows.find(row => row.type === payload.type);
+    const actualPercentage = originalData ? originalData.percentage : Math.round(ratio);
+    
+    // 실제 percentage가 0%이거나 일반적인 MIN_LABEL_PERCENT 조건을 만족하면 표시
+    if (actualPercentage === 0 || ratio >= MIN_LABEL_PERCENT) {
+      // 라벨 표시 로직 계속 진행
+    } else {
+      return null;
+    }
 
     const RADIAN = Math.PI / 180;
     const cos = Math.cos(-midAngle * RADIAN);
@@ -77,7 +87,7 @@ const SatisfactionChart: React.FC<Props> = () => {
     const ey = my;
 
     const textAnchor = cos >= 0 ? 'start' : 'end';
-    const labelText = `${payload.type} ${Math.round(ratio)}%`;
+    const labelText = `${payload.type} ${actualPercentage}%`;
     const color = TYPE_COLOR[payload.type as '만족' | '불만족'] || '#888';
 
     return (
@@ -102,10 +112,10 @@ const SatisfactionChart: React.FC<Props> = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
-  const d = payload[0].payload as SatisfactionRaw;
+      const data = payload[0].payload as SatisfactionRaw;
       return (
         <div className="tooltip">
-          <p>{`${d.type}: ${d.percentage}% (${d.value}건)`}</p>
+          <p>{`${data.type}: ${data.percentage}% (${data.value}건)`}</p>
         </div>
       );
     }
@@ -122,6 +132,15 @@ const SatisfactionChart: React.FC<Props> = () => {
   }
 
   const chartRows = data.length ? data : EMPTY_ROWS;
+
+  // 시각적 차트 데이터 처리
+  const totalValue = chartRows.reduce((sum, row) => sum + row.value, 0);
+  const visualChartRows = totalValue === 0 
+    ? chartRows.map(row => ({ ...row, value: 1 })) // 둘 다 0인 경우: 균등 표시를 위해 1로 설정
+    : chartRows.map(row => ({
+        ...row, 
+        value: row.value === 0 ? 0.01 : row.value // 0인 경우 아주 작은 값으로 설정 (라벨 표시용)
+      }));
 
   return (
     <div className="box chartContainer">
@@ -152,7 +171,7 @@ const SatisfactionChart: React.FC<Props> = () => {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={chartRows}
+                data={visualChartRows}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -163,7 +182,7 @@ const SatisfactionChart: React.FC<Props> = () => {
                 label={renderLabelWithLeader}
                 isAnimationActive={false}
               >
-                {chartRows.map((entry, index) => (
+                {visualChartRows.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={TYPE_COLOR[entry.type as '만족' | '불만족'] || '#888'}
