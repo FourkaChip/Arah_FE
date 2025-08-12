@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo } from 'react';
 import { PaginationProps, PageItem } from '@/types/pagination';
 import './Pagination.scss';

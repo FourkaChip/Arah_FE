@@ -1,4 +1,3 @@
-"use client";
 import {useState, useEffect} from 'react';
 import './ModalInput.scss';
 import '@/components/modal/ModalLayout.scss';

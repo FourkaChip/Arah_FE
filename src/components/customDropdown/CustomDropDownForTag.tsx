@@ -1,5 +1,4 @@
 // FAQ 페이지에서 사용되는 커스텀 드롭다운 컴포넌트입니다.
-"use client";
 import {useEffect, useState} from "react";
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";

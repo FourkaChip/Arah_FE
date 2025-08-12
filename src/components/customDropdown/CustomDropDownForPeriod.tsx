@@ -1,5 +1,4 @@
 // 통계 페이지에서 사용되는 기간 선택 커스텀 드롭다운 컴포넌트입니다.
-"use client";
 import Select from 'react-select';
 import "./CustomDropDownForDept.scss";
 import type { OptionType, CustomDropDownForPeriodProps } from '@/types/analyze';

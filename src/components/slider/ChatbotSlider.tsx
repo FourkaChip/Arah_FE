@@ -1,4 +1,3 @@
-'use client';
 import React, {useMemo, useCallback, useRef, useEffect} from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';

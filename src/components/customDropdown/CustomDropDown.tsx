@@ -1,4 +1,3 @@
-"use client";
 import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {CustomDropDownProps} from "@/types/modals";
