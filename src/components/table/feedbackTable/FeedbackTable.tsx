@@ -129,10 +129,8 @@ export default function FaqAdminTable() {
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
                             onClick={() => {
-                                // to Do : 추후 값 받아오는 것으로 수정할 예정
-                                // 하드코딩된 faq_id = 13 사용
-                                const hardcodedFaqId = 13;
-                                const url = `/admin/faq?faqId=${hardcodedFaqId}&expanded=true`;
+                                const faqId = row.original.faq_id;
+                                const url = `/admin/faq?faqId=${faqId}&expanded=true`;
                                 router.push(url);
                             }}
                             style={{
