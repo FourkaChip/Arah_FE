@@ -1,9 +1,9 @@
 // components/Modal/BotTest/MessageBubble.tsx
 'use client';
 import React from 'react';
-import { Message } from '@/constants/dummydata/DummyBotTest';
 import Image from 'next/image';
 import styles from './ModalBotTest.module.scss';
+import { Message } from '@/types/botTest';
 
 interface MessageBubbleProps {
   message: Message;
