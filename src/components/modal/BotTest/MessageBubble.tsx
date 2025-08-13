@@ -3,12 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import styles from './ModalBotTest.module.scss';
-
-export interface Message {
-    id: number;
-    sender: 'user' | 'bot';
-    text: string;
-}
+import { Message } from '@/types/botTest';
 
 interface MessageBubbleProps {
   message: Message;
