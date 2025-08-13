@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
-import './ModalBotTest.module.scss';
+import styles from './ModalBotTest.module.scss';
 import Image from 'next/image';
 import { useBotChat } from '@/hooks/useBotChat';
 import { useDraggableModal } from '@/hooks/useDraggableModal';
@@ -47,10 +47,10 @@ const ModalBotTest: React.FC<ModalBotTestProps> = ({ onClose }) => {
     };
 
     return (
-        <div className='botTestOverlay' onClick={onClose}>
+        <div className={styles.botTestOverlay} onClick={onClose}>
             <div 
                 ref={modalRef}
-                className='botTestModal'
+                className={styles.botTestModal}
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     position: 'absolute',
@@ -60,38 +60,38 @@ const ModalBotTest: React.FC<ModalBotTestProps> = ({ onClose }) => {
                 }}
             >
                 <div 
-                    className='header'
+                    className={styles.header}
                     onMouseDown={handleMouseDown}
                     style={{ cursor: 'move' }}
                 >
                     <h2>봇 테스트</h2>
-                    <button className='closeButton' onClick={onClose}>×</button>
+                    <button className={styles.closeButton} onClick={onClose}>×</button>
                 </div>
-                <div className='botChatContainer'>
-                <div className='chatArea' ref={chatAreaRef}>
+                <div className={styles.botChatContainer}>
+                <div className={styles.chatArea} ref={chatAreaRef}>
                     {messages.map(msg => (
                         <MessageBubble key={msg.id} message={msg} />
                     ))}
                     {isTyping && (
-                        <div className={`messageBubbleContainer isBot`}>
+                        <div className={`${styles.messageBubbleContainer} ${styles.isBot}`}>
                             <Image 
                                 src="/bot-icon.jpeg" 
                                 alt="Bot Icon" 
                                 width={32} 
                                 height={32}
-                                className='botIcon'
+                                className={styles.botIcon}
                             />
-                            <div className='typingIndicator'>
+                            <div className={styles.typingIndicator}>
                                 <span></span><span></span><span></span>
                             </div>
                         </div>
                     )}
                 </div>
-                <div className='chatInputContainer'>
+                <div className={styles.chatInputContainer}>
                     <input
                         ref={inputRef}
                         type="text"
-                        className='input'
+                        className={styles.input}
                         placeholder="테스트할 발화를 입력해 주세요."
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
@@ -99,7 +99,7 @@ const ModalBotTest: React.FC<ModalBotTestProps> = ({ onClose }) => {
                         disabled={isLoading}
                     />
                     <button 
-                        className='sendButton'
+                        className={styles.sendButton}
                         onClick={handleSendMessage}
                         disabled={isLoading || !inputValue.trim()}
                     >

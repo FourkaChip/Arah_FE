@@ -1,22 +1,13 @@
 // src/api/admin/botTest/botTestFetch.tsx
 import { getAccessToken } from '@/utils/tokenStorage';
+import type { ChatRequest, ChatResponse } from '@/types/botTest';
 
-export interface ChatRequest {
-  message: string;
-}
-
-export interface ChatResponse {
-  timestamp: string;
-  success: boolean;
-  message: string;
-  code: number;
-  result: {
-    request_content: string;
-    response_content: string;
-    meta_result: unknown[];
-  };
-}
-
+/**
+ * 챗봇에게 메시지를 전송하고 응답을 받는 함수
+ * @param message - 전송할 메시지
+ * @returns 챗봇의 응답 메시지
+ * @throws {Error} API 호출 실패시 에러
+ */
 export const sendChatMessage = async (message: string): Promise<string> => {
   try {
     const token = getAccessToken();
@@ -24,13 +15,15 @@ export const sendChatMessage = async (message: string): Promise<string> => {
       throw new Error('인증 토큰이 없습니다.');
     }
 
+    const requestBody: ChatRequest = { message };
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/chats`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -44,8 +37,7 @@ export const sendChatMessage = async (message: string): Promise<string> => {
     }
 
     return data.result.response_content;
-  } catch (error) {
-    console.error('Chat API error:', error);
+  } catch {
     throw new Error('채팅 요청 중 오류가 발생했습니다.');
   }
 };
