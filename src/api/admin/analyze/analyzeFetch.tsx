@@ -59,7 +59,7 @@ export async function fetchCompanyCreatedAt(): Promise<string> {
 export async function fetchFeedbackHourlyCount({ date, signal }: { date: string; signal?: AbortSignal }) {
   const qs = new URLSearchParams({ date });
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/hourly_count?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/hourly_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
   if (!res.ok) {
@@ -77,7 +77,7 @@ export async function fetchFeedbackDailyCount({ year, month, signal }: { year: n
     month: String(month),
   });
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/daily_count?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/daily_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
   if (!res.ok) {
@@ -95,7 +95,7 @@ export async function fetchFeedbackWeeklyCount({ year, month, signal }: { year: 
     month: String(month),
   });
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/weekly_count?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/weekly_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
   if (!res.ok) {
@@ -110,7 +110,7 @@ export async function fetchFeedbackWeeklyCount({ year, month, signal }: { year: 
 export async function fetchFeedbackMonthlyCount({ year, signal }: { year: number; signal?: AbortSignal }) {
   const qs = new URLSearchParams({ year: String(year) });
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/monthly_count?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/monthly_count?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
   if (!res.ok) {
@@ -151,7 +151,7 @@ export async function fetchTopKeywords({
   });
 
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/top?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/top?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
 
@@ -180,7 +180,7 @@ export async function fetchFeedbackReasonStats({
   });
 
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/reason-stats?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/reason-stats?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
 
@@ -209,7 +209,7 @@ export async function fetchSatisfactionRaw({
   });
 
   const res = await authorizedFetch(
-    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/ratio?${qs}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/feedbacks/ratio?${qs}`,
     { method: 'GET', cache: 'no-store', signal }
   );
 
