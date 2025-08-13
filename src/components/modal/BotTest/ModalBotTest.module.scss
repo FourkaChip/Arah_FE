@@ -32,7 +32,8 @@
   background: rgba(93, 95, 239, 0.2);
   user-select: none;
   position: relative;
-  
+  border-radius: 8px 8px 0 0;
+
   h2 {
     margin: 0;
     font-size: 16px;
@@ -63,17 +64,17 @@
   height: calc(100% - 60px);
   min-height: 0;
   padding: 0 24px;
+  border-radius: 0 0 8px 8px;
 }
 
 // 채팅 메시지 영역
 .chatArea {
   flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: scroll;
   padding-bottom: 10px;
   display: flex;
   flex-direction: column;
-  // justify-content: flex-end;
+  // justify-content: flex-end; 
   gap: 12px;
   min-height: 0;
   min-width: 330px;
@@ -92,9 +93,11 @@
   align-items: flex-end;
   gap: 8px;
   max-width: 80%;
+  margin-top: 10px;
 
   &.isBot {
     align-self: flex-start;
+    
   }
 
   &.isUser {
@@ -137,6 +140,7 @@
   display: flex;
   flex-direction: row;
   gap: 12px;
+  border-radius: 0 0 8px 8px;
 
   .input {
     width: 100%;

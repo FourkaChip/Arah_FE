@@ -188,7 +188,7 @@ const ModalBotTest: React.FC<ModalBotTestProps> = ({ onClose }) => {
     };
 
     return (
-        <div className={styles.botTestOverlay}>
+        <div className={styles.botTestOverlay} onClick={onClose}>
             <div 
                 ref={modalRef}
                 className={styles.botTestModal}
