@@ -14,7 +14,8 @@ const ProtectedRoute = ({allowedRoles, children}: ProtectedRouteProps) => {
         if (typeof window === 'undefined') return false;
         const token = sessionStorage.getItem('accessToken');
         if (!token) return false;
-        const role = decodeJwtRole(token);
+        const payload = decodeJwtRole(token);
+        const role = payload?.role;
         return !!role && allowedRoles.includes(role);
     });
 
@@ -31,12 +32,12 @@ const ProtectedRoute = ({allowedRoles, children}: ProtectedRouteProps) => {
                     return;
                 }
 
-                const role = decodeJwtRole(token);
+                const payload = decodeJwtRole(token);
+                const role = payload?.role;
                 if (!role || !allowedRoles.includes(role)) {
                     if (!cancelled) router.replace('/unauthorized');
                     return;
                 }
-
                 if (!cancelled) setAllowed(true);
             } catch (e) {
                 if (!cancelled) router.replace('/login');

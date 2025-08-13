@@ -1,39 +1,25 @@
 // src/components/analyze/FeedbackLineChart.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts';
 import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { FeedbackPeriod } from '@/types/analyze';
+import type { FeedbackPeriod, SatPoint } from '@/types/analyze';
+import { availableYears } from '@/constants/dummydata/DummyAnalyze';
 import {
-  feedbackDataByYear,
-  availableYears,
-  generateDailySatisfactionData,
-  generateHourlySatisfactionData,
-} from '@/constants/dummydata/DummyAnalyze';
-import {
-  SATIS_COLOR,
-  UNSAT_COLOR,
-} from '@/constants/analyzeConfig';
+  fetchFeedbackHourlyCount,
+  fetchFeedbackDailyCount,
+  fetchFeedbackWeeklyCount,
+  fetchFeedbackMonthlyCount,
+  fetchCompanyCreatedAt,
+} from '@/api/admin/analyze/analyzeFetch';
+import { SATIS_COLOR, UNSAT_COLOR } from '@/constants/analyzeConfig';
 import CustomDropDownForPeriod from '@/components/customDropdown/CustomDropDownForPeriod';
 import './AnalyzeChart.scss';
-
-const monthRange = (y: number, m: number) => {
-  const start = `${y}-${String(m).padStart(2, '0')}-01`;
-  const endDay = new Date(y, m, 0).getDate();
-  const end = `${y}-${String(m).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
-  return { start, end };
-};
-
-type DailySatPoint = { day: number; sat: number; unsat: number };
-type WeeklySatPoint = { week: number; sat: number; unsat: number };
-type MonthlySatPoint = { month: number; sat: number; unsat: number };
-type HourlySatPoint = { hour: number; sat: number; unsat: number };
-type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
 
 const FeedbackLineChart: React.FC = () => {
   const [currentYear, setCurrentYear] = useState<number>(2024);
@@ -44,16 +30,56 @@ const FeedbackLineChart: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<FeedbackPeriod>('일별 보기');
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [data, setData] = useState<SatPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [companyCreatedAt, setCompanyCreatedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    setCurrentYear(now.getFullYear());
-    setCurrentMonth(now.getMonth() + 1);
-    setCurrentDay(now.getDate());
+    const initializeComponent = async () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      
+      setCurrentYear(year);
+      setCurrentMonth(month);
+      setCurrentDay(day);
 
-    setSelectedYear(now.getFullYear());
-    setSelectedMonth(now.getMonth() + 1);
-    setSelectedDay(now.getDate());
+      // 가입일 조회
+      try {
+        const createdAt = await fetchCompanyCreatedAt();
+        setCompanyCreatedAt(createdAt);
+        
+        // 가입일 기준으로 초기 날짜 설정
+        const createdDate = new Date(createdAt);
+        const createdYear = createdDate.getFullYear();
+        const createdMonth = createdDate.getMonth() + 1;
+        const createdDay = createdDate.getDate();
+        
+        // 현재 날짜가 가입일보다 이후인지 확인하고 적절한 날짜 설정
+        if (year > createdYear || month > createdMonth || day > createdDay) {
+          setSelectedYear(year);
+          setSelectedMonth(month);
+          setSelectedDay(day);
+        } else {
+          // 가입일로 설정
+          setSelectedYear(createdYear);
+          setSelectedMonth(createdMonth);
+          setSelectedDay(createdDay);
+        }
+      } catch {
+        // 가입일 조회 실패 시 현재 날짜로 설정
+        setSelectedYear(year);
+        setSelectedMonth(month);
+        setSelectedDay(day);
+      }
+      
+      setIsInitialized(true);
+    };
+    
+    initializeComponent();
   }, []);
 
   const getDisplayText = () => {
@@ -70,129 +96,200 @@ const FeedbackLineChart: React.FC = () => {
     }
   };
 
-  const { data, xKey } = useMemo(() => {
-    switch (selectedPeriod) {
-      case '월별 보기': {
-        const capMonth = (y: number, m: number) =>
-          selectedYear === currentYear ? Math.min(m, currentMonth) : m;
+  // API 데이터 fetch
+  useEffect(() => {
+    if (!isInitialized) return; // 초기화 완료 후에만 API 호출
+    
+    setLoading(true);
+    setError(null);
+    const ac = new AbortController();
+    const fetchData = async () => {
+      try {
+        let result: any[] = [];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        const currentDay = now.getDate();
+        const currentHour = now.getHours();
 
-        const months = feedbackDataByYear[selectedYear]?.map((d) => d.month) ?? [];
-        const upTo = capMonth(selectedYear, months.length ? Math.max(...months) : 12);
-
-        const arr: MonthlySatPoint[] = [];
-        for (let m = 1; m <= upTo; m++) {
-          const { start, end } = monthRange(selectedYear, m);
-          const daily = generateDailySatisfactionData(start, end);
-          let sat = 0, unsat = 0;
-          daily.forEach((d) => {
-            sat += d.satisfaction['만족'];
-            unsat += d.satisfaction['불만족'];
+        if (selectedPeriod === '시간별 보기') {
+          const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+          result = await fetchFeedbackHourlyCount({ date, signal: ac.signal });
+          const chartData = Array.from({ length: 24 }, (_, hour) => {
+            const found = result.find((d: any) => d.hour === hour);
+            
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const currentDateTime = new Date(selectedYear, selectedMonth - 1, selectedDay, hour);
+            const isBeforeCreatedAt = createdDate && currentDateTime < createdDate;
+            
+            // 선택된 날짜가 오늘이고, 현재 시간 이후라면 null로 설정
+            const isToday = selectedYear === currentYear && selectedMonth === currentMonth && selectedDay === currentDay;
+            const isFutureHour = isToday && hour > currentHour;
+            
+            return {
+              hour,
+              sat: (isBeforeCreatedAt || isFutureHour) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureHour) ? null : (found ? found.unlike_count : 0),
+            };
           });
-          arr.push({ month: m, sat, unsat });
-        }
-        return { data: arr as SatPoint[], xKey: 'month' as const };
-      }
-
-      case '일별 보기': {
-        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-        const maxDay =
-          selectedYear === currentYear && selectedMonth === currentMonth
-            ? currentDay
-            : daysInMonth;
-
-        const { start, end } = monthRange(selectedYear, selectedMonth);
-        const daily = generateDailySatisfactionData(start, end);
-        const mapped: DailySatPoint[] = daily
-          .map((d) => {
-            const day = Number(d.date.split('-')[2]);
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
+        } else if (selectedPeriod === '일별 보기') {
+          result = await fetchFeedbackDailyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
+          const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+          const resultMap = new Map(result.map((d: any) => [d.day, d]));
+          const chartData = Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1;
+            const found = resultMap.get(day);
+            
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const currentDate = new Date(selectedYear, selectedMonth - 1, day);
+            const isBeforeCreatedAt = createdDate && currentDate < createdDate;
+            
+            // 선택된 년월이 현재 년월이고, 현재 날짜 이후라면 null로 설정
+            const isCurrentMonth = selectedYear === currentYear && selectedMonth === currentMonth;
+            const isFutureDay = isCurrentMonth && day > currentDay;
+            
             return {
               day,
-              sat: d.satisfaction['만족'],
-              unsat: d.satisfaction['불만족'],
+              sat: (isBeforeCreatedAt || isFutureDay) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureDay) ? null : (found ? found.unlike_count : 0),
             };
-          })
-          .filter((p) => p.day <= maxDay);
-
-        return { data: mapped as SatPoint[], xKey: 'day' as const };
-      }
-
-      case '주별 보기': {
-        const { start, end } = monthRange(selectedYear, selectedMonth);
-        const daily = generateDailySatisfactionData(start, end);
-        const bucket = new Map<number, { sat: number; unsat: number }>();
-
-        daily.forEach((d) => {
-          const day = Number(d.date.split('-')[2]);
-          const week = Math.ceil(day / 7);
-          const prev = bucket.get(week) ?? { sat: 0, unsat: 0 };
-          prev.sat += d.satisfaction['만족'];
-          prev.unsat += d.satisfaction['불만족'];
-          bucket.set(week, prev);
-        });
-
-        const maxWeek =
-          selectedYear === currentYear && selectedMonth === currentMonth
-            ? Math.ceil(currentDay / 7)
-            : bucket.size;
-
-        const result: WeeklySatPoint[] = Array.from(bucket.entries())
-          .map(([week, v]) => ({ week, sat: v.sat, unsat: v.unsat }))
-          .filter((p) => p.week <= maxWeek)
-          .sort((a, b) => a.week - b.week);
-
-        return { data: result as SatPoint[], xKey: 'week' as const };
-      }
-
-      case '시간별 보기': {
-        const isToday =
-          selectedYear === currentYear &&
-          selectedMonth === currentMonth &&
-          selectedDay === currentDay;
-
-        if (isToday) {
-          return { data: [] as SatPoint[], xKey: 'hour' as const };
+          });
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
+        } else if (selectedPeriod === '주별 보기') {
+          result = await fetchFeedbackWeeklyCount({ year: selectedYear, month: selectedMonth, signal: ac.signal });
+          
+          // 해당 월의 실제 주차 수 계산
+          const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
+          const lastDayOfMonth = new Date(selectedYear, selectedMonth, 0);
+          
+          // 첫 번째 날의 주차 계산 (일요일을 주의 시작으로 가정)
+          const firstWeek = Math.ceil((firstDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
+          const lastWeek = Math.ceil((lastDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
+          
+          // 현재 주차 계산
+          const currentWeekInMonth = selectedYear === currentYear && selectedMonth === currentMonth 
+            ? Math.ceil((currentDay + firstDayOfMonth.getDay()) / 7) 
+            : Infinity;
+          
+          // 가입일 주차 계산
+          const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+          const createdWeekInMonth = createdDate && selectedYear === createdDate.getFullYear() && selectedMonth === (createdDate.getMonth() + 1)
+            ? Math.ceil((createdDate.getDate() + firstDayOfMonth.getDay()) / 7)
+            : 0;
+          
+          const resultMap = new Map(result.map((d: any) => [d.week, d]));
+          const chartData = [];
+          
+          for (let week = firstWeek; week <= lastWeek; week++) {
+            const found = resultMap.get(week);
+            const isFutureWeek = week > currentWeekInMonth;
+            const isBeforeCreatedWeek = createdDate && 
+              (selectedYear < createdDate.getFullYear() || 
+               (selectedYear === createdDate.getFullYear() && selectedMonth < createdDate.getMonth() + 1) ||
+               (selectedYear === createdDate.getFullYear() && selectedMonth === createdDate.getMonth() + 1 && week < createdWeekInMonth));
+            
+            chartData.push({
+              week,
+              sat: (isBeforeCreatedWeek || isFutureWeek) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedWeek || isFutureWeek) ? null : (found ? found.unlike_count : 0),
+            });
+          }
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
+        } else if (selectedPeriod === '월별 보기') {
+          result = await fetchFeedbackMonthlyCount({ year: selectedYear, signal: ac.signal });
+          const resultMap = new Map(result.map((d: any) => [d.month, d]));
+          const chartData = Array.from({ length: 12 }, (_, i) => {
+            const month = i + 1;
+            const found = resultMap.get(month);
+            
+            // 가입일 이전인지 확인
+            const createdDate = companyCreatedAt ? new Date(companyCreatedAt) : null;
+            const isBeforeCreatedAt = createdDate && 
+              (selectedYear < createdDate.getFullYear() ||
+               (selectedYear === createdDate.getFullYear() && month < createdDate.getMonth() + 1));
+            
+            // 선택된 년도가 현재 년도이고, 현재 월 이후라면 null로 설정
+            const isCurrentYear = selectedYear === currentYear;
+            const isFutureMonth = isCurrentYear && month > currentMonth;
+            
+            return {
+              month,
+              sat: (isBeforeCreatedAt || isFutureMonth) ? null : (found ? found.like_count : 0),
+              unsat: (isBeforeCreatedAt || isFutureMonth) ? null : (found ? found.unlike_count : 0),
+            };
+          });
+          if (!ac.signal.aborted) {
+            setData(chartData);
+          }
         }
-
-        const hourly: HourlySatPoint[] = generateHourlySatisfactionData(
-          selectedYear, selectedMonth, selectedDay
-        );
-        return { data: hourly as SatPoint[], xKey: 'hour' as const };
+      } catch (err: any) {
+        if (!ac.signal.aborted) {
+          if (err.name === 'AbortError') {
+            return;
+          }
+          setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+        }
+      } finally {
+        if (!ac.signal.aborted) {
+          setLoading(false);
+        }
       }
-
-      default:
-        return { data: [] as SatPoint[], xKey: 'day' as const };
-    }
-  }, [
-    selectedPeriod, selectedYear, selectedMonth, selectedDay,
-    currentYear, currentMonth, currentDay,
-  ]);
+    };
+    fetchData();
+    return () => ac.abort();
+  }, [isInitialized, selectedPeriod, selectedYear, selectedMonth, selectedDay, companyCreatedAt]);
 
   const handlePrev = () => {
+    if (!companyCreatedAt) return;
+    
+    const createdDate = new Date(companyCreatedAt);
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth() + 1;
+    const createdDay = createdDate.getDate();
+    
     switch (selectedPeriod) {
       case '월별 보기':
-        if (selectedYear > Math.min(...availableYears)) setSelectedYear(selectedYear - 1);
+        if (selectedYear > createdYear) setSelectedYear(selectedYear - 1);
         break;
       case '일별 보기':
       case '주별 보기':
-        if (selectedMonth > 1) setSelectedMonth(selectedMonth - 1);
-        else if (selectedYear > Math.min(...availableYears)) {
+        if (selectedMonth > 1) {
+          setSelectedMonth(selectedMonth - 1);
+        } else if (selectedYear > createdYear) {
           setSelectedYear(selectedYear - 1);
           setSelectedMonth(12);
         }
         break;
       case '시간별 보기':
-        if (selectedDay > 1) setSelectedDay(selectedDay - 1);
-        else {
-          if (selectedMonth > 1) {
-            const prevMonth = selectedMonth - 1;
-            const daysInPrevMonth = new Date(selectedYear, prevMonth, 0).getDate();
+        if (selectedDay > 1) {
+          // 같은 월에서 하루 이전이 가입일보다 이후인지 확인
+          const prevDay = selectedDay - 1;
+          if (selectedYear > createdYear || selectedMonth > createdMonth || 
+              (selectedYear === createdYear && selectedMonth === createdMonth && prevDay >= createdDay)) {
+            setSelectedDay(prevDay);
+          }
+        } else if (selectedMonth > 1) {
+          const prevMonth = selectedMonth - 1;
+          const daysInPrevMonth = new Date(selectedYear, prevMonth, 0).getDate();
+          // 이전 월의 마지막 날이 가입일보다 이후인지 확인
+          if (selectedYear > createdYear || prevMonth > createdMonth ||
+              (selectedYear === createdYear && prevMonth === createdMonth && daysInPrevMonth >= createdDay)) {
             setSelectedMonth(prevMonth);
             setSelectedDay(daysInPrevMonth);
-          } else if (selectedYear > Math.min(...availableYears)) {
-            setSelectedYear(selectedYear - 1);
-            setSelectedMonth(12);
-            setSelectedDay(31);
           }
+        } else if (selectedYear > createdYear) {
+          setSelectedYear(selectedYear - 1);
+          setSelectedMonth(12);
+          setSelectedDay(31);
         }
         break;
     }
@@ -277,14 +374,26 @@ const FeedbackLineChart: React.FC = () => {
   };
 
   const isPrevDisabled = () => {
+    if (!companyCreatedAt) return false;
+    
+    const createdDate = new Date(companyCreatedAt);
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth() + 1;
+    const createdDay = createdDate.getDate();
+    
     switch (selectedPeriod) {
       case '월별 보기':
-        return selectedYear <= Math.min(...availableYears);
+        return selectedYear <= createdYear;
       case '일별 보기':
       case '주별 보기':
-        return selectedYear <= Math.min(...availableYears) && selectedMonth <= 1;
+        if (selectedYear < createdYear) return true;
+        if (selectedYear === createdYear && selectedMonth <= createdMonth) return true;
+        return false;
       case '시간별 보기':
-        return selectedYear <= Math.min(...availableYears) && selectedMonth <= 1 && selectedDay <= 1;
+        if (selectedYear < createdYear) return true;
+        if (selectedYear === createdYear && selectedMonth < createdMonth) return true;
+        if (selectedYear === createdYear && selectedMonth === createdMonth && selectedDay <= createdDay) return true;
+        return false;
       default:
         return false;
     }
@@ -347,17 +456,54 @@ const FeedbackLineChart: React.FC = () => {
       </div>
 
       <div className="chartWrapper">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey={xKey} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
-            <Tooltip content={(props) => <CustomTooltip {...props} />} />
-            <Legend />
-            <Line type="monotone" name="만족" dataKey="sat" stroke={SATIS_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: SATIS_COLOR }} />
-            <Line type="monotone" name="불만족" dataKey="unsat" stroke={UNSAT_COLOR} strokeWidth={4} dot={false} activeDot={{ r: 6, fill: UNSAT_COLOR }} />
-          </LineChart>
-        </ResponsiveContainer>
+        {loading ? (
+          <p>불러오는 중…</p>
+        ) : error ? (
+          <p className="error">{error}</p>
+        ) : data.length === 0 ? (
+          <p className="empty">데이터가 없습니다.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data as SatPoint[]} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey={
+                selectedPeriod === '월별 보기' ? 'month' :
+                selectedPeriod === '일별 보기' ? 'day' :
+                selectedPeriod === '주별 보기' ? 'week' :
+                'hour'
+              } axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+              <Tooltip content={(props) => <CustomTooltip {...props} />} />
+              <Legend />
+              <Line 
+                type="monotone" 
+                name="만족" 
+                dataKey="sat" 
+                stroke={SATIS_COLOR} 
+                strokeWidth={4} 
+                dot={(() => {
+                  const validSatDataPoints = data.filter(d => d.sat !== null && d.sat !== undefined);
+                  return validSatDataPoints.length === 1 ? { r: 4, fill: SATIS_COLOR } : false;
+                })()} 
+                activeDot={{ r: 6, fill: SATIS_COLOR }} 
+                connectNulls={false} 
+              />
+              <Line 
+                type="monotone" 
+                name="불만족" 
+                dataKey="unsat" 
+                stroke={UNSAT_COLOR} 
+                strokeWidth={4} 
+                dot={(() => {
+                  const validUnsatDataPoints = data.filter(d => d.unsat !== null && d.unsat !== undefined);
+                  return validUnsatDataPoints.length === 1 ? { r: 4, fill: UNSAT_COLOR } : false;
+                })()} 
+                activeDot={{ r: 6, fill: UNSAT_COLOR }} 
+                connectNulls={false} 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

@@ -15,6 +15,14 @@ const nextConfig = {
             },
         ];
     },
+    async rewrites() {
+        return [
+            {
+                source: '/api/ai/:path*',
+                destination: 'http://localhost:8001/api/ai/:path*', // AI 서버 프록시
+            },
+        ];
+    },
 };
 
 export default nextConfig;

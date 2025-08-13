@@ -1,35 +1,26 @@
-// 질문 및 피드백과 관련된 통계 페이지입니다.
 'use client';
 
 import dynamic from 'next/dynamic';
 import './Analyze.scss';
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useEffect, useState } from 'react';
+import { getValidAccessToken } from '@/utils/tokenStorage';
 
-// 피드백 차트 (피드백 추이)
-const FeedbackLineChart = dynamic(
-  () => import('@/components/analyze/FeedbackLineChart'),
-  { ssr: false, loading: () => <p>Loading chart...</p> }
-);
-
-// 피드백 유형
-const FeedbackTypeChart = dynamic(
-  () => import('@/components/analyze/FeedbackTypeChart'),
-  { ssr: false, loading: () => <p>Loading chart...</p> }
-);
-
-// 키워드 차트 (10개 키워드)
-const KeywordChart = dynamic(
-  () => import('@/components/analyze/KeywordChart'),
-  { ssr: false, loading: () => <p>Loading chart...</p> }
-);
-
-// 만족도 차트
-const SatisfactionChart = dynamic(
-  () => import('@/components/analyze/SatisfactionChart'),
-  { ssr: false, loading: () => <p>Loading chart...</p> }
-);
+const FeedbackLineChart = dynamic(() => import('@/components/analyze/FeedbackLineChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
+const FeedbackTypeChart = dynamic(() => import('@/components/analyze/FeedbackTypeChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
+const KeywordChart = dynamic(() => import('@/components/analyze/KeywordChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
+const SatisfactionChart = dynamic(() => import('@/components/analyze/SatisfactionChart'), { ssr: false, loading: () => <p>Loading chart...</p> });
 
 export default function AnalysisPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
+  useEffect(() => {
+    // 토큰이 유효한지 확인
+    getValidAccessToken().then(token => {
+      setIsAuthenticated(token != null);
+    });
+  }, []);
+
   return (
     <ProtectedRoute allowedRoles={['ADMIN']}>
       <div className="analyze-page">
@@ -37,24 +28,37 @@ export default function AnalysisPage() {
           <h1 className="title">통계</h1>
         </div>
 
-        {/* [FIX] 레이아웃: grid-area 기반으로 영역 배치 */}
         <div className="analyze-grid">
-          {/* 1) 라인 그래프 — 전체 가로 */}
           <section className="grid-item line-full">
-            <FeedbackLineChart />
+            {isAuthenticated ? (
+              <FeedbackLineChart />
+            ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
           </section>
 
-          {/* 2) 도넛 2개 — 가로 나란히 */}
           <section className="grid-item donut-left">
+           {isAuthenticated ? (
             <FeedbackTypeChart />
-          </section>
-          <section className="grid-item donut-right">
-            <SatisfactionChart />
+           ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
           </section>
 
-          {/* 3) 키워드 — 전체 가로 */}
+          <section className="grid-item donut-right">
+            {isAuthenticated ? (
+              <SatisfactionChart />
+            ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
+          </section>
+
           <section className="grid-item keyword-full">
-            <KeywordChart />
+            {isAuthenticated ? (
+              <KeywordChart />
+            ) : (
+              <p>인증 정보를 확인하는 중...</p>
+            )}
           </section>
         </div>
       </div>

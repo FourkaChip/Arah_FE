@@ -116,3 +116,101 @@ export interface DailyKeywordData {
   keywords: Record<KeywordName, number>;
   // 기존: { 휴가; 야근; 사직서; 회의; 교육; } → 누락 키로 인해 인덱싱 오류 발생(ts7053)
 }
+
+// API 관련 타입들
+export interface SatisfactionRaw {
+  type: '만족' | '불만족';
+  value: number;
+  percentage: number;
+}
+
+// 피드백 사유 타입
+export type FeedbackReason = 'MISSING_INFO' | 'OTHER' | 'OUTDATED_INFO' | 'WRONG_ANSWER' | 'INTENT_FAILURE';
+
+// 피드백 사유별 통계 데이터 타입
+export interface FeedbackReasonRaw {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
+// API 응답 타입 (피드백 사유 통계)
+export interface FeedbackReasonApiResponse {
+  feedback_reason: FeedbackReason;
+  count: number;
+  percentage: number;
+}
+
+export interface SatisfactionApiResult {
+  like_count: number;
+  unlike_count: number;
+  total_count: number;
+  like_ratio: number;
+  unlike_ratio: number;
+}
+
+// API 요청 파라미터 타입들
+export interface FeedbackCountParams {
+  date?: string;
+  year?: number;
+  month?: number;
+  signal?: AbortSignal;
+}
+
+export interface SatisfactionFetchParams {
+  startDate: string;
+  endDate: string;
+  signal?: AbortSignal;
+}
+
+// 차트 데이터 포인트 타입들
+export interface DailySatPoint {
+  day: number;
+  sat: number;
+  unsat: number;
+}
+
+export interface WeeklySatPoint {
+  week: number;
+  sat: number;
+  unsat: number;
+}
+
+export interface MonthlySatPoint {
+  month: number;
+  sat: number;
+  unsat: number;
+}
+
+export interface HourlySatPoint {
+  hour: number;
+  sat: number;
+  unsat: number;
+}
+
+export type SatPoint = DailySatPoint | WeeklySatPoint | MonthlySatPoint | HourlySatPoint;
+
+// API 응답 타입들 (실제 서버 응답 구조)
+export interface ApiHourlyFeedbackResponse {
+  hour: number;
+  like_count: number;
+  unlike_count: number;
+}
+
+export interface ApiDailyFeedbackResponse {
+  day: number;
+  like_count: number;
+  unlike_count: number;
+}
+
+export interface ApiWeeklyFeedbackResponse {
+  week: number;
+  like_count: number;
+  unlike_count: number;
+}
+
+export interface ApiMonthlyFeedbackResponse {
+  month: number;
+  like_count: number;
+  unlike_count: number;
+}

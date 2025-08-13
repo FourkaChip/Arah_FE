@@ -1,134 +1,106 @@
-// src/components/analyze/SatisfactionChart.tsx
+//src/components/analyze/SatisfactionChart.tsx
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { DateRange } from '@/types/analyze';
-import { aggregateSatisfactionData } from '@/constants/dummydata/DummyAnalyze';
+import React, { useEffect, useState } from 'react';
+import type { SatisfactionRaw } from '@/types/analyze';
+import { TYPE_COLOR } from '@/constants/analyzeConfig';
+import { fetchSatisfactionRaw } from '@/api/admin/analyze/analyzeFetch';
+import { convertSatisfactionResultToRows } from '@/utils/apiUtils';
 import useDefaultDateRange from '@/hooks/useDefaultDateRange';
-import {
-  TYPE_COLOR,
-  MIN_LABEL_PERCENT,
-} from '@/constants/analyzeConfig';
+import ChartHeader from '@/components/common/ChartHeader';
+import DonutChart from '@/components/common/DonutChart';
 import './AnalyzeChart.scss';
 
-const SatisfactionChart: React.FC = () => {
-  const initialRange = useDefaultDateRange();
-  const [dateRange, setDateRange] = useState<DateRange>(initialRange);
+type Props = Record<string, never>;
 
-  const satisfactionData = useMemo(
-    () => aggregateSatisfactionData(dateRange.startDate, dateRange.endDate),
-    [dateRange.startDate, dateRange.endDate]
-  );
+const EMPTY_ROWS: SatisfactionRaw[] = [
+  { type: '만족', value: 0, percentage: 50 },
+  { type: '불만족', value: 0, percentage: 50 },
+];
 
-  const handleDateChange = (field: keyof DateRange, value: string) => {
-    setDateRange(prev => ({ ...prev, [field]: value }));
-  };
+const SatisfactionChart: React.FC<Props> = () => {
+  const [data, setData] = useState<SatisfactionRaw[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const {
+    dateRange,
+    companyCreatedAt,
+    loading: dateRangeLoading,
+    error: dateRangeError,
+    handleDateChange,
+  } = useDefaultDateRange();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderLabelWithLeader = (props: any) => {
-    const { cx, cy, midAngle, outerRadius, percent, payload } = props;
-    const ratio = percent * 100;
-    if (ratio < MIN_LABEL_PERCENT) return null;
+  // 회사 가입일 조회 및 기본 날짜 범위 설정
+  useEffect(() => {
+    if (!dateRange.startDate || !dateRange.endDate || dateRangeLoading) return;
+    const ac = new AbortController();
+    setLoading(true);
+    setError(null);
+    
+    fetchSatisfactionRaw({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      signal: ac.signal,
+    })
+      .then(result => setData(convertSatisfactionResultToRows(result)))
+      .catch(err => {
+        if (err?.name !== 'AbortError') {
+          setError(typeof err?.message === 'string' ? err.message : '요청 실패');
+        }
+      })
+      .finally(() => setLoading(false));
+      
+    return () => ac.abort();
+  }, [dateRange.startDate, dateRange.endDate, dateRangeLoading]);
 
-    const RADIAN = Math.PI / 180;
-    const cos = Math.cos(-midAngle * RADIAN);
-    const sin = Math.sin(-midAngle * RADIAN);
+  const getColor = (type: string) => TYPE_COLOR[type as '만족' | '불만족'] || '#888';
 
-    const startR = outerRadius + 6;
-    const midR = outerRadius + 22;
-    const endOffset = 24;
-
-    const sx = cx + startR * cos;
-    const sy = cy + startR * sin;
-    const mx = cx + midR * cos;
-    const my = cy + midR * sin;
-    const ex = mx + (cos >= 0 ? endOffset : -endOffset);
-    const ey = my;
-
-    const textAnchor = cos >= 0 ? 'start' : 'end';
-    const labelText = `${payload.type} ${Math.round(ratio)}%`;
-    const color = TYPE_COLOR[payload.type as '만족' | '불만족'] || '#888';
-
+  if (error || dateRangeError) {
     return (
-      <g>
-        <path d={`M${sx},${sy} L${mx},${my} L${ex},${ey}`} stroke={color} fill="none" />
-        <circle cx={ex} cy={ey} r={2} fill={color} />
-        <text
-          x={ex + (cos >= 0 ? 4 : -4)}
-          y={ey}
-          textAnchor={textAnchor}
-          dominantBaseline="middle"
-          fill="#333"
-          fontSize={12}
-          style={{ pointerEvents: 'none' }}
-        >
-          {labelText}
-        </text>
-      </g>
-    );
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="tooltip">
-          <p>{`${data.type}: ${data.percentage}% (${data.value}건)`}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="box chartContainer">
-      <div className="chartHeader">
-        <h3 className="chartTitle">만족도</h3>
-        <div className="date-search-section">
-          <input
-            type="date"
-            value={dateRange.startDate}
-            onChange={(e) => handleDateChange('startDate', e.target.value)}
-            className="date-picker satisfaction"
-          />
-          <span>~</span>
-          <input
-            type="date"
-            value={dateRange.endDate}
-            onChange={(e) => handleDateChange('endDate', e.target.value)}
-            className="date-picker satisfaction"
-            min={dateRange.startDate}
+      <div className="box chartContainer">
+        <ChartHeader title="만족도" dateRange={dateRange} onDateChange={handleDateChange} companyCreatedAt={companyCreatedAt} />
+        <div className="chartWrapper">
+          <DonutChart
+            data={[]}
+            getColor={getColor}
+            error={error || dateRangeError}
           />
         </div>
       </div>
+    );
+  }
+
+  const chartRows = data.length ? data : EMPTY_ROWS;
+
+  const totalValue = chartRows.reduce((sum, row) => sum + row.value, 0);
+  const visualChartRows = totalValue === 0 
+    ? chartRows.map(row => ({ ...row, value: 1 }))
+    : chartRows.map(row => ({
+        ...row, 
+        value: row.value === 0 ? 0.01 : row.value
+      }));
+
+  return (
+    <div className="box chartContainer">
+      <ChartHeader 
+        title="만족도" 
+        dateRange={dateRange} 
+        onDateChange={handleDateChange} 
+        companyCreatedAt={companyCreatedAt} 
+      />
 
       <div className="chartWrapper">
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={satisfactionData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={0}
-              dataKey="value"
-              labelLine={false}
-              label={renderLabelWithLeader}
-              isAnimationActive={false}
-            >
-              {satisfactionData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={TYPE_COLOR[entry.type as '만족' | '불만족'] || '#888'}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+        {loading || dateRangeLoading ? (
+          <p>불러오는 중…</p>
+        ) : (
+          <DonutChart
+            data={visualChartRows}
+            getColor={getColor}
+            loading={loading || dateRangeLoading}
+            height={300}
+          />
+        )}
       </div>
     </div>
   );
