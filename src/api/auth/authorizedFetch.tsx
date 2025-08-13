@@ -7,10 +7,7 @@ export const authorizedFetch = async (
     init: RequestInit = {},
 ): Promise<Response> => {
     const token = await getValidAccessToken();
-    console.log('[authorizedFetch] input:', input);
-    console.log('[authorizedFetch] token:', token);
     if (!token) {
-        console.error('[authorizedFetch] 인증 토큰 없음');
         throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
     }
 
@@ -24,7 +21,6 @@ export const authorizedFetch = async (
         customHeaders.set('Content-Type', 'application/json');
     }
 
-    console.log('[authorizedFetch] fetch url:', input);
     const response = await fetch(input, {
         ...init,
         headers: customHeaders,
@@ -32,7 +28,6 @@ export const authorizedFetch = async (
 
     if (response.status === 401) {
         useAuthStore.getState().clearAccessToken();
-        console.error('[authorizedFetch] 401 Unauthorized');
         throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
     }
 

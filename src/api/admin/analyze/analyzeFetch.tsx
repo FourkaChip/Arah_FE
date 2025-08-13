@@ -164,6 +164,35 @@ export async function fetchTopKeywords({
   return json?.result ?? json;
 }
 
+// 피드백 사유 통계 조회
+export async function fetchFeedbackReasonStats({
+  startDate,
+  endDate,
+  signal,
+}: {
+  startDate: string;
+  endDate: string;
+  signal?: AbortSignal;
+}) {
+  const qs = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate,
+  });
+
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_AI_API_BASE_URL}/api/ai/feedbacks/reason-stats?${qs}`,
+    { method: 'GET', cache: 'no-store', signal }
+  );
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  return json?.result ?? json;
+}
+
 // 만족도 비율 조회
 export async function fetchSatisfactionRaw({
   startDate,

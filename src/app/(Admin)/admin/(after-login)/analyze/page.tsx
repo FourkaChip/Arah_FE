@@ -38,9 +38,9 @@ export default function AnalysisPage() {
           </section>
 
           <section className="grid-item donut-left">
-            {isAuthenticated ? (
-              <FeedbackTypeChart />
-            ) : (
+           {isAuthenticated ? (
+            <FeedbackTypeChart />
+           ) : (
               <p>인증 정보를 확인하는 중...</p>
             )}
           </section>

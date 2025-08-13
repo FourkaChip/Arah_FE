@@ -1,8 +1,38 @@
 // src/constants/apiUtils.ts
 import type { 
   SatisfactionRaw, 
-  SatisfactionApiResult 
+  SatisfactionApiResult,
+  FeedbackReasonRaw,
+  FeedbackReasonApiResponse,
+  FeedbackReason
 } from '@/types/analyze';
+
+// 피드백 사유 한글 매핑
+const FEEDBACK_REASON_MAPPING: Record<FeedbackReason, string> = {
+  MISSING_INFO: '정보 누락',
+  OTHER: '기타',
+  OUTDATED_INFO: '오래된 정보',
+  WRONG_ANSWER: '잘못된 답변',
+  INTENT_FAILURE: '질문 의도 파악 실패',
+};
+
+export function convertFeedbackReasonResultToRows(result: FeedbackReasonApiResponse[]): FeedbackReasonRaw[] {
+  if (!result || result.length === 0) {
+    // 데이터가 없는 경우 빈 배열 반환
+    return [];
+  }
+
+  // API 데이터를 변환하여 값이 있는 것만 포함
+  const convertedData = result
+    .filter(item => item.count > 0) // 0보다 큰 값만 필터링
+    .map(item => ({
+      name: FEEDBACK_REASON_MAPPING[item.feedback_reason] || item.feedback_reason,
+      value: item.count,
+      percentage: Math.round(item.percentage),
+    }));
+
+  return convertedData;
+}
 
 export function convertSatisfactionResultToRows(result: SatisfactionApiResult): SatisfactionRaw[] {
   const { like_count, unlike_count } = result;

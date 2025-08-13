@@ -9,6 +9,7 @@ import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { useKeywordChart } from '@/hooks/useKeywordChart';
 import { getKeywordColor, KEYWORD_CHART_CONFIG } from '@/constants/keywordConfig';
+import ChartHeader from '@/components/common/ChartHeader';
 import './AnalyzeChart.scss';
 
 const CustomTooltip = ({ active, payload, label }: TooltipContentProps<ValueType, NameType>) => {
@@ -32,8 +33,6 @@ const KeywordChart: React.FC = () => {
     companyCreatedAt,
     handleDateChange,
   } = useKeywordChart();
-
-  const getCurrentDate = () => new Date().toISOString().split('T')[0];
 
   const renderEmptyState = () => {
     if (loading) {
@@ -135,28 +134,12 @@ const KeywordChart: React.FC = () => {
 
   return (
     <div className="box chartContainer keywordChart">
-      <div className="chartHeader">
-        <h3 className="chartTitle">인기 키워드 TOP 10</h3>
-        <div className="date-search-section">
-          <input
-            type="date"
-            value={dateRange.startDate}
-            onChange={(e) => handleDateChange('startDate', e.target.value)}
-            className="date-picker"
-            min={companyCreatedAt || undefined}
-            max={getCurrentDate()}
-          />
-          <span>~</span>
-          <input
-            type="date"
-            value={dateRange.endDate}
-            onChange={(e) => handleDateChange('endDate', e.target.value)}
-            className="date-picker"
-            min={dateRange.startDate}
-            max={getCurrentDate()}
-          />
-        </div>
-      </div>
+      <ChartHeader 
+        title="인기 키워드 TOP 10" 
+        dateRange={dateRange} 
+        onDateChange={handleDateChange} 
+        companyCreatedAt={companyCreatedAt} 
+      />
 
       <div className="chartWrapper">
         {renderChart()}

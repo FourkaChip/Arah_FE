@@ -69,8 +69,7 @@ const FeedbackLineChart: React.FC = () => {
           setSelectedMonth(createdMonth);
           setSelectedDay(createdDay);
         }
-      } catch (err) {
-        console.error('가입일 조회 실패:', err);
+      } catch {
         // 가입일 조회 실패 시 현재 날짜로 설정
         setSelectedYear(year);
         setSelectedMonth(month);
@@ -235,7 +234,6 @@ const FeedbackLineChart: React.FC = () => {
       } catch (err: any) {
         if (!ac.signal.aborted) {
           if (err.name === 'AbortError') {
-            console.log('Request was cancelled');
             return;
           }
           setError(typeof err?.message === 'string' ? err.message : '요청 실패');

@@ -124,6 +124,23 @@ export interface SatisfactionRaw {
   percentage: number;
 }
 
+// 피드백 사유 타입
+export type FeedbackReason = 'MISSING_INFO' | 'OTHER' | 'OUTDATED_INFO' | 'WRONG_ANSWER' | 'INTENT_FAILURE';
+
+// 피드백 사유별 통계 데이터 타입
+export interface FeedbackReasonRaw {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
+// API 응답 타입 (피드백 사유 통계)
+export interface FeedbackReasonApiResponse {
+  feedback_reason: FeedbackReason;
+  count: number;
+  percentage: number;
+}
+
 export interface SatisfactionApiResult {
   like_count: number;
   unlike_count: number;
