@@ -1,9 +1,8 @@
 import {authorizedFetch} from '@/api/auth/authorizedFetch';
 import {EventSourcePolyfill} from 'event-source-polyfill';
 
-const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_NOTI_API_BASE_URL;
+const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// 캐시 설정
 const CACHE_DURATION = 5 * 60 * 1000;
 const UNREAD_COUNT_CACHE_DURATION = 30 * 1000;
 
@@ -141,9 +140,11 @@ export interface NotificationListResponse {
 
 export interface NotificationCountResponse {
     success: boolean;
-    data: {
+    result: {
         count: number;
     };
+    code?: number;
+    timestamp?: string;
     message?: string;
 }
 
@@ -213,10 +214,8 @@ export const fetchUnreadNotificationCount = async (forceRefresh = false): Promis
 
         notificationCache.set(cacheKey, data);
 
-        if (typeof window !== 'undefined' && data.success && data.data?.count !== undefined) {
-            const serverCount = data.data.count;
-            const currentLocalCount = localStorage.getItem('unreadNotificationCount');
-
+        if (typeof window !== 'undefined' && data.success && data.result?.count !== undefined) {
+            const serverCount = data.result.count;
             localStorage.setItem('unreadNotificationCount', String(serverCount));
         }
 
@@ -225,10 +224,8 @@ export const fetchUnreadNotificationCount = async (forceRefresh = false): Promis
 
         return data;
     } catch (error) {
-
         unreadCountCallQueue.forEach(({reject}) => reject(error));
         unreadCountCallQueue.length = 0;
-
         throw error;
     } finally {
         unreadCountCallInProgress = false;

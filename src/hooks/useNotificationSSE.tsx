@@ -88,7 +88,7 @@ export const useNotificationSSE = ({
             const token = await getValidAccessToken();
             if (!token) throw new Error('인증 토큰이 없습니다.');
 
-            const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_NOTI_API_BASE_URL;
+            const NOTI_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
             if (!NOTI_API_BASE_URL) throw new Error('NOTI API URL이 설정되지 않았습니다.');
 
             const params = new URLSearchParams({token});

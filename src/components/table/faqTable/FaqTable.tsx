@@ -137,7 +137,6 @@ export default function FaqAdminTable() {
                     setCurrentPage(targetPage);
                 }
             } else {
-                console.log('해당 faqId를 찾을 수 없습니다:', faqId);
             }
         }
     }, [searchParams, faqData, navigationState.step]);

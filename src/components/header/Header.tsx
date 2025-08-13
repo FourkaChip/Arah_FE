@@ -11,7 +11,6 @@ import {useAuthStore} from '@/store/auth.store';
 import {logout} from '@/api/auth/authorizedFetch';
 import Image from 'next/image';
 import ModalBotTest from '../modal/BotTest/ModalBotTest';
-import Link from 'next/link';
 
 function NotificationBell({
                               onClick,
@@ -22,20 +21,26 @@ function NotificationBell({
 }) {
     const {unreadCount} = useNotificationContext();
     const [mounted, setMounted] = useState(false);
+    const [displayCount, setDisplayCount] = useState(0);
 
     useEffect(() => setMounted(true), []);
+
+    useEffect(() => {
+        if (mounted) {
+            setDisplayCount(unreadCount);
+        }
+    }, [unreadCount, mounted]);
 
     return (
         <button
             ref={buttonRef}
             className="button is-white has-text-grey-light notification-button"
             onClick={onClick}
-            aria-label={`알림 ${mounted ? unreadCount : 0}개`}
+            aria-label={`알림 ${mounted ? displayCount : 0}개`}
         >
             <i className="fa-solid fa-bell fa-xl"></i>
-            {/* 항상 span을 렌더해 SSR/CSR 트리 동일화 */}
             <span className="notification-badge" suppressHydrationWarning>
-        {mounted && unreadCount > 0 ? unreadCount : ''}
+        {mounted && displayCount > 0 ? displayCount : ''}
       </span>
         </button>
     );

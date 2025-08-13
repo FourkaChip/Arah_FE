@@ -6,6 +6,7 @@ import './Sidebar.scss';
 import {MenuItem, SubMenuItem, SidebarProps} from '@/types/sidebar';
 import {ADMIN_MENU_ITEMS, MASTER_MENU_ITEMS, MENU_ROUTES} from '@/constants/sidebarConfig';
 import {useNavigation} from '@/contexts/NavigationContext';
+import {useNotificationContext} from '@/contexts/NotificationContext';
 
 const ROUTE_TO_MENU_ID: Record<string, string> = Object.entries(MENU_ROUTES).reduce((acc, [key, value]) => {
     acc[value] = key;
@@ -20,7 +21,7 @@ const getUserRole = (pathname: string) => ({
 const useSidebarMenu = (menuItems: MenuItem[]) => {
     const pathname = usePathname();
     const router = useRouter();
-    const { isNavigating, setIsNavigating } = useNavigation();
+    const {isNavigating, setIsNavigating} = useNavigation();
 
     const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
 

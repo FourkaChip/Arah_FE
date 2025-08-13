@@ -9,6 +9,7 @@ import React, {
     useCallback,
     useRef
 } from 'react';
+import {usePathname} from 'next/navigation';
 import {
     fetchNotificationList,
     fetchUnreadNotificationCount,
@@ -65,6 +66,8 @@ export function NotificationProvider({
                                          children,
                                          itemsPerPage = 5,
                                      }: NotificationProviderProps) {
+    const pathname = usePathname();
+
     const getInitialUnreadCount = () => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('unreadNotificationCount');
@@ -228,7 +231,7 @@ export function NotificationProvider({
 
             const response = await fetchUnreadNotificationCount(forceReload);
             if (response.success) {
-                const serverCount = response.data.count;
+                const serverCount = response.result.count;
 
                 setUnreadCount(serverCount);
                 return serverCount;
@@ -243,7 +246,6 @@ export function NotificationProvider({
     const filteredNotifications = notifications;
 
     const derivedUnreadFromList = filteredNotifications.filter(n => !n.isRead).length;
-    const badgeCount = Math.max(unreadCount, derivedUnreadFromList);
 
     const paginatedNotifications = filteredNotifications;
 
@@ -260,6 +262,16 @@ export function NotificationProvider({
         [loadPageData]
     );
 
+    useEffect(() => {
+        if (!isInitializedRef.current || !isClient) return;
+
+        const timeoutId = setTimeout(() => {
+            loadUnreadCount(true);
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [pathname, isClient, loadUnreadCount]);
+
     const handleItemClick = useCallback(async (id: string) => {
         try {
             const clickedNotification = notifications.find(item => item.id === id);
@@ -274,7 +286,6 @@ export function NotificationProvider({
             const response = await markNotificationAsRead(Number(id));
 
             if (response.success) {
-
                 setNotifications(prev =>
                     prev.map(notification =>
                         notification.id === id
@@ -285,6 +296,8 @@ export function NotificationProvider({
 
                 setUnreadCount(prev => {
                     const newCount = Math.max(0, prev - 1);
+                    setTimeout(() => {
+                    }, 0);
                     return newCount;
                 });
 
@@ -305,15 +318,19 @@ export function NotificationProvider({
                 setNotifications((prev) =>
                     prev.map((n) => ({...n, isRead: true}))
                 );
-                setUnreadCount(0);
 
-                loadPageData(currentPage);
+                setUnreadCount(0);
+                setTimeout(() => {
+                }, 0);
+
+                setTimeout(() => {
+                    loadPageData(currentPage);
+                }, 100);
             }
         } catch (error) {
         }
     }, [currentPage, loadPageData]);
 
-    // 초기화 함수 - 클라이언트 마운트 후에만 실행
     const initializeNotifications = useCallback(async () => {
         if (isInitializedRef.current || !isClient) {
             return;
@@ -368,7 +385,6 @@ export function NotificationProvider({
         };
     }, [isClient, initializeNotifications]);
 
-    // 페이지 새로고침 감지 및 처리
     useEffect(() => {
         if (!isClient) return;
 
@@ -395,22 +411,26 @@ export function NotificationProvider({
 
     const refreshModalData = useCallback(async () => {
         try {
-            const isReadParam = false; // 읽지 않은 알림만
+
+            const countResponse = await fetchUnreadNotificationCount(true);
+            const serverUnreadCount = countResponse.success ? countResponse.result.count : 0;
+
+            const isReadParam = false;
             const response = await fetchNotificationList(isReadParam, 0);
 
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
                 );
+
                 setNotifications(transformed);
 
-                const derived = transformed.filter(i => !i.isRead).length;
-                setUnreadCount(prev => Math.max(prev, derived));
+                setUnreadCount(serverUnreadCount);
             }
 
         } catch (error) {
         }
-    }, [unreadCount]);
+    }, []);
 
     const contextValue: NotificationContextType = {
         notifications,
@@ -419,7 +439,7 @@ export function NotificationProvider({
         filters,
         currentPage,
         totalPages,
-        unreadCount: badgeCount,
+        unreadCount: unreadCount,
         handleTabChange,
         handlePageChange,
         handleItemClick,
@@ -430,12 +450,6 @@ export function NotificationProvider({
     return (
         <NotificationContext.Provider value={contextValue}>
             {children}
-            {connectionError && (
-                <div className="sse-error-banner">
-                    실시간 알림 연결에 문제가 있습니다.
-                    <button onClick={reconnect}>재연결</button>
-                </div>
-            )}
         </NotificationContext.Provider>
     );
 }
