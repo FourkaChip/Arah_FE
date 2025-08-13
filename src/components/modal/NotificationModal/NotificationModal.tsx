@@ -66,7 +66,7 @@ const NotificationModal = memo<NotificationModalProps>(({
         return count;
     }, [notifications]);
 
-    const isMarkAllReadDisabled = actualUnreadCount === 0 && unreadCount === 0;
+    const isMarkAllReadDisabled = actualUnreadCount === 0;
 
     useEffect(() => {
         if (isOpen && buttonRef.current) {
@@ -126,7 +126,7 @@ const NotificationModal = memo<NotificationModalProps>(({
                         >
                             모두 읽음 (
                             <span suppressHydrationWarning>
-                                {mounted ? Math.max(unreadCount, actualUnreadCount) : ''}
+                                {mounted ? actualUnreadCount : ''}
                             </span>
                             )
                         </MarkAllReadButton>

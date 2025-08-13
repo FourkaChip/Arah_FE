@@ -395,7 +395,10 @@ export function NotificationProvider({
 
     const refreshModalData = useCallback(async () => {
         try {
-            const isReadParam = false; // 읽지 않은 알림만
+            console.log('🔄 모달용 데이터 새로고침 시작 (읽지 않은 개수 유지)');
+
+            // 읽지 않은 알림만 가져오기
+            const isReadParam = false;
             const response = await fetchNotificationList(isReadParam, 0);
 
             if (response.success) {
@@ -404,13 +407,14 @@ export function NotificationProvider({
                 );
                 setNotifications(transformed);
 
-                const derived = transformed.filter(i => !i.isRead).length;
-                setUnreadCount(prev => Math.max(prev, derived));
+                const actualUnreadCount = transformed.filter(item => !item.isRead).length;
+
+                setUnreadCount(actualUnreadCount);
             }
 
         } catch (error) {
         }
-    }, [unreadCount]);
+    }, []);
 
     const contextValue: NotificationContextType = {
         notifications,
