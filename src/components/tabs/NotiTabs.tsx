@@ -14,13 +14,17 @@ export default function NotiTabs({
                                  }: NotiTabsProps) {
     const [activeTab, setActiveTab] = useState<NotificationTab>(defaultActiveTab || tabs[0]);
     const [isClient, setIsClient] = useState(false);
+    const [displayUnreadCount, setDisplayUnreadCount] = useState(0);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
     useEffect(() => {
-    }, [unreadCount]);
+        if (isClient) {
+            setDisplayUnreadCount(unreadCount);
+        }
+    }, [unreadCount, isClient]);
 
     const handleTabClick = useCallback((tab: NotificationTab) => {
         setActiveTab(tab);
@@ -28,17 +32,19 @@ export default function NotiTabs({
     }, [onTabChange]);
 
     const renderTabContent = useCallback((tab: NotificationTab) => {
-        const shouldShowBadge = isClient && tab === '읽지 않음' && unreadCount > 0;
+        const shouldShowBadge = isClient && tab === '읽지 않음' && displayUnreadCount > 0;
 
         return (
             <>
                 {tab}
                 {shouldShowBadge && (
-                    <span className="unread-badge">{unreadCount}</span>
+                    <span className="unread-badge" suppressHydrationWarning>
+                        {displayUnreadCount}
+                    </span>
                 )}
             </>
         );
-    }, [unreadCount, isClient]);
+    }, [displayUnreadCount, isClient]);
 
     return (
         <div className={`tabs is-medium ${className}`}>

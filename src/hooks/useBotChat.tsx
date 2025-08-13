@@ -73,7 +73,6 @@ export const useBotChat = (inputRef: React.RefObject<HTMLInputElement | null>) =
             };
 
             setMessages(prev => [...prev, errorMessage]);
-            console.error('Chat error:', error);
         } finally {
             setIsLoading(false);
             setTimeout(() => {

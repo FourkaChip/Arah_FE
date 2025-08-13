@@ -60,13 +60,13 @@ const NotificationModal = memo<NotificationModalProps>(({
         [notifications, maxItems]
     );
 
-    // 실제 읽지 않은 알림 개수 계산
     const actualUnreadCount = React.useMemo(() => {
         const count = notifications.filter(n => !n.isRead).length;
         return count;
     }, [notifications]);
 
-    const isMarkAllReadDisabled = actualUnreadCount === 0;
+    const displayUnreadCount = unreadCount;
+    const isMarkAllReadDisabled = displayUnreadCount === 0;
 
     useEffect(() => {
         if (isOpen && buttonRef.current) {
@@ -83,19 +83,18 @@ const NotificationModal = memo<NotificationModalProps>(({
         router.push('/admin/noti');
     };
 
-    const handleMarkAllAsReadClick = useCallback(async () => {
-        handleMarkAllAsRead();
-        onClose();
-    }, [handleMarkAllAsRead, onClose]);
-
     const handleItemClickWrapper = useCallback(async (id: string) => {
-
         const clickedNotification = notifications.find(item => item.id === id);
         const wasUnread = clickedNotification && !clickedNotification.isRead;
 
         handleItemClick(id);
 
     }, [handleItemClick, notifications]);
+
+    const handleMarkAllAsReadClick = useCallback(async () => {
+        handleMarkAllAsRead();
+        onClose();
+    }, [handleMarkAllAsRead, onClose]);
 
     const handleBackdropClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
@@ -126,7 +125,7 @@ const NotificationModal = memo<NotificationModalProps>(({
                         >
                             모두 읽음 (
                             <span suppressHydrationWarning>
-                                {mounted ? actualUnreadCount : ''}
+                                {mounted ? displayUnreadCount : ''}
                             </span>
                             )
                         </MarkAllReadButton>

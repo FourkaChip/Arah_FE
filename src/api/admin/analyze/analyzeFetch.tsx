@@ -29,7 +29,7 @@ export async function fetchCompanyCreatedAt(): Promise<string> {
     
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      companyCreatedAtPromise = null; // 실패 시 캐시 초기화
+      companyCreatedAtPromise = null;
       throw new Error(text || `HTTP ${res.status}`);
     }
     
@@ -37,7 +37,7 @@ export async function fetchCompanyCreatedAt(): Promise<string> {
     const createdAt = json?.result?.createdAt;
     
     if (!createdAt) {
-      companyCreatedAtPromise = null; // 실패 시 캐시 초기화
+      companyCreatedAtPromise = null;
       throw new Error('가입일 정보를 찾을 수 없습니다.');
     }
     

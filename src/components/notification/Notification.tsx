@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import NotiTabs from "@/components/tabs/NotiTabs";
 import Pagination from "@/components/customPagination/Pagination";
 import NotificationList from './NotificationList';
@@ -31,7 +31,8 @@ export default function Notification({
         return paginatedNotifications.filter(n => !n.isRead).length;
     }, [paginatedNotifications]);
 
-    const isMarkAllReadDisabled = actualUnreadCount === 0 && unreadCount === 0;
+    const displayUnreadCount = unreadCount;
+    const isMarkAllReadDisabled = displayUnreadCount === 0;
 
     return (
         <div className={`notification-container ${className}`}>
