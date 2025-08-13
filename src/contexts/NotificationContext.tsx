@@ -430,12 +430,6 @@ export function NotificationProvider({
     return (
         <NotificationContext.Provider value={contextValue}>
             {children}
-            {connectionError && (
-                <div className="sse-error-banner">
-                    실시간 알림 연결에 문제가 있습니다.
-                    <button onClick={reconnect}>재연결</button>
-                </div>
-            )}
         </NotificationContext.Provider>
     );
 }
