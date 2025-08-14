@@ -311,7 +311,6 @@ export default function AdminDataTable() {
                 subRows: undefined
             })));
 
-            modalMessage.showSuccess('폴더 생성 완료', '폴더가 성공적으로 생성되었습니다.');
             return true;
         } catch (error) {
             modalMessage.showError('폴더 생성 실패', '폴더 생성에 실패했습니다.');
