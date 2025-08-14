@@ -2,7 +2,11 @@
 "use client";
 import FallingText from './FallingText';
 
-export default function NotFoundClient() {
+interface NotFoundClientProps {
+    text?: string;
+}
+
+export default function NotFoundClient({ text = "404 NOT FOUND. 존재하지 않는 페이지입니다." }: NotFoundClientProps) {
     return (
         <div style={{
             display: 'flex',
@@ -23,8 +27,8 @@ export default function NotFoundClient() {
                 zIndex: 1
             }}>
                 <FallingText
-                    text="404 NOT FOUND. 존재하지 않는 페이지입니다." // 표시할 텍스트
-                    highlightWords={["404", "NOT", "FOUND"]} // 하이라이트할 단어들
+                    text={text} // props로 받은 텍스트 사용
+                    highlightWords={text.includes("404") ? ["404", "NOT", "FOUND"] : ["403", "Unauthorized"]} // 동적 하이라이트
                     speed={2}              // 떨어지는 속도
                     stagger={0.15}         // 글자 간 딜레이
                     fontSize="2rem"        // 폰트 크기
