@@ -1,6 +1,6 @@
 // window 객체를 사용하는 클라이언트 전용 컴포넌트
 "use client";
-import FallingText from './FallingText';
+import FallingText from '../components/FallingText/FallingText';
 
 interface NotFoundClientProps {
     text?: string;
@@ -17,27 +17,56 @@ export default function NotFoundClient({ text = "404 NOT FOUND. 존재하지 않
             position: 'relative',
             overflow: 'hidden'
         }}>
-            {/* 전체 화면을 차지하는 FallingText */}
+            <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                fontSize: '5rem',
+                fontWeight: 'bold',
+                color: 'rgba(255, 255, 255, 0.3)',
+                zIndex: 0,
+                userSelect: 'none',
+                pointerEvents: 'none',
+                whiteSpace: 'pre-line',
+                textAlign: 'center'
+            }}>
+                {text.split('.')[0]}
+            </div>
+
+            <div style={{
+                position: 'absolute',
+                bottom: '100px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: '1.2rem',
+                zIndex: 2,
+                textAlign: 'center'
+            }}>
+                스페이스바를 눌러보세요
+            </div>
+
             <div style={{ 
                 position: 'absolute',
-                top: 0,
+                top: '100px',
                 left: 0,
                 width: '100%', 
                 height: '80vh',
                 zIndex: 1
             }}>
                 <FallingText
-                    text={text} // props로 받은 텍스트 사용
-                    highlightWords={text.includes("404") ? ["404", "NOT", "FOUND"] : ["403", "Unauthorized"]} // 동적 하이라이트
-                    speed={2}              // 떨어지는 속도
-                    stagger={0.15}         // 글자 간 딜레이
-                    fontSize="2rem"        // 폰트 크기
-                    color="#ffffff"        // 텍스트 색상
-                    shadow={true}          // 그림자 효과 여부
+                    text={text}
+                    highlightWords={text.includes("404") ? ["404", "NOT", "FOUND"] : ["403", "Unauthorized"]}
+                    trigger="click"
+                    speed={2}
+                    stagger={0.15}
+                    fontSize="2rem"
+                    color="#ffffff"
+                    shadow={true}
                 />
             </div>
             
-            {/* 버튼을 왼쪽 최상단에 배치 */}
             <div style={{
                 position: 'absolute',
                 top: '20px',
