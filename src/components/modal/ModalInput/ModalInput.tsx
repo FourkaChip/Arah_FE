@@ -67,7 +67,7 @@ export default function ModalInput({
         if (onResendCode) {
             try {
                 onResendCode();
-                setTimeLeft(300);
+                setTimeLeft(180);
                 setIsTimerActive(true);
             } catch {
                 toast.error('인증코드 재전송에 실패했습니다.');
