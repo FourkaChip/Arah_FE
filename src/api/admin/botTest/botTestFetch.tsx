@@ -2,13 +2,7 @@
 import { getAccessToken } from '@/utils/tokenStorage';
 import type { ChatRequest, ChatResponse } from '@/types/botTest';
 
-/**
- * 챗봇에게 메시지를 전송하고 응답을 받는 함수
- * @param message - 전송할 메시지
- * @returns 챗봇의 응답 메시지
- * @throws {Error} API 호출 실패시 에러
- */
-export const sendChatMessage = async (message: string): Promise<string> => {
+export const sendChatMessage = async (message: string): Promise<ChatResponse['result']> => {
   try {
     const token = getAccessToken();
     if (!token) {
@@ -36,7 +30,7 @@ export const sendChatMessage = async (message: string): Promise<string> => {
       throw new Error(data.message || '채팅 요청에 실패했습니다.');
     }
 
-    return data.result.response_content;
+    return data.result;
   } catch {
     throw new Error('채팅 요청 중 오류가 발생했습니다.');
   }

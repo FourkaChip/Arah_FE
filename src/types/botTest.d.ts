@@ -4,6 +4,12 @@ export interface Message {
     text: string;
 }
 
+// 메타 결과 문서 타입
+export interface MetaDocument {
+    title?: string;
+    [key: string]: unknown;
+}
+
 // API 관련 타입들
 export interface ChatRequest {
     message: string;
@@ -17,7 +23,7 @@ export interface ChatResponse {
     result: {
         request_content: string;
         response_content: string;
-        meta_result: unknown[];
+        meta_result: MetaDocument[];
     };
 }
 

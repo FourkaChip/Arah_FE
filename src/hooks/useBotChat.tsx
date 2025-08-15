@@ -60,11 +60,25 @@ export const useBotChat = (inputRef: React.RefObject<HTMLInputElement | null>) =
             const botMessage: Message = {
                 id: nextId.current++,
                 sender: 'bot',
-                text: botResponse
+                text: botResponse.response_content
             };
 
             setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
+
+            if (botResponse.meta_result && botResponse.meta_result.length > 0) {
+                const firstDocument = botResponse.meta_result[0];
+                if (firstDocument && firstDocument.title) {
+                    setTimeout(() => {
+                        const sourceMessage: Message = {
+                            id: nextId.current++,
+                            sender: 'bot',
+                            text: `근거 자료: ${firstDocument.title}`
+                        };
+                        setMessages(prev => [...prev, sourceMessage]);
+                    }, 500);
+                }
+            }
+        } catch {
             setIsTyping(false);
             const errorMessage: Message = {
                 id: nextId.current++,
