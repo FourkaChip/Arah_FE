@@ -14,6 +14,7 @@ export default function ModalUpload({
     onSubmit
 }: ExtendedModalUploadProps) {
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [version, setVersion] = useState('');
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -59,6 +60,11 @@ export default function ModalUpload({
             return;
         }
 
+        if (!version.trim()) {
+            setError('버전을 입력해주세요.');
+            return;
+        }
+
         if (!comment.trim()) {
             setError('변경사항을 입력해주세요.');
             return;
@@ -73,7 +79,7 @@ export default function ModalUpload({
         setError(null);
 
         try {
-            await onSubmit(uploadedFile, comment);
+            await onSubmit(uploadedFile, comment, version);
             // 업로드 성공 시 완료 메시지 모달 노출
             showSuccess("업로드 완료", "데이터셋이 성공적으로 업로드되었습니다.");
             onClose();
@@ -124,13 +130,25 @@ export default function ModalUpload({
                                 </li>
                             </ul>
                         </div>
-                        <textarea
-                            className="textarea"
-                            placeholder="변경사항을 입력해 주세요."
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            style={{marginTop: 12, height: 120}}
-                        />
+                        <div className="input-section">
+                            <label className="input-label">버전</label>
+                            <input
+                                type="text"
+                                className="version-input"
+                                placeholder="예: v1.0.0"
+                                value={version}
+                                onChange={(e) => setVersion(e.target.value)}
+                            />
+                        </div>
+                        <div className="input-section">
+                            <label className="input-label">변경사항</label>
+                            <textarea
+                                className="textarea"
+                                placeholder="변경사항을 입력해 주세요."
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                            />
+                        </div>
                     </>
                 ) : (
                     <div className="drag-drop-box" onClick={() => fileInputRef.current?.click()}>

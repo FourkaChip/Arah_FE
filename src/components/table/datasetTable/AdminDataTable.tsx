@@ -319,14 +319,13 @@ export default function AdminDataTable() {
         }
     };
 
-    const handleUploadDataset = async (file: File, commitMessage: string) => {
+    const handleUploadDataset = async (file: File, commitMessage: string, version: string) => {
         if (!selectedFolderId) {
             throw new Error('폴더가 선택되지 않았습니다.');
         }
 
         try {
             const title = file.name.replace('.pdf', '');
-            const version = '0.1.0';
 
             const result = await fetchUploadPdf(
                 file,
