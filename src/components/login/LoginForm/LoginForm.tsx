@@ -312,11 +312,8 @@ export default function LoginForm() {
                         }}
                         onKeyDown={handleKeyDown}
                     />
-                    {/*{passwordError && (*/}
-                    {/*    <p className="login-form-error-text">비밀번호를 다시 입력해 주세요</p>*/}
-                    {/*)}*/}
                 </label>
-                <p className="login-form-missing">
+                <p className="login-form-missing" style={{ visibility: pathname === '/admin/login' ? 'hidden' : 'visible' }}>
                     비밀번호를 잊으셨다면?{' '}
                     {pathname === '/master/login' ? (
                         <a
