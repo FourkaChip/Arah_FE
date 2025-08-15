@@ -63,7 +63,7 @@ export default function FaqAdminTable() {
     };
 
     const filteredData = useMemo(() => {
-        return data
+        const filtered = data
             .sort((a, b) => b.feedback_id - a.feedback_id)
             .filter(row => {
                 const isTagAll = selectedTag === 'all';
@@ -80,6 +80,11 @@ export default function FaqAdminTable() {
 
                 return tagMatch && matches && afterStart && beforeEnd;
             });
+
+        return filtered.map((item, index) => ({
+            ...item,
+            displayNo: filtered.length - index
+        }));
     }, [data, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
@@ -91,7 +96,7 @@ export default function FaqAdminTable() {
 
     const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
         {
-            accessorKey: "feedback_id",
+            accessorKey: "displayNo",
             header: "No.",
         },
         {
