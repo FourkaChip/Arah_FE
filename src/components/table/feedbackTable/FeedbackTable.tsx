@@ -262,11 +262,30 @@ export default function FaqAdminTable() {
                                             className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
                                         >
                                             <div className="faq-detail-view">
-                                                <p><strong>질문</strong> {row.original.question}</p>
-                                                <p className="answer"><strong>답변</strong> {row.original.answer}</p>
-                                                <p className="feedback">
-                                                    <strong>사유</strong> {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
-                                                </p>
+                                                <div className="feedback-question-section">
+                                                    <p className="feedback-label">
+                                                        <strong>질문</strong>
+                                                    </p>
+                                                    <p className ="feedback-content question-content">
+                                                        {row.original.question}
+                                                    </p>
+                                                </div>
+                                                <div className="feedback-answer-section">
+                                                    <p className="feedback-label">
+                                                        <strong>답변</strong>
+                                                    </p>
+                                                    <p className ="feedback-content answer-content">
+                                                        {row.original.answer}
+                                                    </p>
+                                                </div>
+                                                <div className="feedback-feedback_reason-section">
+                                                    <p className="feedback-label">
+                                                        <strong>사유</strong>
+                                                    </p>
+                                                    <p className ="feedback-content feedback_reason-content">
+                                                        {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>

@@ -152,19 +152,44 @@ $primary: $blue;
   text-align: left;
   background-color: #f9f9f9;
   color: #0a0a0a;
-  padding: 16px;
+  padding: 35px;
   font-size: 14px;
   line-height: 1.6;
-  p {
-    margin: 6px 0;
-    font-weight: bold;
-    strong {
-      font-size: 20px;
-      color: $primary !important;
-      margin-right: 6px;
-      font-weight: bolder;
+
+  // 공통 섹션 스타일
+  .faq-question-section,
+  .faq-answer-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 5px 40px 5px 5px;
+    font-weight: bolder;
+
+    .faq-label {
+      margin: 0;
+      align-self: flex-start; // 라벨을 맨 위에 고정
+
+      strong {
+        font-size: 20px;
+        font-weight: bolder;
+      }
     }
-    &.answer {
+
+    .faq-content {
+      margin: 0;
+      flex: 1; // 남은 공간을 모두 차지
+      word-wrap: break-word; // 긴 단어 줄바꿈
+      white-space: pre-wrap; // 공백과 줄바꿈 유지
+      overflow-wrap: break-word; // 단어 분할 허용
+    }
+  }
+
+  // 답변 섹션 특화 스타일
+  .faq-answer-section {
+    .faq-label strong {
+      color: #2E70E8 !important;
+    }
+    .faq-content.answer-content {
       color: #2E70E8;
     }
   }
