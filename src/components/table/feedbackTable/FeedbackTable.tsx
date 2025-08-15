@@ -19,6 +19,13 @@ import Pagination from "@/components/customPagination/Pagination";
 import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache, deleteFeedback} from "@/api/admin/feedback/feedbackFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import {useModalMessage} from "@/hooks/useModalMessage";
+import { FEEDBACK_REASON_MAPPING } from "@/utils/apiUtils";
+
+// 피드백 사유 한국어로 변환
+const getFeedbackReasonKorean = (feedbackReason: string | null | undefined): string => {
+    if (!feedbackReason) return '사유 없음';
+    return FEEDBACK_REASON_MAPPING[feedbackReason as keyof typeof FEEDBACK_REASON_MAPPING] || feedbackReason;
+};
 
 export default function FaqAdminTable() {
     const modalMessage = useModalMessage();
@@ -270,7 +277,7 @@ export default function FaqAdminTable() {
                                                 <p><strong>질문</strong> {row.original.question}</p>
                                                 <p className="answer"><strong>답변</strong> {row.original.answer}</p>
                                                 <p className="feedback">
-                                                    <strong>사유</strong> {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
+                                                    <strong>사유</strong> {getFeedbackReasonKorean(row.original.feedback_content || row.original.feedback_reason)}
                                                 </p>
                                             </div>
                                         </div>
