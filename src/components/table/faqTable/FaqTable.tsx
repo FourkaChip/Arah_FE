@@ -103,7 +103,7 @@ export default function FaqAdminTable() {
                             question: faq.question,
                             answer: faq.answer,
                         }))
-                        .sort((a, b) => b.no - a.no)
+                        .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime())
                 );
             })
             .finally(() => setLoading(false));
@@ -205,7 +205,7 @@ export default function FaqAdminTable() {
 
     const filteredData = useMemo(() => {
         return faqData
-            .sort((a, b) => b.no - a.no)
+            .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime())
             .filter(row => {
                 const isTagAll = selectedTag === 'all';
                 const tagMatch = isTagAll || row.tag === selectedTag;
@@ -338,7 +338,7 @@ export default function FaqAdminTable() {
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })));
+            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
             showSuccess("삭제 완료", "FAQ가 성공적으로 삭제되었습니다.");
         } catch (e) {
             showError("삭제 실패", "FAQ 삭제에 실패했습니다.");
@@ -369,7 +369,7 @@ export default function FaqAdminTable() {
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })));
+            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
             showSuccess("수정 완료", "FAQ가 성공적으로 수정되었습니다.");
         } catch (e) {
             showError("수정 실패", "FAQ 수정에 실패했습니다.");
@@ -391,7 +391,7 @@ export default function FaqAdminTable() {
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })));
+            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
         } finally {
             setLoading(false);
         }

@@ -19,6 +19,13 @@ import Pagination from "@/components/customPagination/Pagination";
 import {fetchUnlikeFeedbackList, clearUnlikeFeedbackCache, deleteFeedback} from "@/api/admin/feedback/feedbackFetch";
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import {useModalMessage} from "@/hooks/useModalMessage";
+import { FEEDBACK_REASON_MAPPING } from "@/utils/apiUtils";
+
+// 피드백 사유 한국어로 변환
+const getFeedbackReasonKorean = (feedbackReason: string | null | undefined): string => {
+    if (!feedbackReason) return '사유 없음';
+    return FEEDBACK_REASON_MAPPING[feedbackReason as keyof typeof FEEDBACK_REASON_MAPPING] || feedbackReason;
+};
 
 export default function FaqAdminTable() {
     const modalMessage = useModalMessage();
@@ -63,7 +70,7 @@ export default function FaqAdminTable() {
     };
 
     const filteredData = useMemo(() => {
-        return data
+        const filtered = data
             .sort((a, b) => b.feedback_id - a.feedback_id)
             .filter(row => {
                 const isTagAll = selectedTag === 'all';
@@ -80,6 +87,11 @@ export default function FaqAdminTable() {
 
                 return tagMatch && matches && afterStart && beforeEnd;
             });
+
+        return filtered.map((item, index) => ({
+            ...item,
+            displayNo: filtered.length - index
+        }));
     }, [data, selectedTag, searchValue, startDate, endDate]);
 
     const paginatedData = useMemo(
@@ -91,7 +103,7 @@ export default function FaqAdminTable() {
 
     const columns = useMemo<ColumnDef<FeedbackRowData>[]>(() => [
         {
-            accessorKey: "feedback_id",
+            accessorKey: "displayNo",
             header: "No.",
         },
         {

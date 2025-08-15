@@ -8,7 +8,7 @@ import type {
 } from '@/types/analyze';
 
 // 피드백 사유 한글 매핑
-const FEEDBACK_REASON_MAPPING: Record<FeedbackReason, string> = {
+export const FEEDBACK_REASON_MAPPING: Record<FeedbackReason, string> = {
   MISSING_INFO: '정보 누락',
   OTHER: '기타',
   OUTDATED_INFO: '오래된 정보',

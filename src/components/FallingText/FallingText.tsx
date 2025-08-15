@@ -30,10 +30,7 @@ const FallingText: React.FC<FallingTextProps> = ({
   gravity = 1,
   mouseConstraintStiffness = 0.2,
   fontSize = "1rem",
-  speed = 2,
-  stagger = 0.15,
   color = "#fff",
-  shadow = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -71,7 +68,19 @@ const FallingText: React.FC<FallingTextProps> = ({
       observer.observe(containerRef.current);
       return () => observer.disconnect();
     }
-  }, [trigger]);
+    
+    if (trigger === "click") {
+      const handleKeyPress = (event: KeyboardEvent) => {
+        if (event.code === 'Space' && !effectStarted) {
+          event.preventDefault();
+          setEffectStarted(true);
+        }
+      };
+      
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [trigger, effectStarted]);
 
   useEffect(() => {
     if (!effectStarted) return;
@@ -146,25 +155,23 @@ const FallingText: React.FC<FallingTextProps> = ({
     const wordBodies = Array.from(wordSpans).map((elem) => {
       const rect = elem.getBoundingClientRect();
 
-      // 원래 위치에서 랜덤하게 좌우로 이동
       const originalX = rect.left - containerRect.left + rect.width / 2;
       const originalY = rect.top - containerRect.top + rect.height / 2;
-      const x = originalX + (Math.random() - 0.5) * 200; // 좌우 200px 범위에서 랜덤
-      const y = originalY + Math.random() * 50; // 위쪽으로 약간 랜덤
+      const x = originalX + (Math.random() - 0.5) * 200;
+      const y = originalY + Math.random() * 50;
 
       const body = Bodies.rectangle(x, y, rect.width, rect.height, {
         render: { fillStyle: "transparent" },
-        restitution: 0.6, // 탄성 약간 감소
-        frictionAir: 0.005, // 공기 저항 감소
+        restitution: 0.6,
+        frictionAir: 0.005,
         friction: 0.3,
       });
 
-      // 더 강한 초기 속도와 회전 적용
       Matter.Body.setVelocity(body, {
-        x: (Math.random() - 0.5) * 15, // 좌우 속도 증가
-        y: (Math.random() - 0.5) * 8,  // 위아래 속도도 추가
+        x: (Math.random() - 0.5) * 15,
+        y: (Math.random() - 0.5) * 8,
       });
-      Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2); // 회전 속도 증가
+      Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
       return { elem, body };
     });
 
