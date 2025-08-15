@@ -19,6 +19,10 @@ $red: #EB1D1D;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: none;
+
+  &::placeholder{
+    color: darkgray;
+  }
 }
 
 .timer-display {

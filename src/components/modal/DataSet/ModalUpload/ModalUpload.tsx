@@ -10,9 +10,11 @@ import {useModalMessage} from "@/hooks/useModalMessage";
 export default function ModalUpload({
     onClose,
     folderId,
+    folderName,
     onSubmit
 }: ExtendedModalUploadProps) {
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [version, setVersion] = useState('');
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,13 +54,14 @@ export default function ModalUpload({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDownloadTemplate = () => {
-        // TODO: template download API
-    };
-
     const handleSubmit = async () => {
         if (!uploadedFile) {
             setError('파일을 선택해주세요.');
+            return;
+        }
+
+        if (!version.trim()) {
+            setError('버전을 입력해주세요.');
             return;
         }
 
@@ -76,7 +79,7 @@ export default function ModalUpload({
         setError(null);
 
         try {
-            await onSubmit(uploadedFile, comment);
+            await onSubmit(uploadedFile, comment, version);
             // 업로드 성공 시 완료 메시지 모달 노출
             showSuccess("업로드 완료", "데이터셋이 성공적으로 업로드되었습니다.");
             onClose();
@@ -92,15 +95,10 @@ export default function ModalUpload({
             <button className="modal-close upload-modal" onClick={onClose}>×</button>
             <div className="modal-dialog upload-modal">
                 <div className="modal-content">
-                    <h2 className="modal-title">
-                        데이터셋 업로드
-                        {folderId && <span style={{fontSize: '14px', color: '#666', marginLeft: '10px'}}>
-                            (폴더 ID: {folderId})
-                        </span>}
-                    </h2>
-                    <button className="download-template-button" onClick={handleDownloadTemplate}>
-                        양식 다운로드
-                    </button>
+                    <h2 className="modal-title">데이터셋 업로드</h2>
+                    {folderName && (
+                        <p className="folder-info">폴더: {folderName}</p>
+                    )}
                 </div>
 
                 {error && (
@@ -132,17 +130,29 @@ export default function ModalUpload({
                                 </li>
                             </ul>
                         </div>
-                        <textarea
-                            className="textarea"
-                            placeholder="변경사항을 입력해 주세요."
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            style={{marginTop: 12, height: 120}}
-                        />
+                        <div className="input-section">
+                            <label className="input-label">버전</label>
+                            <input
+                                type="text"
+                                className="version-input"
+                                placeholder="예: v1.0.0"
+                                value={version}
+                                onChange={(e) => setVersion(e.target.value)}
+                            />
+                        </div>
+                        <div className="input-section">
+                            <label className="input-label">변경사항</label>
+                            <textarea
+                                className="textarea"
+                                placeholder="변경사항을 입력해 주세요."
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                            />
+                        </div>
                     </>
                 ) : (
                     <div className="drag-drop-box" onClick={() => fileInputRef.current?.click()}>
-                        <Image src="/upload-icon.svg" alt="upload" width={50} height={50} />
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
                         <p>파일을 업로드하거나 여기로 끌어 놓으세요.</p>
                         <p>(하나의 pdf 파일만 업로드 가능합니다.)</p>
                         <p>(업로드 가능한 파일의 최대 용량은 5MB입니다.)</p>

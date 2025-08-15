@@ -7,7 +7,7 @@ import {NotificationProvider} from '@/contexts/NotificationContext';
 const PAGE_CONFIG = {
     ITEMS_PER_PAGE: 5,
     TITLE: '알림',
-    DESCRIPTION: '사용자 피드백에 대한 수신 알림을 제공합니다.'
+    DESCRIPTION: '사용자 피드백에 대한 수신 알림을 제공합니다. 알림은 30일 동안 보관되며, 이후에는 자동으로 삭제됩니다.'
 } as const;
 
 export default function AdminNotiPage() {
