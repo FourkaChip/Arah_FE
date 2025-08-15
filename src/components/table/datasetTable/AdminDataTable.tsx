@@ -63,6 +63,7 @@ export default function AdminDataTable() {
     const [openFolderModal, setOpenFolderModal] = useState(false);
     const [openUploadModal, setOpenUploadModal] = useState(false);
     const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+    const [selectedFolderName, setSelectedFolderName] = useState<string | null>(null);
 
     const [editingDocumentId, setEditingDocumentId] = useState<number | null>(null);
     const [editingDocumentTitle, setEditingDocumentTitle] = useState<string>('');
@@ -350,7 +351,9 @@ export default function AdminDataTable() {
     };
 
     const handleAddDatasetClick = (folderId: number) => {
+        const selectedFolder = data.find(folder => folder.id === folderId.toString());
         setSelectedFolderId(folderId);
+        setSelectedFolderName(selectedFolder?.folderName || null);
         setOpenUploadModal(true);
     };
 
@@ -730,8 +733,10 @@ export default function AdminDataTable() {
                     onClose={() => {
                         setOpenUploadModal(false);
                         setSelectedFolderId(null);
+                        setSelectedFolderName(null);
                     }}
                     folderId={selectedFolderId}
+                    folderName={selectedFolderName}
                     onSubmit={handleUploadDataset}
                 />
             )}

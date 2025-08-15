@@ -10,6 +10,7 @@ import {useModalMessage} from "@/hooks/useModalMessage";
 export default function ModalUpload({
     onClose,
     folderId,
+    folderName,
     onSubmit
 }: ExtendedModalUploadProps) {
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -88,12 +89,10 @@ export default function ModalUpload({
             <button className="modal-close upload-modal" onClick={onClose}>×</button>
             <div className="modal-dialog upload-modal">
                 <div className="modal-content">
-                    <h2 className="modal-title">
-                        데이터셋 업로드
-                        {folderId && <span style={{fontSize: '14px', color: '#666', marginLeft: '10px'}}>
-                            (폴더 ID: {folderId})
-                        </span>}
-                    </h2>
+                    <h2 className="modal-title">데이터셋 업로드</h2>
+                    {folderName && (
+                        <p className="folder-info">폴더: {folderName}</p>
+                    )}
                 </div>
 
                 {error && (

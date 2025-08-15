@@ -113,6 +113,7 @@ export interface ModalCommitProps {
 
 export interface ExtendedModalUploadProps extends ModalUploadProps {
     folderId?: number | null;
+    folderName?: string | null;
     onSubmit?: (file: File, commitMessage: string) => Promise<any>;
 }
 
