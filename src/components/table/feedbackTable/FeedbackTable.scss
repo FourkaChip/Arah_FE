@@ -257,8 +257,8 @@ $primary: $blue;
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
 
   &.open {
-    //max-height: 500px;
-    max-height: none;
+    overflow-y: scroll;
+    max-height: 500px;
     opacity: 1;
   }
 }
