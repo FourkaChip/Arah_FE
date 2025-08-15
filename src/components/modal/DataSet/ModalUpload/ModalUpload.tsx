@@ -52,10 +52,6 @@ export default function ModalUpload({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDownloadTemplate = () => {
-        // TODO: template download API
-    };
-
     const handleSubmit = async () => {
         if (!uploadedFile) {
             setError('파일을 선택해주세요.');
@@ -98,9 +94,6 @@ export default function ModalUpload({
                             (폴더 ID: {folderId})
                         </span>}
                     </h2>
-                    <button className="download-template-button" onClick={handleDownloadTemplate}>
-                        양식 다운로드
-                    </button>
                 </div>
 
                 {error && (
