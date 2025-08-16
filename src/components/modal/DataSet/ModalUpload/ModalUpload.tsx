@@ -1,15 +1,14 @@
 import {useState, useRef, useEffect} from 'react';
 import './ModalUpload.scss';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
-import {ExtendedModalUploadProps, ModalUploadProps} from "@/types/modals";
-import Image from "next/image";
+import {ExtendedModalUploadProps} from "@/types/modals";
 import {useModalMessage} from "@/hooks/useModalMessage";
 
 
 
 export default function ModalUpload({
     onClose,
-    folderId,
+    // folderId,
     folderName,
     onSubmit
 }: ExtendedModalUploadProps) {

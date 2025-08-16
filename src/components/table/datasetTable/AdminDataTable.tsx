@@ -44,7 +44,7 @@ export default function AdminDataTable() {
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
-    const [openCommitModal, setOpenCommitModal] = useState(false);
+    // const [openCommitModal, setOpenCommitModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openEditFolderModal, setOpenEditFolderModal] = useState(false);
 
@@ -167,7 +167,7 @@ export default function AdminDataTable() {
             cell: ({row}) => (
                 <input
                     type="checkbox"
-                    checked={!!selectedRowIds[row.original.id]}
+                    checked={selectedRowIds[row.original.id]}
                     onChange={(e) =>
                         setSelectedRowIds((prev) => ({
                             ...prev,

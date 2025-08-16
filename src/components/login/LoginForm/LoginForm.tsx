@@ -39,7 +39,7 @@ export default function LoginForm() {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorType, setErrorType] = useState<'email' | 'password' | 'verify'>('password');
+    // const [errorType, setErrorType] = useState<'email' | 'password' | 'verify'>('password');
     const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
     const handleCompanyInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

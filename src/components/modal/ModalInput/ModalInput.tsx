@@ -7,7 +7,6 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
 import {useQueryClient} from '@tanstack/react-query';
 import {toast, Toaster} from 'react-hot-toast';
-import LoadingSpinner from '@/components/spinner/Spinner';
 import SpinnerOverlay from '@/components/spinner/SpinnerOverlay';
 
 export default function ModalInput({

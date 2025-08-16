@@ -41,7 +41,6 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
                 return;
             }
             const tokenToRegister = inputValue;
-            const accessToken = useAuthStore.getState().accessToken;
 
             if (!tokenToRegister || tokenToRegister.trim() === '') {
                 alert("등록할 토큰을 입력해 주세요.");
