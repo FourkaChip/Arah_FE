@@ -114,6 +114,11 @@
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .department-search-input {
@@ -128,6 +133,11 @@
   &::placeholder {
     color: #232d64;
   }
+}
+
+.admin-search-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .department-checkbox-input {
@@ -148,13 +158,6 @@
   cursor: pointer;
 }
 
-.modal-footer-dept {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 32px;
-}
-
 .button.is-dark {
   background-color: #232d64;
   color: white;
@@ -162,4 +165,13 @@
   &:hover {
     background-color: darken(#232d64, 5%);
   }
+
+  flex-shrink: 0;
+}
+
+.modal-footer-dept {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
 }
