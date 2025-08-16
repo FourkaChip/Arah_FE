@@ -203,6 +203,9 @@ export default function LoginForm() {
     };
 
     const handleLogin = () => {
+        if (masterLoginMutation.isPending || adminLoginMutation.isPending || verifyMutation.isPending) {
+            return;
+        }
         if (pathname === '/master/login') {
             masterLoginMutation.mutate();
         } else {
@@ -215,12 +218,6 @@ export default function LoginForm() {
         handleLogin();
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleLogin();
-        }
-    };
 
     const isLoading = masterLoginMutation.isPending || adminLoginMutation.isPending || verifyMutation.isPending;
 
@@ -264,7 +261,6 @@ export default function LoginForm() {
                             value={companyName}
                             className="login-form-input"
                             onChange={handleCompanyInputChange}
-                            onKeyDown={handleKeyDown}
                         />
                         {showSuggestions && suggestions.length > 0 && (
                             <ul className="company-suggestion-dropdown">
@@ -292,7 +288,6 @@ export default function LoginForm() {
                         value={email}
                         className="login-form-input"
                         onChange={(e) => setEmail(e.target.value)}
-                        onKeyDown={handleKeyDown}
                         onInvalid={(e) => e.preventDefault()}
                     />
                 </label>
@@ -310,7 +305,6 @@ export default function LoginForm() {
                             setPassword(e.target.value);
                             setPasswordError(false);
                         }}
-                        onKeyDown={handleKeyDown}
                     />
                 </label>
                 <p className="login-form-missing" style={{ visibility: pathname === '/admin/login' ? 'hidden' : 'visible' }}>
@@ -341,7 +335,8 @@ export default function LoginForm() {
                 )}
                 <LoginButton
                     label="로그인"
-                    onClick={handleLogin}
+                    type="submit"
+                    disabled={isLoading}
                 />
             </form>
 
