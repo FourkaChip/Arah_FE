@@ -29,7 +29,7 @@ export default function ModalInput({
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [timeLeft, setTimeLeft] = useState(300);
+    const [timeLeft, setTimeLeft] = useState(180);
     const [isTimerActive, setIsTimerActive] = useState(modalType === 'auth');
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export default function ModalInput({
         if (onResendCode) {
             try {
                 onResendCode();
-                setTimeLeft(300);
+                setTimeLeft(180);
                 setIsTimerActive(true);
             } catch {
                 toast.error('인증코드 재전송에 실패했습니다.');
