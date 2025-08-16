@@ -245,6 +245,7 @@ export default function ModalDepartment({
                                     hideFooter
                                     disableColumnMenu
                                     disableColumnResize
+                                    localeText={{ noRowsLabel: '관리자가 없습니다' }}
                                 />
                             </div>
                             <div className="modal-footer-dept">
@@ -338,6 +339,7 @@ export default function ModalDepartment({
                                     disableColumnMenu
                                     disableColumnResize
                                     disableColumnSelector
+                                    localeText={{ noRowsLabel: '부서가 없습니다' }}
                                 />
                             </div>
                             <div className="modal-footer-dept">
