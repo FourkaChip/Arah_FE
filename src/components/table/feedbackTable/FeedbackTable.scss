@@ -158,27 +158,75 @@ $primary: $blue;
   padding: 16px;
   font-size: 14px;
   line-height: 1.6;
-  p {
-    margin: 6px 0;
-    padding: 8px;
-    font-weight: bold;
-    strong {
-      font-size: 14px;
-      color: $primary !important;
-      margin-right: 17px;
-      font-weight: bolder;
-    }
-    &.answer {
-      color: #5D5FEF;
 
-      strong{
-        color: #5D5FEF !important;
+  // 공통 섹션 스타일
+  .feedback-question-section,
+  .feedback-answer-section,
+  .feedback-feedback_reason-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 5px 50px 5px 5px;
+    font-weight: bolder;
+
+    .feedback-label {
+      padding: 0;
+      margin: 0;
+      align-self: flex-start; // 라벨을 맨 위에 고정
+
+      strong {
+        color: $primary !important;
+        font-size: 20px;
+        font-weight: bolder;
       }
     }
 
-    &.feedback {
-      background: #FFFBDB !important;
+    .feedback-content {
+      margin: 0;
+      flex: 1; // 남은 공간을 모두 차지
+      word-wrap: break-word; // 긴 단어 줄바꿈
+      white-space: pre-wrap; // 공백과 줄바꿈 유지
+      overflow-wrap: break-word; // 단어 분할 허용
+      font-weight: bold;
     }
+  }
+
+  // 답변 섹션 특화 스타일
+  .feedback-answer-section {
+    .feedback-label strong {
+      color: #5D5FEF !important;
+    }
+    .feedback-content.answer-content {
+      color: #5D5FEF;
+    }
+  }
+
+  // 사유 섹션 특화 스타일
+  .feedback-feedback_reason-section {
+    background: #FFFBDB !important;
+  }
+
+  p {
+    margin: 6px 0;
+    padding: 4px;
+    //font-weight: bold;
+    //strong {
+    //  font-size: 14px;
+    //  color: $primary !important;
+    //  margin-right: 17px;
+    //  font-weight: bolder;
+    //}
+    //&.answer {
+    //  color: #5D5FEF;
+    //
+    //  strong{
+    //    color: #5D5FEF !important;
+    //  }
+    //}
+    //
+    //&.feedback {
+    //  background: #FFFBDB !important;
+    //}
   }
 }
 
@@ -209,6 +257,7 @@ $primary: $blue;
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
 
   &.open {
+    overflow-y: scroll;
     max-height: 500px;
     opacity: 1;
   }

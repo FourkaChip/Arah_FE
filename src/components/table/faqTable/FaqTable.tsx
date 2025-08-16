@@ -452,10 +452,22 @@ export default function FaqAdminTable() {
                                                 className={`faq-detail-wrapper animated-wrapper${expandedRowId === row.id ? " open" : ""}`}
                                             >
                                                 <div className="faq-detail-view">
-                                                    <p className="faq-detail-view question">
-                                                        <strong>Q.</strong> {row.original.question}</p>
-                                                    <p className="faq-detail-view answer">
-                                                        <strong>A.</strong> {row.original.answer}</p>
+                                                    <div className="faq-question-section">
+                                                        <p className="faq-label">
+                                                            <strong>Q.</strong>
+                                                        </p>
+                                                        <p className="faq-content question-content">
+                                                            {row.original.question}
+                                                        </p>
+                                                    </div>
+                                                    <div className="faq-answer-section">
+                                                        <p className="faq-label">
+                                                            <strong>A.</strong>
+                                                        </p>
+                                                        <p className="faq-content answer-content">
+                                                            {row.original.answer}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
