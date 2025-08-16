@@ -83,7 +83,6 @@ export function NotificationProvider({
     const latestReqRef = useRef(0);
     const isInitializedRef = useRef(false);
     const sseInitializedRef = useRef(false);
-    const unreadCountLoadingRef = useRef(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -206,32 +205,6 @@ export function NotificationProvider({
         [filters.tab, itemsPerPage]
     );
 
-    const loadUnreadCount = useCallback(async (forceReload = false) => {
-        if (unreadCountLoadingRef.current && !forceReload) {
-            return unreadCount;
-        }
-
-        unreadCountLoadingRef.current = true;
-
-        try {
-            if (forceReload) {
-                clearNotificationCache();
-            }
-
-            const response = await fetchUnreadNotificationCount(forceReload);
-            if (response.success) {
-                const serverCount = response.result.count;
-
-                refetchUnreadCount(); // 서버에서 최신 unreadCount 받아옴
-                return serverCount;
-            }
-        } catch (error) {
-        } finally {
-            unreadCountLoadingRef.current = false;
-        }
-        return unreadCount;
-    }, [unreadCount, isClient]);
-
     const filteredNotifications = notifications;
 
     const derivedUnreadFromList = filteredNotifications.filter(n => !n.isRead).length;
@@ -250,16 +223,6 @@ export function NotificationProvider({
         },
         [loadPageData]
     );
-
-    useEffect(() => {
-        if (!isInitializedRef.current || !isClient) return;
-
-        const timeoutId = setTimeout(() => {
-            loadUnreadCount(true);
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-    }, [pathname, isClient, loadUnreadCount]);
 
     const handleItemClick = useCallback(async (id: string) => {
         try {
@@ -282,7 +245,7 @@ export function NotificationProvider({
                             : notification
                     )
                 );
-                refetchUnreadCount(); // 읽음 처리 후 즉시 서버에서 최신 unreadCount 받아옴
+                await refetchUnreadCount();
 
                 if (filters.tab === '읽지 않음') {
                     setTimeout(() => {
@@ -301,7 +264,7 @@ export function NotificationProvider({
                 setNotifications((prev) =>
                     prev.map((n) => ({...n, isRead: true}))
                 );
-                refetchUnreadCount(); // 전체 읽음 처리 후 즉시 서버에서 최신 unreadCount 받아옴
+                await refetchUnreadCount();
                 setTimeout(() => {
                     loadPageData(currentPage);
                 }, 100);
@@ -317,11 +280,9 @@ export function NotificationProvider({
 
         isInitializedRef.current = true;
 
-        const serverCount = await loadUnreadCount(true);
-
         await loadPageData(1);
-
-    }, [loadUnreadCount, loadPageData, isClient, unreadCount]);
+        await refetchUnreadCount();
+    }, [loadPageData, isClient, refetchUnreadCount]);
 
     useEffect(() => {
         if (isClient && !isInitializedRef.current) {
@@ -344,7 +305,6 @@ export function NotificationProvider({
             if (event.key === 'accessToken' && event.newValue) {
                 isInitializedRef.current = false;
                 sseInitializedRef.current = false;
-                unreadCountLoadingRef.current = false;
                 setTimeout(() => {
                     if (isClient) {
                         initializeNotifications();
@@ -354,7 +314,6 @@ export function NotificationProvider({
                 setNotifications([]);
                 isInitializedRef.current = false;
                 sseInitializedRef.current = false;
-                unreadCountLoadingRef.current = false;
             }
         };
 
@@ -371,27 +330,14 @@ export function NotificationProvider({
             localStorage.setItem('unreadNotificationCount', String(unreadCount));
         };
 
-        const handleLoad = () => {
-            if (isClient && isInitializedRef.current) {
-                setTimeout(() => {
-                    loadUnreadCount(true);
-                }, 500);
-            }
-        };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
-        window.addEventListener('load', handleLoad);
-
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            window.removeEventListener('load', handleLoad);
         };
-    }, [unreadCount, isClient, loadUnreadCount]);
+    }, [unreadCount, isClient]);
 
     const refreshModalData = useCallback(async () => {
         try {
-            const countResponse = await fetchUnreadNotificationCount(true);
-            const serverUnreadCount = countResponse.success ? countResponse.result.count : 0;
             const isReadParam = false;
             const response = await fetchNotificationList(isReadParam, 0);
             if (response.success) {
@@ -399,11 +345,10 @@ export function NotificationProvider({
                     transformServerDataToClient
                 );
                 setNotifications(transformed);
-                // setUnreadCount(serverUnreadCount); // 제거: unreadCount는 useQuery로 관리
             }
-        } catch (error) {
-        }
-    }, []);
+            await refetchUnreadCount();
+        } catch (error) {}
+    }, [refetchUnreadCount]);
 
     const contextValue: NotificationContextType = {
         notifications,
