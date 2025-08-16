@@ -8,10 +8,34 @@
 
 .tooltip-text {
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   cursor: default;
   width: 100%;
+  line-height: 1.4;
+
+  // 여러 줄 텍스트를 위한 스타일
+  .department-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    padding: 1px 0;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 2px;
+    }
+  }
+
+  // 단일 텍스트를 위한 스타일 (div가 없는 경우)
+  &:not(:has(div)) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    display: block;
+  }
 }
 
 .tooltip-popup {
@@ -27,10 +51,12 @@
   font-size: 13px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-top: 6px;
-  white-space: nowrap;
+  white-space: nowrap; // 한 줄로 표시
   line-height: 1.4;
   width: max-content;
   min-width: fit-content;
+  max-width: 300px; // 최대 너비 제한
+  text-align: center;
 
   // 애니메이션 효과
   opacity: 0;

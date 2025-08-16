@@ -1,7 +1,8 @@
+// components/tooltip/TooltipCell.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import './TooltipCell.scss';
 
-interface TooltipCellProps {
+export interface TooltipCellProps {
     text: string;
     maxWidth?: string;
     className?: string;
@@ -13,14 +14,18 @@ const TooltipCell: React.FC<TooltipCellProps> = ({
                                                      className = ""
                                                  }) => {
     const [showTooltip, setShowTooltip] = useState(false);
+    const [tooltipText, setTooltipText] = useState('');
     const [isOverflowing, setIsOverflowing] = useState(false);
     const textRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const checkOverflow = () => {
             if (textRef.current) {
-                const isTextOverflowing = textRef.current.scrollWidth > textRef.current.clientWidth;
-                setIsOverflowing(isTextOverflowing);
+                // 단일 줄 텍스트의 경우 overflow 체크
+                if (!text.includes(', ')) {
+                    const isTextOverflowing = textRef.current.scrollWidth > textRef.current.clientWidth;
+                    setIsOverflowing(isTextOverflowing);
+                }
             }
         };
 
@@ -31,13 +36,44 @@ const TooltipCell: React.FC<TooltipCellProps> = ({
 
     const handleMouseEnter = () => {
         if (isOverflowing) {
+            setTooltipText(text);
             setShowTooltip(true);
         }
     };
 
     const handleMouseLeave = () => {
         setShowTooltip(false);
+        setTooltipText('');
     };
+
+    // 개별 div 요소에 대한 마우스 이벤트 핸들러
+    const handleDivMouseEnter = (e: React.MouseEvent<HTMLDivElement>, fullText: string) => {
+        const target = e.currentTarget;
+        const isOverflowing = target.scrollWidth > target.clientWidth;
+
+        if (isOverflowing) {
+            setTooltipText(fullText);
+            setShowTooltip(true);
+        }
+    };
+
+    const handleDivMouseLeave = () => {
+        setShowTooltip(false);
+        setTooltipText('');
+    };
+
+    // 여러 줄 표시를 위한 텍스트 처리
+    const displayText = text.includes(', ') ?
+        text.split(', ').map((item, index) => (
+            <div
+                key={index}
+                onMouseEnter={(e) => handleDivMouseEnter(e, item)}
+                onMouseLeave={handleDivMouseLeave}
+                className="department-item"
+            >
+                {item}
+            </div>
+        )) : text;
 
     return (
         <div className={`tooltip-wrapper ${className}`}>
@@ -48,12 +84,12 @@ const TooltipCell: React.FC<TooltipCellProps> = ({
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                {text}
+                {displayText}
             </div>
 
-            {showTooltip && isOverflowing && (
+            {showTooltip && tooltipText && (
                 <div className="tooltip-popup">
-                    {text}
+                    {tooltipText}
                     <div className="tooltip-arrow" />
                 </div>
             )}
@@ -61,4 +97,4 @@ const TooltipCell: React.FC<TooltipCellProps> = ({
     );
 };
 
-export default React.memo(TooltipCell);
+export default TooltipCell;
