@@ -95,13 +95,13 @@ export default function ModalFAQ({
                             </label>
                             <div style={{position: 'relative'}}>
                                 <input
-                                    className="input faq-input-with-counter"
+                                    className="input"
                                     placeholder="예상 질문을 입력해 주세요."
                                     value={question}
                                     maxLength={200}
                                     onChange={(e) => setQuestion(e.target.value.slice(0, 200))}
                                 />
-                                <span className="input-counter">{question.length} / 200</span>
+                                <span className="input-counter-outside">{question.length} / 200</span>
                             </div>
                         </div>
 
@@ -109,14 +109,14 @@ export default function ModalFAQ({
                             <label>제공 답변</label>
                             <div style={{position: 'relative'}}>
                                 <textarea
-                                    className="textarea faq-textarea-with-counter"
+                                    className="textarea"
                                     placeholder="질문에 대한 답변을 등록해 주세요."
                                     value={answer}
                                     maxLength={500}
                                     onChange={(e) => setAnswer(e.target.value.slice(0, 500))}
                                     style={{height: 160}}
                                 />
-                                <span className="textarea-counter">{answer.length} / 500</span>
+                                <span className="textarea-counter-outside">{answer.length} / 500</span>
                             </div>
                         </div>
 
