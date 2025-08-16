@@ -210,21 +210,20 @@ export default function ModalDepartment({
     return typeof window !== 'undefined'
         ? createPortal(
             <div className="modal-window department-modal">
-                <div className="modal-dialog department-modal" style={{width: 640, height: 574}}>
+                <div className="modal-dialog department-modal">
                     <button className="modal-close" onClick={onClose}>×</button>
                     {initialLoading ? (
-                        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
+                        <div className="centered-content">
                             <p>로딩 중...</p>
                         </div>
                     ) : step === 'list' ? (
                         <>
                             <h2 className="modal-title-dept">관리자 부서 등록</h2>
                             <p className="modal-description-dept">관리자가 관리할 부서를 선택해 주세요.</p>
-                            <div style={{display: 'flex', gap: 8, marginBottom: 16}}>
+                            <div className="department-search-wrapper">
                                 <input
                                     className="admin-search-input"
                                     placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요."
-                                    style={{flex: 1}}
                                     value={emailInput}
                                     onChange={e => setEmailInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
@@ -238,8 +237,8 @@ export default function ModalDepartment({
                                     {loading ? '조회 중...' : '추가'}
                                 </button>
                             </div>
-                            {errorMsg && <div style={{color: 'red', marginBottom: 8}}>{errorMsg}</div>}
-                            <div style={{height: 320}}>
+                            {errorMsg && <div className="error-message">{errorMsg}</div>}
+                            <div className="department-datagrid">
                                 <DataGrid
                                     rows={users}
                                     columns={columns}
@@ -248,8 +247,7 @@ export default function ModalDepartment({
                                     disableColumnResize
                                 />
                             </div>
-                            <div className="modal-footer"
-                                 style={{display: 'flex', justifyContent: 'center', marginTop: 32, gap: 8}}>
+                            <div className="modal-footer-dept">
                                 <ModalButton
                                     type="cancel"
                                     label="취소"
@@ -286,16 +284,16 @@ export default function ModalDepartment({
                         </>
                     ) : (
                         <>
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div className="modal-header-flex">
                                 <h2 className="modal-title-dept">관리자 부서 등록</h2>
-                                <span className="modal-description-dept" style={{fontWeight: 600}}>
+                                <span className="modal-description-dept strong">
                                     관리자: {selectedUser?.name}
                                 </span>
                             </div>
                             <p className="modal-description-dept">
                                 관리자가 관리할 부서를 선택해 주세요.
                             </p>
-                            <div style={{flex: 1, marginTop: 16, height: 320}}>
+                            <div className="department-datagrid select-mode">
                                 <DataGrid
                                     rows={departmentList.map((dept) => ({id: dept.departmentId, name: dept.name}))}
                                     columns={[
@@ -308,35 +306,27 @@ export default function ModalDepartment({
                                             field: 'checked',
                                             headerName: '',
                                             renderHeader: () => (
-                                                <input
-                                                    type="checkbox"
-                                                    className="department-checkbox-input"
-                                                    style={{
-                                                        width: 20,
-                                                        height: 20,
-                                                        accentColor: '#232D64',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    checked={checked.length === departmentList.length}
-                                                    onChange={(e) => {
-                                                        const isChecked = e.target.checked;
-                                                        setChecked(isChecked ? departmentList.map(d => d.name) : []);
-                                                    }}
-                                                />
+                                                <div className="centered-content">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="department-checkbox-input"
+                                                        checked={checked.length === departmentList.length}
+                                                        onChange={(e) => {
+                                                            const isChecked = e.target.checked;
+                                                            setChecked(isChecked ? departmentList.map(d => d.name) : []);
+                                                        }}
+                                                    />
+                                                </div>
                                             ),
                                             renderCell: (params) => (
-                                                <input
-                                                    type="checkbox"
-                                                    className="department-checkbox-input"
-                                                    style={{
-                                                        width: 20,
-                                                        height: 20,
-                                                        accentColor: '#232D64',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    checked={checked.includes(params.row.name)}
-                                                    onChange={() => toggleDepartment(params.row.name)}
-                                                />
+                                                <div className="centered-content">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="department-checkbox-input"
+                                                        checked={checked.includes(params.row.name)}
+                                                        onChange={() => toggleDepartment(params.row.name)}
+                                                    />
+                                                </div>
                                             ),
                                             sortable: false,
                                             width: 80,
@@ -348,8 +338,7 @@ export default function ModalDepartment({
                                     disableColumnSelector
                                 />
                             </div>
-                            <div className="modal-footer"
-                                 style={{display: 'flex', justifyContent: 'center', marginTop: 32, gap: 8}}>
+                            <div className="modal-footer-dept">
                                 <ModalButton
                                     type="cancel"
                                     label="취소"

@@ -2,6 +2,12 @@
 @use "bulma/sass/elements/button";
 @use "bulma/sass/form";
 
+.MuiDataGrid-columnHeader {
+  text-align: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
 .modal-window.department-modal {
   color-scheme: light !important;
   position: fixed !important;
@@ -54,47 +60,35 @@
   margin-bottom: 24px;
 }
 
-.department-search-wrapper {
+.centered-content {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  justify-content: center !important;
+  align-items: center !important;
+  align-content: center !important;
+  text-align: center !important;
+  height: 100%;
+  width: 100%;
 }
 
-.department-search-input {
-  @extend .input;
-  background-color: #ffffff;
-  color: #232D64;
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-
-  &::placeholder {
-    color: #232D64;
-  }
+.error-message {
+  color: red;
+  margin-bottom: 8px;
 }
 
-.department-checkbox-input {
-  height: 24px;
-  accent-color: #232D64;
-  cursor: pointer;
-}
-
-.department-search-button {
-  @extend .button;
-  @extend .is-primary;
+.strong {
   font-weight: 600;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background-color: #202452;
-  color: white;
-  border: none;
-  cursor: pointer;
+}
+
+.modal-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .department-datagrid {
+  height: 320px;
   flex: 1;
+  margin-top: 16px;
 
   .MuiDataGrid-root {
     border: none;
@@ -110,18 +104,62 @@
   }
 }
 
-.modal-footer {
+.department-datagrid.select-mode {
+  flex: 1;
+  margin-top: 16px;
+  height: 320px;
+}
+
+.department-search-wrapper {
   display: flex;
-  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.department-search-input {
+  @extend .input;
+  background-color: #ffffff;
+  color: #232d64;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+
+  &::placeholder {
+    color: #232d64;
+  }
+}
+
+.department-checkbox-input {
+  width: 120px !important;
+  accent-color: #232d64;
+  cursor: pointer;
+}
+
+.department-search-button {
+  @extend .button;
+  @extend .is-primary;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background-color: #202452;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-footer-dept {
+  display: flex;
+  justify-content: center;
   gap: 12px;
   margin-top: 32px;
 }
 
 .button.is-dark {
-  background-color: #232D64;
+  background-color: #232d64;
   color: white;
 
   &:hover {
-    background-color: darken(#232D64, 5%);
+    background-color: darken(#232d64, 5%);
   }
 }
