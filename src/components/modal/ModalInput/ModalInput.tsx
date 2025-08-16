@@ -29,7 +29,7 @@ export default function ModalInput({
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [timeLeft, setTimeLeft] = useState(300);
+    const [timeLeft, setTimeLeft] = useState(180);
     const [isTimerActive, setIsTimerActive] = useState(modalType === 'auth');
 
     useEffect(() => {
