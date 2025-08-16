@@ -1,5 +1,6 @@
 "use client";
 import {useState, useEffect, useCallback, useMemo, useRef} from 'react';
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {createPortal} from 'react-dom';
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
@@ -28,6 +29,10 @@ export default function ModalDepartment({
     const [currentUserCompanyId, setCurrentUserCompanyId] = useState<number | null>(null);
     const [initialLoading, setInitialLoading] = useState(true);
     const queryClient = useQueryClient();
+
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertLabel, setAlertLabel] = useState('알림');
+    const [alertDesc, setAlertDesc] = useState('');
 
     const initializedFromDefaultUser = useRef(false);
     const didLoadCurrentUser = useRef(false);
@@ -141,6 +146,12 @@ export default function ModalDepartment({
 
     const handleConfirmDepartment = useCallback(async () => {
         if (!selectedUser) return;
+        if (checked.length === 0) {
+            setAlertLabel('관리자 등록 오류');
+            setAlertDesc('부서를 선택해주세요');
+            setAlertOpen(true);
+            return;
+        }
 
         const selectedDeptNames = departmentList
             .filter(dept => checked.includes(dept.name))
@@ -278,7 +289,9 @@ export default function ModalDepartment({
                                                 alert("관리자 부서 등록에 실패했습니다. 다시 시도해 주세요.");
                                             }
                                         } else {
-                                            if (onClose) onClose();
+                                            setAlertLabel('관리자 등록 오류');
+                                            setAlertDesc('부서를 선택해주세요');
+                                            setAlertOpen(true);
                                         }
                                     }}
                                     disabled={loading}
@@ -362,6 +375,14 @@ export default function ModalDepartment({
                             </div>
                         </>
                     )}
+                {alertOpen && (
+                    <ModalDefault
+                        type="default"
+                        label={alertLabel}
+                        description={alertDesc}
+                        onClose={() => setAlertOpen(false)}
+                    />
+                )}
                 </div>
             </div>,
             document.body
