@@ -173,11 +173,13 @@ export default function ModalUpload({
                         type="cancel"
                         label="취소"
                         onClick={onClose}
+                        disabled={loading}
                     />
                     <ModalButton
                         type="default"
                         label={loading ? "업로드 중..." : "등록"}
                         onClick={handleSubmit}
+                        disabled={loading}
                     />
                 </div>
             </div>

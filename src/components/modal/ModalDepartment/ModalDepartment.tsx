@@ -254,6 +254,7 @@ export default function ModalDepartment({
                                     onClick={() => {
                                         if (onClose) onClose();
                                     }}
+                                    disabled={loading}
                                 />
                                 <ModalButton
                                     type="default"
@@ -279,6 +280,7 @@ export default function ModalDepartment({
                                             if (onClose) onClose();
                                         }
                                     }}
+                                    disabled={loading}
                                 />
                             </div>
                         </>
@@ -347,11 +349,13 @@ export default function ModalDepartment({
                                         setSelectedUser(null);
                                         setChecked([]);
                                     }}
+                                    disabled={loading}
                                 />
                                 <ModalButton
                                     type="default"
                                     label="확인"
                                     onClick={handleConfirmDepartment}
+                                    disabled={loading}
                                 />
                             </div>
                         </>

@@ -161,7 +161,7 @@ export default function ModalCommit({onClose, docId, folderId}: ModalCommitProps
                     ))}
                 </div>
                 <div className="modal-footer fixed-footer">
-                    <ModalButton type="default" label="확인" onClick={onClose}/>
+                    <ModalButton type="default" label="확인" onClick={onClose} disabled={loading}/>
                 </div>
             </div>
         </div>

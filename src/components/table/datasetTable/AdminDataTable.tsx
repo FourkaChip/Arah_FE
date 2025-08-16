@@ -26,6 +26,7 @@ import {
     fetchVersionHistory,
     fetchDeletePdf,
     fetchCreateFolder,
+    fetchUpdateFolder,
     fetchUploadPdf,
     fetchDeleteFolder,
     fetchChangeMainDocument,

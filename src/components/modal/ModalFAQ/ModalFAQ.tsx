@@ -97,8 +97,8 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
                         </div>
 
                         <div className="modal-footer">
-                            <ModalButton type="cancel" label="취소" onClick={onClose}/>
-                            <ModalButton type="default" label="등록" onClick={handleSubmit}/>
+                            <ModalButton type="cancel" label="취소" onClick={onClose} disabled={loading}/>
+                            <ModalButton type="default" label="등록" onClick={handleSubmit} disabled={loading}/>
                         </div>
                     </div>
                 </div>

@@ -92,6 +92,7 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
                                     type="default"
                                     label={editMode ? (loading ? "등록 중..." : "등록") : buttonLabel}
                                     onClick={handleSubmit}
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
