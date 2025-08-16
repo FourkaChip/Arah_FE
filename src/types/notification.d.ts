@@ -57,6 +57,8 @@ export interface NotificationContextType {
     handleItemClick: (id: string) => void;
     handleMarkAllAsRead: () => void;
     refreshModalData?: () => Promise<void>;
+    errorMessage: string | null;
+    setErrorMessage: (msg: string | null) => void;
 }
 
 export interface NotificationProviderProps {

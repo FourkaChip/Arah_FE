@@ -79,6 +79,7 @@ export function NotificationProvider({
     const [totalPages, setTotalPages] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const latestReqRef = useRef(0);
     const isInitializedRef = useRef(false);
@@ -232,6 +233,7 @@ export function NotificationProvider({
             }
 
             if (clickedNotification.isRead) {
+                setErrorMessage('이미 읽음 처리된 알림입니다.');
                 return;
             }
 
@@ -252,6 +254,8 @@ export function NotificationProvider({
                         loadPageData(currentPage);
                     }, 100);
                 }
+            } else if (response.message === '이미 읽음 처리된 알림입니다.') {
+                setErrorMessage(response.message);
             }
         } catch (error) {
         }
@@ -363,6 +367,8 @@ export function NotificationProvider({
         handleItemClick,
         handleMarkAllAsRead,
         refreshModalData,
+        errorMessage,
+        setErrorMessage,
     };
 
     return (

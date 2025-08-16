@@ -8,6 +8,7 @@ import MarkAllReadButton from './MarkAllReadButton';
 import {useNotificationContext} from '@/contexts/NotificationContext';
 import {NOTIFICATION_TABS, NotificationProps} from '@/types/notification.d';
 import './Notification.scss';
+import ModalDefault from '@/components/modal/ModalDefault/ModalDefault';
 
 
 export default function Notification({
@@ -25,6 +26,8 @@ export default function Notification({
         handlePageChange,
         handleItemClick,
         handleMarkAllAsRead,
+        errorMessage,
+        setErrorMessage,
     } = useNotificationContext();
 
     const actualUnreadCount = React.useMemo(() => {
@@ -67,6 +70,14 @@ export default function Notification({
                     onPageChange={handlePageChange}
                 />
             </div>
+            {errorMessage && (
+                <ModalDefault
+                    type="default"
+                    label="알림 오류"
+                    onClose={() => setErrorMessage(null)}
+                    errorMessages={[errorMessage]}
+                />
+            )}
         </div>
     );
 }
