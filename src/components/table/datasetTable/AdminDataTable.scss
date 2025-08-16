@@ -273,7 +273,9 @@ $primary: $blue;
       border-bottom: 1px solid #eee;
       text-align: center !important;
     }
-
+    tr {
+      height: 48px;
+    }
     tr:nth-child(even) {
       background-color: #fdfdfd;
     }
