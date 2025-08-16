@@ -96,6 +96,7 @@ export interface ModalFAQProps {
     category?: string;
     question?: string;
     answer?: string;
+    loading?: boolean;
 }
 
 // CustomDropDownProps는 커스텀 드롭다운 컴포넌트에서 사용되는 속성 타입입니다.
