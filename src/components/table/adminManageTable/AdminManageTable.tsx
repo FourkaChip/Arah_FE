@@ -159,7 +159,13 @@ export default function MasterAdminTable() {
                     cell: ({row}) => {
                         const depts = row.original.adminDepartments;
                         if (Array.isArray(depts)) {
-                            return depts.join(', ');
+                            return (
+                                <div>
+                                    {depts.map((dept, index) => (
+                                        <div key={index}>{dept}</div>
+                                    ))}
+                                </div>
+                            );
                         }
                         return row.original.departmentName || '';
                     }
