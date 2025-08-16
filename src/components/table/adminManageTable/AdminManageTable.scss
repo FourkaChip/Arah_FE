@@ -11,7 +11,6 @@ $primary: $blue;
   font-size: 20px;
   padding: 0;
   margin-top: 6px;
-
   &:hover {
     color: #ff1a1a;
   }
@@ -46,35 +45,31 @@ $primary: $blue;
   font-size: 14px;
   margin-top: 16px;
   table-layout: fixed;
+  overflow: visible;
 
   thead {
     background-color: transparent;
-
     th {
       padding: 12px 8px;
       border-bottom: 1px solid #ddd;
       color: #232d64 !important;
       text-align: center !important;
       font-weight: 600;
-      // 필요시 컬럼별 width 지정
     }
   }
 
   tbody {
     tr {
       border-bottom: 1px solid #eee;
-
       &:nth-child(even) {
         background-color: #fafafa;
       }
-
       td {
         padding: 10px 8px;
         vertical-align: middle;
         text-align: center !important;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        overflow: visible;
+        position: relative;
 
         &.empty-row {
           text-align: center;

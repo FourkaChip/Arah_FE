@@ -5,6 +5,7 @@ import CustomSearch from "@/components/customSearch/CustomSearch";
 import ModalDepartment from "@/components/modal/ModalDepartment/ModalDepartment";
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import Pagination from "@/components/customPagination/Pagination";
+import TooltipCell from "@/components/tooltip/TooltipCell";
 import './AdminManageTable.scss';
 import '@/app/(Master)/master/(after-login)/manage/ManageAdmin.scss';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
@@ -130,13 +131,17 @@ export default function MasterAdminTable() {
         setOpenDeleteModal(true);
     }, [pathName]);
 
-    // tanstack-table 열 정의 - AdminRowType 타입에 맞게 조정
+    // tanstack-table 열 정의 - 분리된 툴팁 컴포넌트 사용
     const columns: ColumnDef<AdminRowType>[] = useMemo(() => {
         if (pathName === '/master/dept') {
             return [
                 {
                     accessorKey: "name",
                     header: "부서명",
+                    cell: ({getValue}) => {
+                        const name = getValue() as string;
+                        return <TooltipCell text={name || ''} maxWidth="300px" />;
+                    }
                 },
                 {
                     id: "edit",
@@ -159,15 +164,11 @@ export default function MasterAdminTable() {
                     cell: ({row}) => {
                         const depts = row.original.adminDepartments;
                         if (Array.isArray(depts)) {
-                            return (
-                                <div>
-                                    {depts.map((dept, index) => (
-                                        <div key={index}>{dept}</div>
-                                    ))}
-                                </div>
-                            );
+                            const deptText = depts.join(', ');
+                            return <TooltipCell text={deptText} maxWidth="150px" />;
                         }
-                        return row.original.departmentName || '';
+                        const deptText = row.original.departmentName || '';
+                        return <TooltipCell text={deptText} maxWidth="150px" />;
                     }
                 },
                 {
@@ -187,15 +188,26 @@ export default function MasterAdminTable() {
                 {
                     accessorKey: "position",
                     header: "직급",
+                    cell: ({getValue}) => {
+                        const position = getValue() as string;
+                        return <TooltipCell text={position || ''} maxWidth="100px" />;
+                    }
                 },
                 {
                     accessorKey: "name",
                     header: "사용자명",
+                    cell: ({getValue}) => {
+                        const name = getValue() as string;
+                        return <TooltipCell text={name || ''} maxWidth="120px" />;
+                    }
                 },
                 {
                     accessorKey: "email",
                     header: "이메일",
-                    cell: ({row}) => row.original.email || '',
+                    cell: ({row}) => {
+                        const email = row.original.email || '';
+                        return <TooltipCell text={email} maxWidth="180px" />;
+                    }
                 },
                 {
                     id: "departmentSetting",
@@ -226,7 +238,6 @@ export default function MasterAdminTable() {
                 }
             ];
         }
-        // 타입 에러 방지를 위해, 기본적으로 빈 배열을 반환합니다.
         return [];
     }, [pathName, deletingEmail, handleOpenDeptModal, handleOpenDeleteModal]);
 
