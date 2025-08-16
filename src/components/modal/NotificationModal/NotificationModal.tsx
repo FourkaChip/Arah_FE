@@ -60,11 +60,6 @@ const NotificationModal = memo<NotificationModalProps>(({
         [notifications, maxItems]
     );
 
-    const actualUnreadCount = React.useMemo(() => {
-        const count = notifications.filter(n => !n.isRead).length;
-        return count;
-    }, [notifications]);
-
     const displayUnreadCount = unreadCount;
     const isMarkAllReadDisabled = displayUnreadCount === 0;
 
@@ -84,8 +79,6 @@ const NotificationModal = memo<NotificationModalProps>(({
     };
 
     const handleItemClickWrapper = useCallback(async (id: string) => {
-        const clickedNotification = notifications.find(item => item.id === id);
-        const wasUnread = clickedNotification && !clickedNotification.isRead;
 
         handleItemClick(id);
 
