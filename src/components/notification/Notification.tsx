@@ -74,7 +74,10 @@ export default function Notification({
                 <ModalDefault
                     type="default"
                     label="알림 오류"
-                    onClose={() => setErrorMessage(null)}
+                    onClose={() => {
+                        setErrorMessage(null);
+                        window.location.reload();
+                    }}
                     errorMessages={[errorMessage]}
                 />
             )}
