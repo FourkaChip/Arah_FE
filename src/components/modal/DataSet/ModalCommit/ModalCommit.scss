@@ -34,6 +34,18 @@ $content-heading-color: #2E70E8;
   overflow: hidden;
 }
 
+.fixed-footer {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  z-index: 10000;
+  display: flex;
+  justify-content: flex-end;
+  width: auto;
+  background: none;
+  box-shadow: none;
+}
+
 .modal-close {
   position: absolute;
   top: 16px;
