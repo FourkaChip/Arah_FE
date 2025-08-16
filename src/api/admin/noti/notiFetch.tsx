@@ -159,9 +159,14 @@ export interface NotificationIdResponse {
 export const fetchNotificationList = async (
     isRead?: boolean,
     offset: number = 0,
-    limit?: number
+    limit?: number,
+    forceRefresh: boolean = false
 ): Promise<NotificationListResponse> => {
     const cacheKey = notificationCache.generateListKey(isRead, offset);
+    if (forceRefresh) {
+        notificationCache.delete(cacheKey);
+        inFlight.delete(cacheKey);
+    }
     return getOrFetch(cacheKey, async () => {
         const params = new URLSearchParams({offset: String(offset)});
         if (isRead !== undefined) {

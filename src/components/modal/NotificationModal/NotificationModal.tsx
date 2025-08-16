@@ -79,13 +79,13 @@ const NotificationModal = memo<NotificationModalProps>(({
     };
 
     const handleItemClickWrapper = useCallback(async (id: string) => {
-        handleItemClick(id);
+        await handleItemClick(id);
         if (contextRefreshModalData) {
             await contextRefreshModalData();
         } else if (refreshModalData) {
             await refreshModalData();
         }
-    }, [handleItemClick, notifications, contextRefreshModalData, refreshModalData]);
+    }, [handleItemClick, contextRefreshModalData, refreshModalData]);
 
     const handleMarkAllAsReadClick = useCallback(async () => {
         handleMarkAllAsRead();

@@ -185,7 +185,7 @@ export function NotificationProvider({
                     setNotifications(transformed);
 
                     const derived = transformed.filter(i => !i.isRead).length;
-                    refetchUnreadCount(); // 읽지 않은 알림 수를 서버에서 최신 상태로 가져옴
+                    refetchUnreadCount();
                     setHasNext(response.result.hasNext);
 
                     setTotalPages((prev) => {
@@ -343,7 +343,7 @@ export function NotificationProvider({
     const refreshModalData = useCallback(async () => {
         try {
             const isReadParam = false;
-            const response = await fetchNotificationList(isReadParam, 0);
+            const response = await fetchNotificationList(isReadParam, 0, undefined, true);
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
