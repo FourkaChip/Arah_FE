@@ -28,6 +28,7 @@ export default function Notification({
         handleMarkAllAsRead,
         errorMessage,
         setErrorMessage,
+        refreshModalData
     } = useNotificationContext();
 
     const actualUnreadCount = React.useMemo(() => {
@@ -74,9 +75,11 @@ export default function Notification({
                 <ModalDefault
                     type="default"
                     label="알림 오류"
-                    onClose={() => {
+                    onClose={async () => {
                         setErrorMessage(null);
-                        window.location.reload();
+                        if (typeof refreshModalData === 'function') {
+                            await refreshModalData();
+                        }
                     }}
                     errorMessages={[errorMessage]}
                 />
