@@ -141,7 +141,7 @@ export default function AdminDataTable() {
         [filteredData, currentPage]
     );
 
-    const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
+    const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
 
     const columns = useMemo<ColumnDef<RowData>[]>(() => [
         {
@@ -152,7 +152,7 @@ export default function AdminDataTable() {
                     ref={checkboxRef}
                     onChange={(e) => {
                         const checked = e.target.checked;
-                        const newSelections: Record<number, boolean> = {};
+                        const newSelections: Record<string, boolean> = {};
                         paginatedData.forEach((row) => {
                             newSelections[row.id] = checked;
                         });
@@ -201,7 +201,7 @@ export default function AdminDataTable() {
                 <button
                     className="edit-folder-btn"
                     onClick={() => {
-                        setEditingFolderRowId(row.original.id);
+                        setEditingFolderRowId(row.original.id.toString());
                         setEditingFolderTitle(row.original.folderName);
                         setOpenEditFolderModal(true);
                     }}
@@ -370,7 +370,7 @@ export default function AdminDataTable() {
     };
 
     const handleAddDatasetClick = (folderId: number) => {
-        const selectedFolder = data.find(folder => folder.id === folderId.toString());
+        const selectedFolder = data.find(folder => String(folder.id) === String(folderId));
         setSelectedFolderId(folderId);
         setSelectedFolderName(selectedFolder?.folderName || null);
         setOpenUploadModal(true);
@@ -378,7 +378,7 @@ export default function AdminDataTable() {
 
     const handleDeleteSelectedFolders = async () => {
         const selectedFolderIds = Object.keys(selectedRowIds)
-            .filter(id => selectedRowIds[Number(id)])
+            .filter(id => selectedRowIds[id])
             .map(id => Number(id));
 
         if (selectedFolderIds.length === 0) {
