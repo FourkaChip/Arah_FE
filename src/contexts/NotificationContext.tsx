@@ -26,6 +26,7 @@ import {
     NotificationProviderProps
 } from '@/types/notification';
 import {useNotificationSSE} from '@/hooks/useNotificationSSE';
+import {useQuery} from '@tanstack/react-query';
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -68,50 +69,38 @@ export function NotificationProvider({
                                      }: NotificationProviderProps) {
     const pathname = usePathname();
 
-    const getInitialUnreadCount = () => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('unreadNotificationCount');
-            const count = saved ? parseInt(saved, 10) : 0;
-            return count;
-        }
-        return 0;
-    };
-
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [filters, setFilters] = useState<NotificationFilters>({
         tab: '전체',
         category: '전체',
     });
     const [currentPage, setCurrentPage] = useState(1);
-    const [unreadCount, setUnreadCount] = useState(getInitialUnreadCount);
     const [isLoading, setIsLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const latestReqRef = useRef(0);
     const isInitializedRef = useRef(false);
     const sseInitializedRef = useRef(false);
-    const unreadCountLoadingRef = useRef(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    useEffect(() => {
-        if (isClient && typeof window !== 'undefined') {
-            localStorage.setItem('unreadNotificationCount', String(unreadCount));
-        }
-    }, [unreadCount, isClient]);
+    const {
+        data: unreadCount = 0,
+        refetch: refetchUnreadCount,
+    } = useQuery({
+        queryKey: ['unreadNotificationCount'],
+        queryFn: async () => fetchUnreadNotificationCount(true).then(res => res.result.count),
+        staleTime: 10000,
+    });
 
     const handleNewNotification = useCallback((serverNotification: ServerNotificationItem) => {
         try {
-            setUnreadCount(prev => {
-                const newCount = prev + 1;
-                return newCount;
-            });
-
-            if ((filters.tab === '전체' || filters.tab === '읽지 않음') && currentPage === 1) {
+            if (filters.tab === '전체' || filters.tab === '읽지 않음') {
                 const newNotification = transformServerDataToClient(serverNotification);
 
                 setNotifications(prev => {
@@ -196,7 +185,7 @@ export function NotificationProvider({
                     setNotifications(transformed);
 
                     const derived = transformed.filter(i => !i.isRead).length;
-                    setUnreadCount(prev => Math.max(prev, derived));
+                    refetchUnreadCount();
                     setHasNext(response.result.hasNext);
 
                     setTotalPages((prev) => {
@@ -217,32 +206,6 @@ export function NotificationProvider({
         [filters.tab, itemsPerPage]
     );
 
-    const loadUnreadCount = useCallback(async (forceReload = false) => {
-        if (unreadCountLoadingRef.current && !forceReload) {
-            return unreadCount;
-        }
-
-        unreadCountLoadingRef.current = true;
-
-        try {
-            if (forceReload) {
-                clearNotificationCache();
-            }
-
-            const response = await fetchUnreadNotificationCount(forceReload);
-            if (response.success) {
-                const serverCount = response.result.count;
-
-                setUnreadCount(serverCount);
-                return serverCount;
-            }
-        } catch (error) {
-        } finally {
-            unreadCountLoadingRef.current = false;
-        }
-        return unreadCount;
-    }, [unreadCount, isClient]);
-
     const filteredNotifications = notifications;
 
     const derivedUnreadFromList = filteredNotifications.filter(n => !n.isRead).length;
@@ -262,16 +225,6 @@ export function NotificationProvider({
         [loadPageData]
     );
 
-    useEffect(() => {
-        if (!isInitializedRef.current || !isClient) return;
-
-        const timeoutId = setTimeout(() => {
-            loadUnreadCount(true);
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-    }, [pathname, isClient, loadUnreadCount]);
-
     const handleItemClick = useCallback(async (id: string) => {
         try {
             const clickedNotification = notifications.find(item => item.id === id);
@@ -280,6 +233,7 @@ export function NotificationProvider({
             }
 
             if (clickedNotification.isRead) {
+                setErrorMessage('이미 읽음 처리된 알림입니다.');
                 return;
             }
 
@@ -293,23 +247,19 @@ export function NotificationProvider({
                             : notification
                     )
                 );
-
-                setUnreadCount(prev => {
-                    const newCount = Math.max(0, prev - 1);
-                    setTimeout(() => {
-                    }, 0);
-                    return newCount;
-                });
+                await refetchUnreadCount();
 
                 if (filters.tab === '읽지 않음') {
                     setTimeout(() => {
                         loadPageData(currentPage);
                     }, 100);
                 }
+            } else if (response.message === '이미 읽음 처리된 알림입니다.') {
+                setErrorMessage(response.message);
             }
         } catch (error) {
         }
-    }, [notifications, filters.tab, currentPage, loadPageData]);
+    }, [notifications, filters.tab, currentPage, loadPageData, refetchUnreadCount]);
 
     const handleMarkAllAsRead = useCallback(async () => {
         try {
@@ -318,18 +268,14 @@ export function NotificationProvider({
                 setNotifications((prev) =>
                     prev.map((n) => ({...n, isRead: true}))
                 );
-
-                setUnreadCount(0);
-                setTimeout(() => {
-                }, 0);
-
+                await refetchUnreadCount();
                 setTimeout(() => {
                     loadPageData(currentPage);
                 }, 100);
             }
         } catch (error) {
         }
-    }, [currentPage, loadPageData]);
+    }, [currentPage, loadPageData, refetchUnreadCount]);
 
     const initializeNotifications = useCallback(async () => {
         if (isInitializedRef.current || !isClient) {
@@ -338,11 +284,9 @@ export function NotificationProvider({
 
         isInitializedRef.current = true;
 
-        const serverCount = await loadUnreadCount(true);
-
         await loadPageData(1);
-
-    }, [loadUnreadCount, loadPageData, isClient, unreadCount]);
+        await refetchUnreadCount();
+    }, [loadPageData, isClient, refetchUnreadCount]);
 
     useEffect(() => {
         if (isClient && !isInitializedRef.current) {
@@ -365,7 +309,6 @@ export function NotificationProvider({
             if (event.key === 'accessToken' && event.newValue) {
                 isInitializedRef.current = false;
                 sseInitializedRef.current = false;
-                unreadCountLoadingRef.current = false;
                 setTimeout(() => {
                     if (isClient) {
                         initializeNotifications();
@@ -375,7 +318,6 @@ export function NotificationProvider({
                 setNotifications([]);
                 isInitializedRef.current = false;
                 sseInitializedRef.current = false;
-                unreadCountLoadingRef.current = false;
             }
         };
 
@@ -392,45 +334,25 @@ export function NotificationProvider({
             localStorage.setItem('unreadNotificationCount', String(unreadCount));
         };
 
-        const handleLoad = () => {
-            if (isClient && isInitializedRef.current) {
-                setTimeout(() => {
-                    loadUnreadCount(true);
-                }, 500);
-            }
-        };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
-        window.addEventListener('load', handleLoad);
-
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            window.removeEventListener('load', handleLoad);
         };
-    }, [unreadCount, isClient, loadUnreadCount]);
+    }, [unreadCount, isClient]);
 
     const refreshModalData = useCallback(async () => {
         try {
-
-            const countResponse = await fetchUnreadNotificationCount(true);
-            const serverUnreadCount = countResponse.success ? countResponse.result.count : 0;
-
             const isReadParam = false;
-            const response = await fetchNotificationList(isReadParam, 0);
-
+            const response = await fetchNotificationList(isReadParam, 0, undefined, true);
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
                 );
-
                 setNotifications(transformed);
-
-                setUnreadCount(serverUnreadCount);
             }
-
-        } catch (error) {
-        }
-    }, []);
+            await refetchUnreadCount();
+        } catch (error) {}
+    }, [refetchUnreadCount]);
 
     const contextValue: NotificationContextType = {
         notifications,
@@ -439,12 +361,14 @@ export function NotificationProvider({
         filters,
         currentPage,
         totalPages,
-        unreadCount: unreadCount,
+        unreadCount: unreadCount as number,
         handleTabChange,
         handlePageChange,
         handleItemClick,
         handleMarkAllAsRead,
         refreshModalData,
+        errorMessage,
+        setErrorMessage,
     };
 
     return (

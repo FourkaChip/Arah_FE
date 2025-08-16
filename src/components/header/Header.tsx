@@ -20,28 +20,18 @@ function NotificationBell({
     buttonRef: React.RefObject<HTMLButtonElement | null>;
 }) {
     const {unreadCount} = useNotificationContext();
-    const [mounted, setMounted] = useState(false);
-    const [displayCount, setDisplayCount] = useState(0);
-
-    useEffect(() => setMounted(true), []);
-
-    useEffect(() => {
-        if (mounted) {
-            setDisplayCount(unreadCount);
-        }
-    }, [unreadCount, mounted]);
 
     return (
         <button
             ref={buttonRef}
             className="button is-white has-text-grey-light notification-button"
             onClick={onClick}
-            aria-label={`알림 ${mounted ? displayCount : 0}개`}
+            aria-label={`알림 ${unreadCount}개`}
         >
             <i className="fa-solid fa-bell fa-xl"></i>
-            {mounted && displayCount > 0 && (
+            {unreadCount > 0 && (
                 <span className="notification-badge" suppressHydrationWarning>
-                    {displayCount}
+                    {unreadCount}
                 </span>
             )}
         </button>
