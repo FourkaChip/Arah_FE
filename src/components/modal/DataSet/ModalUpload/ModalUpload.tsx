@@ -1,15 +1,14 @@
 import {useState, useRef, useEffect} from 'react';
 import './ModalUpload.scss';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
-import {ExtendedModalUploadProps, ModalUploadProps} from "@/types/modals";
-import Image from "next/image";
+import {ExtendedModalUploadProps} from "@/types/modals";
 import {useModalMessage} from "@/hooks/useModalMessage";
 
 
 
 export default function ModalUpload({
     onClose,
-    folderId,
+    // folderId,
     folderName,
     onSubmit
 }: ExtendedModalUploadProps) {
@@ -173,11 +172,13 @@ export default function ModalUpload({
                         type="cancel"
                         label="취소"
                         onClick={onClose}
+                        disabled={loading}
                     />
                     <ModalButton
                         type="default"
                         label={loading ? "업로드 중..." : "등록"}
                         onClick={handleSubmit}
+                        disabled={loading}
                     />
                 </div>
             </div>

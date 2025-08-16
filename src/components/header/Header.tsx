@@ -39,9 +39,11 @@ function NotificationBell({
             aria-label={`알림 ${mounted ? displayCount : 0}개`}
         >
             <i className="fa-solid fa-bell fa-xl"></i>
-            <span className="notification-badge" suppressHydrationWarning>
-        {mounted && displayCount > 0 ? displayCount : ''}
-      </span>
+            {mounted && displayCount > 0 && (
+                <span className="notification-badge" suppressHydrationWarning>
+                    {displayCount}
+                </span>
+            )}
         </button>
     );
 }

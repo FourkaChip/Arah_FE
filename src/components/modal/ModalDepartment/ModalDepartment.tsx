@@ -1,5 +1,6 @@
 "use client";
 import {useState, useEffect, useCallback, useMemo, useRef} from 'react';
+import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {createPortal} from 'react-dom';
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import ModalButton from "@/components/modal/Buttons/ModalButton";
@@ -28,6 +29,10 @@ export default function ModalDepartment({
     const [currentUserCompanyId, setCurrentUserCompanyId] = useState<number | null>(null);
     const [initialLoading, setInitialLoading] = useState(true);
     const queryClient = useQueryClient();
+
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertLabel, setAlertLabel] = useState('알림');
+    const [alertDesc, setAlertDesc] = useState('');
 
     const initializedFromDefaultUser = useRef(false);
     const didLoadCurrentUser = useRef(false);
@@ -141,6 +146,12 @@ export default function ModalDepartment({
 
     const handleConfirmDepartment = useCallback(async () => {
         if (!selectedUser) return;
+        if (checked.length === 0) {
+            setAlertLabel('관리자 등록 오류');
+            setAlertDesc('부서를 선택해주세요');
+            setAlertOpen(true);
+            return;
+        }
 
         const selectedDeptNames = departmentList
             .filter(dept => checked.includes(dept.name))
@@ -210,21 +221,20 @@ export default function ModalDepartment({
     return typeof window !== 'undefined'
         ? createPortal(
             <div className="modal-window department-modal">
-                <div className="modal-dialog department-modal" style={{width: 640, height: 574}}>
+                <div className="modal-dialog department-modal">
                     <button className="modal-close" onClick={onClose}>×</button>
                     {initialLoading ? (
-                        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
+                        <div className="centered-content">
                             <p>로딩 중...</p>
                         </div>
                     ) : step === 'list' ? (
                         <>
                             <h2 className="modal-title-dept">관리자 부서 등록</h2>
                             <p className="modal-description-dept">관리자가 관리할 부서를 선택해 주세요.</p>
-                            <div style={{display: 'flex', gap: 8, marginBottom: 16}}>
+                            <div className="department-search-wrapper">
                                 <input
                                     className="admin-search-input"
                                     placeholder="관리자로 등록할 사용자의 이메일을 입력해 주세요."
-                                    style={{flex: 1}}
                                     value={emailInput}
                                     onChange={e => setEmailInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
@@ -238,24 +248,25 @@ export default function ModalDepartment({
                                     {loading ? '조회 중...' : '추가'}
                                 </button>
                             </div>
-                            {errorMsg && <div style={{color: 'red', marginBottom: 8}}>{errorMsg}</div>}
-                            <div style={{height: 320}}>
+                            {errorMsg && <div className="error-message">{errorMsg}</div>}
+                            <div className="department-datagrid">
                                 <DataGrid
                                     rows={users}
                                     columns={columns}
                                     hideFooter
                                     disableColumnMenu
                                     disableColumnResize
+                                    localeText={{ noRowsLabel: '관리자가 없습니다' }}
                                 />
                             </div>
-                            <div className="modal-footer"
-                                 style={{display: 'flex', justifyContent: 'center', marginTop: 32, gap: 8}}>
+                            <div className="modal-footer-dept">
                                 <ModalButton
                                     type="cancel"
                                     label="취소"
                                     onClick={() => {
                                         if (onClose) onClose();
                                     }}
+                                    disabled={loading}
                                 />
                                 <ModalButton
                                     type="default"
@@ -278,24 +289,27 @@ export default function ModalDepartment({
                                                 alert("관리자 부서 등록에 실패했습니다. 다시 시도해 주세요.");
                                             }
                                         } else {
-                                            if (onClose) onClose();
+                                            setAlertLabel('관리자 등록 오류');
+                                            setAlertDesc('부서를 선택해주세요');
+                                            setAlertOpen(true);
                                         }
                                     }}
+                                    disabled={loading}
                                 />
                             </div>
                         </>
                     ) : (
                         <>
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div className="modal-header-flex">
                                 <h2 className="modal-title-dept">관리자 부서 등록</h2>
-                                <span className="modal-description-dept" style={{fontWeight: 600}}>
+                                <span className="modal-description-dept strong">
                                     관리자: {selectedUser?.name}
                                 </span>
                             </div>
                             <p className="modal-description-dept">
                                 관리자가 관리할 부서를 선택해 주세요.
                             </p>
-                            <div style={{flex: 1, marginTop: 16, height: 320}}>
+                            <div className="department-datagrid select-mode">
                                 <DataGrid
                                     rows={departmentList.map((dept) => ({id: dept.departmentId, name: dept.name}))}
                                     columns={[
@@ -308,35 +322,27 @@ export default function ModalDepartment({
                                             field: 'checked',
                                             headerName: '',
                                             renderHeader: () => (
-                                                <input
-                                                    type="checkbox"
-                                                    className="department-checkbox-input"
-                                                    style={{
-                                                        width: 20,
-                                                        height: 20,
-                                                        accentColor: '#232D64',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    checked={checked.length === departmentList.length}
-                                                    onChange={(e) => {
-                                                        const isChecked = e.target.checked;
-                                                        setChecked(isChecked ? departmentList.map(d => d.name) : []);
-                                                    }}
-                                                />
+                                                <div className="centered-content">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="department-checkbox-input"
+                                                        checked={checked.length === departmentList.length}
+                                                        onChange={(e) => {
+                                                            const isChecked = e.target.checked;
+                                                            setChecked(isChecked ? departmentList.map(d => d.name) : []);
+                                                        }}
+                                                    />
+                                                </div>
                                             ),
                                             renderCell: (params) => (
-                                                <input
-                                                    type="checkbox"
-                                                    className="department-checkbox-input"
-                                                    style={{
-                                                        width: 20,
-                                                        height: 20,
-                                                        accentColor: '#232D64',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    checked={checked.includes(params.row.name)}
-                                                    onChange={() => toggleDepartment(params.row.name)}
-                                                />
+                                                <div className="centered-content">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="department-checkbox-input"
+                                                        checked={checked.includes(params.row.name)}
+                                                        onChange={() => toggleDepartment(params.row.name)}
+                                                    />
+                                                </div>
                                             ),
                                             sortable: false,
                                             width: 80,
@@ -346,10 +352,10 @@ export default function ModalDepartment({
                                     disableColumnMenu
                                     disableColumnResize
                                     disableColumnSelector
+                                    localeText={{ noRowsLabel: '부서가 없습니다' }}
                                 />
                             </div>
-                            <div className="modal-footer"
-                                 style={{display: 'flex', justifyContent: 'center', marginTop: 32, gap: 8}}>
+                            <div className="modal-footer-dept">
                                 <ModalButton
                                     type="cancel"
                                     label="취소"
@@ -358,15 +364,25 @@ export default function ModalDepartment({
                                         setSelectedUser(null);
                                         setChecked([]);
                                     }}
+                                    disabled={loading}
                                 />
                                 <ModalButton
                                     type="default"
                                     label="확인"
                                     onClick={handleConfirmDepartment}
+                                    disabled={loading}
                                 />
                             </div>
                         </>
                     )}
+                {alertOpen && (
+                    <ModalDefault
+                        type="default"
+                        label={alertLabel}
+                        description={alertDesc}
+                        onClose={() => setAlertOpen(false)}
+                    />
+                )}
                 </div>
             </div>,
             document.body

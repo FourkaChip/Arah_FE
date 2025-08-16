@@ -2,12 +2,13 @@
 import '@/components/modal/Buttons/ModalButton.scss'; // globals.scss에 있는 스타일 코드는 적용되지 않고, 해당 경로의 scss만 참조합니다.
 import { ModalConfirmButtonProps} from "@/types/modals";
 
-export default function ModalButton({ type, label, onClick }: ModalConfirmButtonProps) {
+export default function ModalButton({ type, label, onClick, disabled }: ModalConfirmButtonProps) {
     return (
         <button
             className={`common-button ${type}`}
             onClick={onClick ? onClick : undefined}
             type="button"
+            disabled={disabled}
         >
             {label}
         </button>

@@ -26,6 +26,7 @@ import {
     fetchVersionHistory,
     fetchDeletePdf,
     fetchCreateFolder,
+    fetchUpdateFolder,
     fetchUploadPdf,
     fetchDeleteFolder,
     fetchChangeMainDocument,
@@ -35,7 +36,7 @@ import {
 import {fetchCurrentUserInfo} from "@/api/auth/master";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import {faFile} from "@fortawesome/free-solid-svg-icons/faFile";
-import { useModalMessage } from "@/hooks/useModalMessage";
+import {useModalMessage} from "@/hooks/useModalMessage";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 export default function AdminDataTable() {
@@ -43,8 +44,9 @@ export default function AdminDataTable() {
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTopRowDeleteModal, setOpenTopRowDeleteModal] = useState(false);
-    const [openCommitModal, setOpenCommitModal] = useState(false);
+    // const [openCommitModal, setOpenCommitModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
+    const [openEditFolderModal, setOpenEditFolderModal] = useState(false);
 
     const checkboxRef = useRef<HTMLInputElement>(null);
     const subTableRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -68,6 +70,8 @@ export default function AdminDataTable() {
     const [editingDocumentId, setEditingDocumentId] = useState<number | null>(null);
     const [editingDocumentTitle, setEditingDocumentTitle] = useState<string>('');
     const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
+    const [editingFolderTitle, setEditingFolderTitle] = useState<string>('');
+    const [editingFolderRowId, setEditingFolderRowId] = useState<string | null>(null);
 
     useEffect(() => {
         const getCompanyId = async () => {
@@ -137,7 +141,7 @@ export default function AdminDataTable() {
         [filteredData, currentPage]
     );
 
-    const [selectedRowIds, setSelectedRowIds] = useState<Record<number, boolean>>({});
+    const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
 
     const columns = useMemo<ColumnDef<RowData>[]>(() => [
         {
@@ -148,7 +152,7 @@ export default function AdminDataTable() {
                     ref={checkboxRef}
                     onChange={(e) => {
                         const checked = e.target.checked;
-                        const newSelections: Record<number, boolean> = {};
+                        const newSelections: Record<string, boolean> = {};
                         paginatedData.forEach((row) => {
                             newSelections[row.id] = checked;
                         });
@@ -163,7 +167,7 @@ export default function AdminDataTable() {
             cell: ({row}) => (
                 <input
                     type="checkbox"
-                    checked={!!selectedRowIds[row.original.id]}
+                    checked={selectedRowIds[row.original.id]}
                     onChange={(e) =>
                         setSelectedRowIds((prev) => ({
                             ...prev,
@@ -189,6 +193,22 @@ export default function AdminDataTable() {
             accessorKey: "folderName",
             header: "폴더명",
             cell: info => info.getValue(),
+        },
+        {
+            id: "edit-folder",
+            header: "폴더명 수정",
+            cell: ({row}) => (
+                <button
+                    className="edit-folder-btn"
+                    onClick={() => {
+                        setEditingFolderRowId(row.original.id.toString());
+                        setEditingFolderTitle(row.original.folderName);
+                        setOpenEditFolderModal(true);
+                    }}
+                >
+                    <FontAwesomeIcon icon={faPen} style={{width: 14, height: 14}}/>
+                </button>
+            ),
         },
         {
             id: "add-dataset",
@@ -252,7 +272,7 @@ export default function AdminDataTable() {
             return;
         }
 
-        setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: true }));
+        setLoadingDocuments(prev => ({...prev, [folderIdNum]: true}));
 
         try {
             const documents = await fetchVersionHistory(folderIdNum);
@@ -261,9 +281,9 @@ export default function AdminDataTable() {
                 [folderIdNum]: documents || []
             }));
         } catch (error) {
-            setFolderDocuments(prev => ({ ...prev, [folderIdNum]: [] }));
+            setFolderDocuments(prev => ({...prev, [folderIdNum]: []}));
         } finally {
-            setLoadingDocuments(prev => ({ ...prev, [folderIdNum]: false }));
+            setLoadingDocuments(prev => ({...prev, [folderIdNum]: false}));
         }
     };
 
@@ -350,7 +370,7 @@ export default function AdminDataTable() {
     };
 
     const handleAddDatasetClick = (folderId: number) => {
-        const selectedFolder = data.find(folder => folder.id === folderId.toString());
+        const selectedFolder = data.find(folder => String(folder.id) === String(folderId));
         setSelectedFolderId(folderId);
         setSelectedFolderName(selectedFolder?.folderName || null);
         setOpenUploadModal(true);
@@ -358,7 +378,7 @@ export default function AdminDataTable() {
 
     const handleDeleteSelectedFolders = async () => {
         const selectedFolderIds = Object.keys(selectedRowIds)
-            .filter(id => selectedRowIds[Number(id)])
+            .filter(id => selectedRowIds[id])
             .map(id => Number(id));
 
         if (selectedFolderIds.length === 0) {
@@ -386,7 +406,7 @@ export default function AdminDataTable() {
             setSelectedRowIds({});
 
             setFolderDocuments(prev => {
-                const newFolderDocuments = { ...prev };
+                const newFolderDocuments = {...prev};
                 selectedFolderIds.forEach(id => {
                     delete newFolderDocuments[id];
                 });
@@ -470,6 +490,34 @@ export default function AdminDataTable() {
         }
     };
 
+    const handleUpdateFolder = async (newTitle: string) => {
+        if (!editingFolderRowId) return;
+        try {
+            setLoading(true);
+            await fetchUpdateFolder(Number(editingFolderRowId), newTitle);
+            clearFoldersCache();
+            const folders = await fetchFoldersByCompany();
+            setData(
+                folders.map((folder: any, idx: number) => ({
+                    id: folder.folder_id.toString(),
+                    no: idx + 1,
+                    registeredAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                    updatedAt: folder.created_at?.slice(0, 10).replace(/-/g, '/') || "",
+                    folderName: folder.name,
+                    subRows: undefined
+                }))
+            );
+            modalMessage.showSuccess('폴더명 변경 완료', '폴더명이 성공적으로 변경되었습니다.');
+            setOpenEditFolderModal(false);
+            setEditingFolderRowId(null);
+            setEditingFolderTitle('');
+        } catch (error) {
+            modalMessage.showError('폴더명 변경 실패', '폴더명 변경에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <div className="admin-dataset-header">
@@ -494,11 +542,11 @@ export default function AdminDataTable() {
                 </div>
                 <div className="action-buttons">
                     <button className="create-folder" onClick={() => setOpenFolderModal(true)}>
-                        <FontAwesomeIcon icon={faFile} style={{ width: 20, height: 20, marginRight: 10 }} />
+                        <FontAwesomeIcon icon={faFile} style={{width: 20, height: 20, marginRight: 10}}/>
                         폴더 생성
                     </button>
                     <button className="delete-folder" onClick={() => setOpenTopRowDeleteModal(true)}>
-                        <FontAwesomeIcon icon={faTimes} style={{ width: 20, height: 20, marginRight: 10 }} />
+                        <FontAwesomeIcon icon={faTimes} style={{width: 20, height: 20, marginRight: 10}}/>
                         <span>폴더 삭제</span>
                     </button>
                 </div>
@@ -571,7 +619,8 @@ export default function AdminDataTable() {
                                                             <tbody>
                                                             {documents.length === 0 ? (
                                                                 <tr>
-                                                                    <td colSpan={9} style={{textAlign: "center", padding: "20px"}}>
+                                                                    <td colSpan={9}
+                                                                        style={{textAlign: "center", padding: "20px"}}>
                                                                         등록된 문서가 없습니다
                                                                     </td>
                                                                 </tr>
@@ -737,6 +786,18 @@ export default function AdminDataTable() {
                     folderId={selectedFolderId}
                     folderName={selectedFolderName}
                     onSubmit={handleUploadDataset}
+                />
+            )}
+            {openEditFolderModal && (
+                <ModalInput
+                    modalType="edit-folder"
+                    onClose={() => {
+                        setOpenEditFolderModal(false);
+                        setEditingFolderRowId(null);
+                        setEditingFolderTitle('');
+                    }}
+                    onSubmit={handleUpdateFolder}
+                    defaultValue={editingFolderTitle}
                 />
             )}
         </>

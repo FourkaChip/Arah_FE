@@ -13,6 +13,7 @@ export default function ModalDefault({
     onSubmit,
     errorMessages,
     description,
+    loading = false,
 }: ModalDefaultProps) {
     let fallbackDescription = '';
     let buttonLabel = '';
@@ -53,12 +54,14 @@ export default function ModalDefault({
                         type={buttonType}
                         label={buttonLabel}
                         onClick={onSubmit}
+                        disabled={loading}
                     />
                 ) : (
                     <ModalButton
                         type={buttonType}
                         label={buttonLabel}
                         onClick={onClose}
+                        disabled={loading}
                     />
                 )}
             </div>

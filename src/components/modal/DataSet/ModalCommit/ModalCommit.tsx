@@ -5,7 +5,7 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {ModalCommitProps} from "@/types/modals";
 
 
-export default function ModalCommit({ onClose, docId, folderId }: ModalCommitProps) {
+export default function ModalCommit({onClose, docId, folderId}: ModalCommitProps) {
     const [modifiedContent, setModifiedContent] = useState<string>("");
     const [commitMessage, setCommitMessage] = useState<string>("변경사항이 없습니다.");
     const [loading, setLoading] = useState(false);
@@ -65,7 +65,7 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
     }, [docId, folderId]);
 
     const parseDiffContent = (content: string) => {
-        if (!content) return { addedLines: [], removedLines: [] };
+        if (!content) return {addedLines: [], removedLines: []};
 
         const lines = content.split('\n');
         const addedLines: string[] = [];
@@ -79,10 +79,10 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
             }
         });
 
-        return { addedLines, removedLines };
+        return {addedLines, removedLines};
     };
 
-    const { addedLines, removedLines } = docId ? parseDiffContent(modifiedContent) : {
+    const {addedLines, removedLines} = docId ? parseDiffContent(modifiedContent) : {
         addedLines: [
             "외부 저장매체 사용 시 사전 승인을 받아야 한다.",
             "점심시간은 12:00~13:00",
@@ -105,16 +105,13 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                 <button className="modal-close" onClick={onClose}>×</button>
                 <h2 className="modal-title commit-modal">변경사항</h2>
                 <p className="modal-subtitle commit-modal">데이터셋의 변경사항을 확인할 수 있습니다.</p>
-
                 <div className="commit-message">
                     <span>직전 버전 기준 변경사항</span>
                 </div>
                 <div className="commit-content">{commitMessage}</div>
-
                 <div className="commit-message">
                     <p><strong>현재 사용 중인 <b>버전</b></strong><span>과의 차이 비교</span></p>
                 </div>
-
                 <div className="diff-container">
                     {loading ? (
                         <div className="loading-message">
@@ -143,7 +140,6 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                                     )}
                                 </div>
                             </div>
-
                             <div className="diff-column removed-column">
                                 <div className="diff-header removed-header">
                                     <span className="diff-icon">-</span>
@@ -164,9 +160,8 @@ export default function ModalCommit({ onClose, docId, folderId }: ModalCommitPro
                         </div>
                     ))}
                 </div>
-
-                <div className="modal-footer">
-                    <ModalButton type="default" label="확인" onClick={onClose} />
+                <div className="modal-footer fixed-footer">
+                    <ModalButton type="default" label="확인" onClick={onClose} disabled={loading}/>
                 </div>
             </div>
         </div>

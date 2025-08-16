@@ -41,7 +41,6 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
                 return;
             }
             const tokenToRegister = inputValue;
-            const accessToken = useAuthStore.getState().accessToken;
 
             if (!tokenToRegister || tokenToRegister.trim() === '') {
                 alert("등록할 토큰을 입력해 주세요.");
@@ -92,6 +91,7 @@ const ModalInputFilled = ({type, onClose, value}: ModalInputFilledProps) => {
                                     type="default"
                                     label={editMode ? (loading ? "등록 중..." : "등록") : buttonLabel}
                                     onClick={handleSubmit}
+                                    disabled={loading}
                                 />
                             </div>
                         </div>

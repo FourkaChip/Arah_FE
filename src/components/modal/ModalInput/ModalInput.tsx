@@ -7,7 +7,6 @@ import ModalButton from "@/components/modal/Buttons/ModalButton";
 import {useRouter} from "next/navigation";
 import {useQueryClient} from '@tanstack/react-query';
 import {toast, Toaster} from 'react-hot-toast';
-import LoadingSpinner from '@/components/spinner/Spinner';
 import SpinnerOverlay from '@/components/spinner/SpinnerOverlay';
 
 export default function ModalInput({
@@ -135,6 +134,14 @@ export default function ModalInput({
                     title: '데이터셋 이름 수정',
                     description: '변경할 데이터셋 이름을 입력해주세요.',
                     placeholder: '데이터셋명 (ex.회사규정)',
+                    buttonType: 'default',
+                    buttonLabel: '수정',
+                };
+            case 'edit-folder':
+                return {
+                    title: title || '폴더명 수정',
+                    description: '변경할 폴더명을 입력해주세요.',
+                    placeholder: '폴더명 (ex.회사규정)',
                     buttonType: 'default',
                     buttonLabel: '수정',
                 };
@@ -289,6 +296,29 @@ export default function ModalInput({
             return;
         }
 
+        if (modalType === 'edit-folder') {
+            if (onSubmit) {
+                setLoading(true);
+                try {
+                    const result = await onSubmit(inputValue);
+                    if (result !== false) {
+                        setInputValue('');
+                        setError(false);
+                        setErrorMsg(undefined);
+                        onClose();
+                    } else {
+                        setError(true);
+                    }
+                } catch (e: any) {
+                    setError(true);
+                    setErrorMsg(e.message || '폴더명 수정에 실패했습니다.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+            return;
+        }
+
         onClose();
     };
 
@@ -296,7 +326,7 @@ export default function ModalInput({
 
     return (
         <>
-            {isVerifyLoading && <SpinnerOverlay message="인증 중..." zIndex={10000} />}
+            {isVerifyLoading && <SpinnerOverlay message="인증 중..." zIndex={10000}/>}
 
             <Toaster position="top-right"/>
             <ModalLayout
@@ -308,7 +338,7 @@ export default function ModalInput({
                         type={config.buttonType as 'default' | 'delete-data'}
                         label={loading ? '처리중...' : config.buttonLabel}
                         onClick={handleSubmit}
-                        disabled={isVerifyLoading}
+                        disabled={loading}
                     />
                 }
                 onClose={onClose}
@@ -343,6 +373,7 @@ export default function ModalInput({
                         {error && modalType === 'tag' && !errorMsg ? '태그 등록에 실패했습니다' : ''}
                         {error && modalType === 'folder' && !errorMsg ? '폴더 생성에 실패했습니다' : ''}
                         {error && modalType === 'edit-dataset' && !errorMsg ? '데이터셋 이름 수정에 실패했습니다' : ''}
+                        {error && modalType === 'edit-folder' && !errorMsg ? '폴더명 수정에 실패했습니다' : ''}
                         {errorMsg || ''}
                     </span>
                     {config.subText && (
@@ -405,6 +436,7 @@ export default function ModalInput({
                                     router.push('/master/manage');
                                 }
                             }}
+                            disabled={loading}
                         />
                     }
                     onClose={() => {
