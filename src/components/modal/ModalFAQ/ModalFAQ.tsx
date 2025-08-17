@@ -7,7 +7,15 @@ import {ModalFAQProps} from "@/types/modals";
 import {fetchAdminFaqTagList} from "@/api/admin/faq/faqFetch";
 import {useModalMessage} from "@/hooks/useModalMessage";
 
-export default function ModalFAQ({onClose, onSubmit, category, question: initQuestion, answer: initAnswer, companyId}: ModalFAQProps & { companyId: number }) {
+export default function ModalFAQ({
+                                     loading,
+                                     onClose,
+                                     onSubmit,
+                                     category,
+                                     question: initQuestion,
+                                     answer: initAnswer,
+                                     companyId
+                                 }: ModalFAQProps & { companyId: number }) {
     const [question, setQuestion] = useState(initQuestion ?? "");
     const [answer, setAnswer] = useState(initAnswer ?? "");
     const [categories, setCategories] = useState<string[]>([]);
@@ -37,6 +45,10 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
             });
     }, [companyId]);
 
+    const isQuestionValid = question.length > 0 && question.length <= 200;
+    const isAnswerValid = answer.length > 0 && answer.length <= 500;
+    const isFormValid = isQuestionValid && isAnswerValid && !!selectedCategory;
+
     const handleSubmit = async () => {
         if (!selectedCategory) {
             showError("등록 실패", "카테고리를 선택해 주세요.");
@@ -48,6 +60,10 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
         }
         if (!answer) {
             showError("등록 실패", "답변을 등록해 주세요.");
+            return;
+        }
+        if (question.length > 200 || answer.length > 500) {
+            showError("등록 실패", "글자 수를 초과하였습니다.");
             return;
         }
         onSubmit({
@@ -77,28 +93,37 @@ export default function ModalFAQ({onClose, onSubmit, category, question: initQue
                                     companyId={companyId}
                                 />
                             </label>
-                            <input
-                                className="input"
-                                placeholder="예상 질문을 입력해 주세요."
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                            />
+                            <div style={{position: 'relative'}}>
+                                <input
+                                    className="input"
+                                    placeholder="예상 질문을 입력해 주세요."
+                                    value={question}
+                                    maxLength={200}
+                                    onChange={(e) => setQuestion(e.target.value.slice(0, 200))}
+                                />
+                                <span className="input-counter-outside">{question.length} / 200</span>
+                            </div>
                         </div>
 
                         <div className="form-section">
                             <label>제공 답변</label>
-                            <textarea
-                                className="textarea"
-                                placeholder="질문에 대한 답변을 등록해 주세요."
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                                style={{height: 160}}
-                            />
+                            <div style={{position: 'relative'}}>
+                                <textarea
+                                    className="textarea"
+                                    placeholder="질문에 대한 답변을 등록해 주세요."
+                                    value={answer}
+                                    maxLength={500}
+                                    onChange={(e) => setAnswer(e.target.value.slice(0, 500))}
+                                    style={{height: 160}}
+                                />
+                                <span className="textarea-counter-outside">{answer.length} / 500</span>
+                            </div>
                         </div>
 
-                        <div className="modal-footer">
+                        <div className="modal-footer-faq">
                             <ModalButton type="cancel" label="취소" onClick={onClose} disabled={loading}/>
-                            <ModalButton type="default" label="등록" onClick={handleSubmit} disabled={loading}/>
+                            <ModalButton type="default" label="등록" onClick={handleSubmit}
+                                         disabled={loading || !isFormValid}/>
                         </div>
                     </div>
                 </div>
