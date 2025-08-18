@@ -16,7 +16,7 @@ const ProtectedRoute = ({allowedRoles, children}: ProtectedRouteProps) => {
         if (!token) return false;
         const payload = decodeJwtRole(token);
         const role = payload?.role;
-        return !!role && allowedRoles.includes(role);
+        return typeof role === 'string' && allowedRoles.includes(role);
     });
 
     const [checkedOnce, setCheckedOnce] = useState(false);
@@ -34,7 +34,7 @@ const ProtectedRoute = ({allowedRoles, children}: ProtectedRouteProps) => {
 
                 const payload = decodeJwtRole(token);
                 const role = payload?.role;
-                if (!role || !allowedRoles.includes(role)) {
+                if (typeof role !== 'string' || !allowedRoles.includes(role)) {
                     if (!cancelled) router.replace('/unauthorized');
                     return;
                 }

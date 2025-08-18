@@ -35,3 +35,12 @@ export interface LoginButtonProps {
     onClick?: () => void;
     disabled?: boolean;
 }
+
+export interface JwtPayload {
+    role?: string;
+    userId?: number;
+    companyId?: number;
+    exp?: number;
+    iat?: number;
+    [key: string]: unknown;
+}
