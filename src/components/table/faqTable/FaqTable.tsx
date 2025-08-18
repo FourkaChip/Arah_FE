@@ -1,7 +1,7 @@
 // FAQ 페이지에 적용되는 테이블 컴포넌트입니다.
 "use client";
 import {useState, useMemo, useRef, useEffect} from "react";
-import { useSearchParams } from 'next/navigation';
+import {useSearchParams} from 'next/navigation';
 import CustomSearch from "@/components/customSearch/CustomSearch";
 import './FaqTable.scss';
 import {
@@ -93,17 +93,18 @@ export default function FaqAdminTable() {
         setLoading(true);
         fetchAdminFaqList()
             .then((data) => {
+                const sortedData = data.sort((a: any, b: any) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
                 setFaqData(
-                    data
-                        .map((faq: any, idx: number) => ({
-                            id: faq.faq_id,
-                            no: idx + 1,
-                            tag: faq.tag_name || "",
-                            registeredAt: faq.created_at?.slice(0, 10) || "",
-                            question: faq.question,
-                            answer: faq.answer,
-                        }))
-                        .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime())
+                    sortedData.map((faq: any, index: number) => ({
+                        id: faq.faq_id,
+                        no: index + 1,
+                        tag: faq.tag_name || "",
+                        registeredAt: faq.created_at?.slice(0, 10) || "",
+                        question: faq.question,
+                        answer: faq.answer,
+                    }))
                 );
             })
             .finally(() => setLoading(false));
@@ -115,11 +116,9 @@ export default function FaqAdminTable() {
         const shouldExpand = searchParams.get('expanded');
 
         if (faqId && shouldExpand === 'true' && faqData.length > 0 && navigationState.step === 'idle') {
-            // 타겟 FAQ 찾기
             const targetFaq = faqData.find(faq => faq.id.toString() === faqId);
 
             if (targetFaq) {
-                // 전체 데이터에서 바로 위치 계산
                 const sortedData = faqData.sort((a, b) => b.no - a.no);
                 const targetIndex = sortedData.findIndex(faq => faq.id.toString() === faqId);
 
@@ -127,7 +126,6 @@ export default function FaqAdminTable() {
                     const targetPage = Math.floor(targetIndex / pageSize);
                     const rowIndexInPage = targetIndex - (targetPage * pageSize);
 
-                    // 상태 업데이트 및 페이지 이동
                     setNavigationState({
                         targetFaqId: faqId,
                         targetPage,
@@ -141,7 +139,6 @@ export default function FaqAdminTable() {
         }
     }, [searchParams, faqData, navigationState.step]);
 
-    // 페이지 이동 완료 후 상세보기 열기
     useEffect(() => {
         if (navigationState.step === 'page-set' && navigationState.rowIndexInPage) {
             const timer = setTimeout(() => {
@@ -150,13 +147,12 @@ export default function FaqAdminTable() {
                     ...prev,
                     step: 'expanded'
                 }));
-            }, 300); // 페이지 렌더링 대기
+            }, 300);
 
             return () => clearTimeout(timer);
         }
     }, [navigationState.step, navigationState.rowIndexInPage]);
 
-    // 상세보기 열기 완료 후 스크롤 이동
     useEffect(() => {
         if (navigationState.step === 'expanded' && navigationState.targetFaqId) {
             const timer = setTimeout(() => {
@@ -171,13 +167,12 @@ export default function FaqAdminTable() {
                     ...prev,
                     step: 'scrolled'
                 }));
-            }, 300); // DOM 업데이트 대기
+            }, 300);
 
             return () => clearTimeout(timer);
         }
     }, [navigationState.step, navigationState.targetFaqId]);
 
-    // 스크롤 완료 후 URL 정리
     useEffect(() => {
         if (navigationState.step === 'scrolled') {
             const timer = setTimeout(() => {
@@ -186,14 +181,13 @@ export default function FaqAdminTable() {
                 url.searchParams.delete('expanded');
                 window.history.replaceState({}, '', url.pathname);
 
-                // 네비게이션 완료
                 setNavigationState({
                     targetFaqId: null,
                     targetPage: null,
                     rowIndexInPage: null,
                     step: 'completed'
                 });
-            }, 1000); // 스크롤 애니메이션 완료 대기
+            }, 1000);
 
             return () => clearTimeout(timer);
         }
@@ -233,6 +227,12 @@ export default function FaqAdminTable() {
         {
             accessorKey: "no",
             header: "No.",
+            cell: ({row}) => {
+                const rowIndex = row.index;
+                const totalCount = filteredData.length;
+                const globalIndex = totalCount - (currentPage * pageSize + rowIndex);
+                return globalIndex;
+            },
         },
         {
             accessorKey: "tag",
@@ -331,14 +331,17 @@ export default function FaqAdminTable() {
         try {
             await fetchDeleteAdminFaq(deleteTargetId);
             const data = await fetchAdminFaqList();
-            setFaqData(data.map((faq: any, idx: number) => ({
+            const sortedData = data.sort((a: any, b: any) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            setFaqData(sortedData.map((faq: any, index: number) => ({
                 id: faq.faq_id,
-                no: idx + 1,
+                no: index + 1, // no 프로퍼티 추가
                 tag: faq.tag_name || "",
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
+            })));
             showSuccess("삭제 완료", "FAQ가 성공적으로 삭제되었습니다.");
         } catch (e) {
             showError("삭제 실패", "FAQ 삭제에 실패했습니다.");
@@ -362,14 +365,17 @@ export default function FaqAdminTable() {
             }
             await fetchUpdateAdminFaq(editRow.id, data.question, data.answer, tag_id);
             const faqList = await fetchAdminFaqList();
-            setFaqData(faqList.map((faq: any, idx: number) => ({
+            const sortedData = faqList.sort((a: any, b: any) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            setFaqData(sortedData.map((faq: any, index: number) => ({
                 id: faq.faq_id,
-                no: idx + 1,
+                no: index + 1,
                 tag: faq.tag_name || "",
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
+            })));
             showSuccess("수정 완료", "FAQ가 성공적으로 수정되었습니다.");
         } catch (e) {
             showError("수정 실패", "FAQ 수정에 실패했습니다.");
@@ -384,14 +390,17 @@ export default function FaqAdminTable() {
         setLoading(true);
         try {
             const data = await fetchAdminFaqList();
-            setFaqData(data.map((faq: any, idx: number) => ({
+            const sortedData = data.sort((a: any, b: any) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            setFaqData(sortedData.map((faq: any, index: number) => ({
                 id: faq.faq_id,
-                no: idx + 1,
+                no: index + 1,
                 tag: faq.tag_name || "",
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,
                 answer: faq.answer,
-            })).sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()));
+            })));
         } finally {
             setLoading(false);
         }

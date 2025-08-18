@@ -360,9 +360,13 @@ export default function ModalDepartment({
                                     type="cancel"
                                     label="취소"
                                     onClick={() => {
-                                        setStep('list');
-                                        setSelectedUser(null);
-                                        setChecked([]);
+                                        if (defaultUser) {
+                                            if (onClose) onClose();
+                                        } else {
+                                            setStep('list');
+                                            setSelectedUser(null);
+                                            setChecked([]);
+                                        }
                                     }}
                                     disabled={loading}
                                 />
