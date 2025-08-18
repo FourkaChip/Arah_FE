@@ -1,8 +1,10 @@
 .notification-toast {
   min-width: 200px;
   max-width: 400px;
-  background: #fff;
-  color: #333;
+  background: #fff !important;
+  color: #333 !important;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   &-content {
     display: flex;
@@ -17,7 +19,7 @@
   }
 
   &-title {
-    color: #000;
+    color: #000 !important;
     font-weight: bold;
   }
 
@@ -27,6 +29,6 @@
   }
 
   &-description {
-    color: #333;
+    color: #333 !important;
   }
 }
