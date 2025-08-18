@@ -44,7 +44,7 @@ export default function ModalUpload({
             setUploadedFile(file);
             setError(null);
         } else {
-            setError('PDF 파일만 업로드 가능합니다.');
+            alert('PDF 파일만 업로드 가능합니다.');
         }
     };
 
@@ -55,22 +55,22 @@ export default function ModalUpload({
 
     const handleSubmit = async () => {
         if (!uploadedFile) {
-            setError('파일을 선택해주세요.');
+            alert('파일을 선택해주세요.');
             return;
         }
 
         if (!version.trim()) {
-            setError('버전을 입력해주세요.');
+            alert('버전을 입력해주세요.');
             return;
         }
 
         if (!comment.trim()) {
-            setError('변경사항을 입력해주세요.');
+            alert('변경사항을 입력해주세요.');
             return;
         }
 
         if (!onSubmit) {
-            setError('업로드 기능이 설정되지 않았습니다.');
+            alert('업로드 기능이 설정되지 않았습니다.');
             return;
         }
 
@@ -83,7 +83,7 @@ export default function ModalUpload({
             showSuccess("업로드 완료", "데이터셋이 성공적으로 업로드되었습니다.");
             onClose();
         } catch (error: any) {
-            setError(error.message || '업로드에 실패했습니다.');
+            alert(error.message || '업로드에 실패했습니다.');
         } finally {
             setLoading(false);
         }
