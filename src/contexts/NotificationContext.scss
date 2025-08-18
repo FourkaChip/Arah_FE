@@ -1,0 +1,32 @@
+.notification-toast {
+  min-width: 200px;
+  max-width: 400px;
+  background: #fff;
+  color: #333;
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  &-title {
+    color: #000;
+    font-weight: bold;
+  }
+
+  &-icon {
+    color: #E85D75;
+    font-size: 20px;
+  }
+
+  &-description {
+    color: #333;
+  }
+}

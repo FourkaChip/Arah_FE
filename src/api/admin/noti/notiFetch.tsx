@@ -124,6 +124,7 @@ export interface ServerNotificationItem {
     type: 'UPDATE' | 'FEEDBACK' | 'QNA';
     isRead: boolean;
     content: NotificationContent;
+    companyId: number | null;
 }
 
 export interface NotificationListResponse {
@@ -135,6 +136,8 @@ export interface NotificationListResponse {
         notificationResponseList: ServerNotificationItem[];
         nextOffset: number;
         hasNext: boolean;
+        totalCount: number;
+        totalPages: number;
     };
 }
 

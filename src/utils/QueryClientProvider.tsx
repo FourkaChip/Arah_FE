@@ -3,6 +3,7 @@
 
 import {QueryClientProvider, QueryClient} from '@tanstack/react-query';
 import {ReactNode, useState, useEffect} from 'react';
+import {Toaster} from 'react-hot-toast';
 import {useAuthStore} from "@/store/auth.store";
 import {getValidAccessToken, removeRefreshToken, removeAccessToken} from "@/utils/tokenStorage";
 
@@ -33,6 +34,38 @@ export default function ClientProviders({children}: { children: ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             {children}
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        padding: '12px 16px',
+                        maxWidth: '400px',
+                    },
+                    success: {
+                        iconTheme: {
+                            primary: '#10B981',
+                            secondary: '#fff',
+                        },
+                    },
+                    error: {
+                        iconTheme: {
+                            primary: '#EF4444',
+                            secondary: '#fff',
+                        },
+                    },
+                    loading: {
+                        iconTheme: {
+                            primary: '#3B82F6',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
+            />
         </QueryClientProvider>
     );
 }
