@@ -214,7 +214,7 @@ export default function MasterAdminTable() {
                     header: "부서 설정",
                     cell: ({row}) => (
                         <button
-                            className="text-blue-600 underline"
+                            className="button is-text has-text-primary"
                             onClick={() => handleOpenDeptModal(row.original)}
                         >
                             부서 설정
