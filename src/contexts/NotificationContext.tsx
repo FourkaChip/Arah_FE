@@ -121,7 +121,7 @@ export function NotificationProvider({
         try {
             // 캐시 무효화 (다음 새로고침 시 최신 데이터 보장)
             clearNotificationCache();
-            
+
             // 안읽음 카운트 즉시 업데이트
             refetchUnreadCount();
             showToastNotification(serverNotification);
@@ -163,7 +163,7 @@ export function NotificationProvider({
     }, []);
 
     const loadPageData = useCallback(
-        async (page: number) => {
+        async (page: number, forceRefresh: boolean = false) => {
             setIsLoading(true);
             const reqId = Date.now();
             latestReqRef.current = reqId;
@@ -174,7 +174,7 @@ export function NotificationProvider({
                 else if (filters.tab === '읽지 않음') isRead = false;
 
                 const offset = (page - 1) * itemsPerPage;
-                const response = await fetchNotificationList(isRead, offset);
+                const response = await fetchNotificationList(isRead, offset, undefined, forceRefresh);
 
                 if (latestReqRef.current !== reqId) return;
 
@@ -190,7 +190,7 @@ export function NotificationProvider({
                     setHasNext(response.result.hasNext);
 
                     let calculatedTotalPages = 1;
-                    
+
                     if (filters.tab === '전체') {
                         calculatedTotalPages = response.result.totalPages;
                     } else if (filters.tab === '읽지 않음') {
@@ -199,11 +199,11 @@ export function NotificationProvider({
                         const readCount = response.result.totalCount - unreadCount;
                         calculatedTotalPages = Math.ceil(readCount / itemsPerPage);
                     }
-                    
+
                     if (calculatedTotalPages === 0 || (transformed.length === 0 && page === 1)) {
                         calculatedTotalPages = 1;
                     }
-                    
+
                     setTotalPages(calculatedTotalPages);
                 }
             } catch (error) {
@@ -249,20 +249,18 @@ export function NotificationProvider({
             const response = await markNotificationAsRead(Number(id));
 
             if (response.success) {
-                setNotifications(prev =>
-                    prev.map(notification =>
-                        notification.id === id
-                            ? {...notification, isRead: true}
-                            : notification
-                    )
-                );
-                await refetchUnreadCount();
-
-                if (filters.tab === '읽지 않음') {
-                    setTimeout(() => {
-                        loadPageData(currentPage);
-                    }, 100);
+                if (filters.tab === '읽지 않음' || filters.tab === '전체') {
+                    await loadPageData(currentPage, true);
+                } else {
+                    setNotifications(prev =>
+                        prev.map(notification =>
+                            notification.id === id
+                                ? {...notification, isRead: true}
+                                : notification
+                        )
+                    );
                 }
+                await refetchUnreadCount();
             } else if (response.message === '이미 읽음 처리된 알림입니다.') {
                 setErrorMessage(response.message);
             }
@@ -351,8 +349,12 @@ export function NotificationProvider({
 
     const refreshModalData = useCallback(async () => {
         try {
-            const isReadParam = false;
-            const response = await fetchNotificationList(isReadParam, 0, undefined, true);
+
+            let isReadParam: boolean | undefined;
+            if (filters.tab === '읽음') isReadParam = true;
+            else if (filters.tab === '읽지 않음') isReadParam = false;
+            const offset = (currentPage - 1) * itemsPerPage;
+            const response = await fetchNotificationList(isReadParam, offset, undefined, true);
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
@@ -360,8 +362,9 @@ export function NotificationProvider({
                 setNotifications(transformed);
             }
             await refetchUnreadCount();
-        } catch (error) {}
-    }, [refetchUnreadCount]);
+        } catch (error) {
+        }
+    }, [filters.tab, currentPage, itemsPerPage, refetchUnreadCount]);
 
     const contextValue: NotificationContextType = {
         notifications,
