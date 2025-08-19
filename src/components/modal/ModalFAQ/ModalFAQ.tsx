@@ -21,10 +21,15 @@ export default function ModalFAQ({
     const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState(category ?? "");
     const {
+        openSuccessModal,
+        successTitle,
+        successDescription,
         openErrorModal,
         errorTitle,
         errorDescription,
+        showSuccess,
         showError,
+        closeSuccess,
         closeError,
     } = useModalMessage();
 
@@ -88,9 +93,10 @@ export default function ModalFAQ({
                                 <span>사용자 질문</span>
                                 <CustomDropDown
                                     value={selectedCategory}
-                                    options={categories}
                                     onChange={setSelectedCategory}
                                     companyId={companyId}
+                                    onSuccess={showSuccess}
+                                    onError={showError}
                                 />
                             </label>
                             <div style={{position: 'relative'}}>
@@ -128,6 +134,14 @@ export default function ModalFAQ({
                     </div>
                 </div>
             </div>
+            {openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={successTitle}
+                    description={successDescription}
+                    onClose={closeSuccess}
+                />
+            )}
             {openErrorModal && (
                 <ModalDefault
                     type="default"

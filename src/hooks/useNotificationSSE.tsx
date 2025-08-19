@@ -10,6 +10,7 @@ interface SSENotificationData {
     senderId: number;
     receiverId: number;
     type: 'UPDATE' | 'FEEDBACK' | 'QNA';
+    companyId: number | null;
     content: {
         department: string;
         description: string;
@@ -97,8 +98,10 @@ export const useNotificationSSE = ({
             }
 
             const headers: Record<string, string> = {
-                Accept: 'text/event-stream',
-                Authorization: `Bearer ${token}`,
+                'Accept': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Content-Type': 'text/event-stream',
+                'Authorization': `Bearer ${token}`,
             };
 
             const es = new EventSourcePolyfill(
@@ -141,6 +144,7 @@ export const useNotificationSSE = ({
                         type: data.type,
                         isRead: false,
                         content: data.content,
+                        companyId: data.companyId,
                     };
                     onNewNotification?.(serverNotification);
                 } catch (err) {

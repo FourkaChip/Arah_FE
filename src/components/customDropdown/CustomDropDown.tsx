@@ -2,8 +2,6 @@ import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
 import {fetchAdminFaqTagList, fetchAddAdminFaqTag, fetchDeleteAdminFaqTag} from "@/api/admin/faq/faqFetch";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
-import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
-import {useModalMessage} from "@/hooks/useModalMessage";
 import {Tag, DropdownOption, CustomDropDownTagProps} from "@/types/customDropdown";
 import {
     DROPDOWN_ACTIONS,
@@ -17,23 +15,13 @@ export default function CustomDropDown({
     value,
     onChange,
     companyId,
+    onSuccess,
+    onError,
 }: CustomDropDownTagProps) {
     const [tags, setTags] = useState<Tag[]>([]);
     const [showInputModal, setShowInputModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [dropdownKey] = useState(0);
-    const {
-        openSuccessModal,
-        successTitle,
-        successDescription,
-        openErrorModal,
-        errorTitle,
-        errorDescription,
-        showSuccess,
-        showError,
-        closeSuccess,
-        closeError,
-    } = useModalMessage();
 
     useEffect(() => {
         fetchAdminFaqTagList()
@@ -42,16 +30,14 @@ export default function CustomDropDown({
             })
             .catch((error) => {
                 console.error("태그 목록 조회 실패:", error);
-                showError(MODAL_MESSAGES.TAG_FETCH_ERROR.title, MODAL_MESSAGES.TAG_FETCH_ERROR.description);
+                onError?.(MODAL_MESSAGES.TAG_FETCH_ERROR.title, MODAL_MESSAGES.TAG_FETCH_ERROR.description);
             });
-    }, [companyId, showError]);
+    }, [companyId, onError]);
 
     const formatOptionLabel = (option: DropdownOption) => {
-        // 편집 모드에서 태그 삭제 버튼 표시
         if (isEditMode && option.value !== DROPDOWN_ACTIONS.ADD && option.value !== DROPDOWN_ACTIONS.EDIT) {
             const tag = tags.find(t => t.name === option.value);
             
-            // 태그 ID를 추출
             const tagId = tag?.tag_id;
             
             return (
@@ -74,7 +60,6 @@ export default function CustomDropDown({
             );
         }
         
-        // 특별한 액션들에 아이콘 추가
         if (option.value === DROPDOWN_ACTIONS.ADD) {
             return (
                 <span className="dropdown-option-add">
@@ -117,7 +102,6 @@ export default function CustomDropDown({
             setShowInputModal(true);
         } else if (selected?.value === DROPDOWN_ACTIONS.EDIT) {
             setIsEditMode(true);
-            // 드롭다운을 닫지 않고 편집 모드로 전환
         } else if (!isEditMode) {
             onChange(selected?.value ?? "");
         }
@@ -129,10 +113,9 @@ export default function CustomDropDown({
             const tagList = await fetchAdminFaqTagList();
             setTags(tagList);
             onChange(tagName);
-            showSuccess("전송되었습니다", "태그가 성공적으로 등록되었습니다.");
-            // 편집 모드는 유지하되 모달만 닫기
+            onSuccess?.("수정 성공", "태그가 성공적으로 등록되었습니다.");
         } catch {
-            showError(MODAL_MESSAGES.TAG_ADD_ERROR.title, MODAL_MESSAGES.TAG_ADD_ERROR.description);
+            onError?.(MODAL_MESSAGES.TAG_ADD_ERROR.title, MODAL_MESSAGES.TAG_ADD_ERROR.description);
         } finally {
             setShowInputModal(false);
         }
@@ -143,16 +126,15 @@ export default function CustomDropDown({
             await fetchDeleteAdminFaqTag(tagId);
             const tagList = await fetchAdminFaqTagList();
             setTags(tagList);
-            // 현재 선택된 태그가 삭제된 경우 선택 해제
             const deletedTag = tags.find(tag => tag.tag_id === tagId);
             if (deletedTag && value === deletedTag.name) {
                 onChange("");
             }
+            onSuccess?.("삭제 완료", "태그가 성공적으로 삭제되었습니다.");
         } catch (error) {
             console.error("태그 삭제 실패:", error);
-            // 에러 메시지가 있으면 그것을 사용하고, 없으면 기본 메시지 사용
             const errorMessage = error instanceof Error ? error.message : MODAL_MESSAGES.TAG_DELETE_ERROR.description;
-            showError(MODAL_MESSAGES.TAG_DELETE_ERROR.title, errorMessage);
+            onError?.(MODAL_MESSAGES.TAG_DELETE_ERROR.title, errorMessage);
         }
     };
 
@@ -182,22 +164,6 @@ export default function CustomDropDown({
                     description={MODAL_MESSAGES.TAG_INPUT_MODAL.description}
                     onClose={() => setShowInputModal(false)}
                     onSubmit={handleAddTag}
-                />
-            )}
-            {openSuccessModal && (
-                <ModalDefault
-                    type="default"
-                    label={successTitle}
-                    description={successDescription}
-                    onClose={closeSuccess}
-                />
-            )}
-            {openErrorModal && (
-                <ModalDefault
-                    type="default"
-                    label={errorTitle}
-                    description={errorDescription}
-                    onClose={closeError}
                 />
             )}
         </div>

@@ -333,6 +333,7 @@ export const createNotificationSSEWithHeaders = async (lastEventId?: number): Pr
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'text/event-stream',
+                'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache'
             },
             heartbeatTimeout: 120000,
