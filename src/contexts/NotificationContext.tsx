@@ -249,7 +249,7 @@ export function NotificationProvider({
             const response = await markNotificationAsRead(Number(id));
 
             if (response.success) {
-                if (filters.tab === '읽지 않음') {
+                if (filters.tab === '읽지 않음' || filters.tab === '전체') {
                     await loadPageData(currentPage, true);
                 } else {
                     setNotifications(prev =>
@@ -349,8 +349,12 @@ export function NotificationProvider({
 
     const refreshModalData = useCallback(async () => {
         try {
-            const isReadParam = false;
-            const response = await fetchNotificationList(isReadParam, 0, undefined, true);
+
+            let isReadParam: boolean | undefined;
+            if (filters.tab === '읽음') isReadParam = true;
+            else if (filters.tab === '읽지 않음') isReadParam = false;
+            const offset = (currentPage - 1) * itemsPerPage;
+            const response = await fetchNotificationList(isReadParam, offset, undefined, true);
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
@@ -360,7 +364,7 @@ export function NotificationProvider({
             await refetchUnreadCount();
         } catch (error) {
         }
-    }, [refetchUnreadCount]);
+    }, [filters.tab, currentPage, itemsPerPage, refetchUnreadCount]);
 
     const contextValue: NotificationContextType = {
         notifications,
