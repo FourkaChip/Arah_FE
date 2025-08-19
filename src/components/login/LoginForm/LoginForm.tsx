@@ -34,6 +34,7 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [verifyToken, setVerifyToken] = useState('');
     const [passwordError, setPasswordError] = useState(false);
+    const [emailError, setEmailError] = useState(false);
     const [showTokenModal, setShowTokenModal] = useState(false);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -41,6 +42,12 @@ export default function LoginForm() {
     const [showErrorModal, setShowErrorModal] = useState(false);
     // const [errorType, setErrorType] = useState<'email' | 'password' | 'verify'>('password');
     const [errorMessages, setErrorMessages] = useState<string[]>([]);
+
+    // 이메일 형식 유효성 검사 함수
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
     const handleCompanyInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
@@ -286,10 +293,26 @@ export default function LoginForm() {
                         type="email"
                         placeholder="이메일을 입력해 주세요."
                         value={email}
-                        className="login-form-input"
-                        onChange={(e) => setEmail(e.target.value)}
+                        className={`login-form-input ${emailError ? 'error' : ''}`}
+                        onChange={(e) => {
+                            const newEmail = e.target.value;
+                            setEmail(newEmail);
+                            
+                            // 이메일이 비어있지 않은 경우에만 유효성 검사
+                            if (newEmail.trim() !== '') {
+                                const isValid = validateEmail(newEmail);
+                                setEmailError(!isValid);
+                            } else {
+                                setEmailError(false);
+                            }
+                        }}
                         onInvalid={(e) => e.preventDefault()}
                     />
+                    {emailError && (
+                        <p className="login-form-error-message">
+                            이메일 형식이 맞지 않습니다
+                        </p>
+                    )}
                 </label>
 
                 <label className="login-form-label">
