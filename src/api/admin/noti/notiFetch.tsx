@@ -306,7 +306,8 @@ export const createNotificationSSEWithAuth = async (lastEventId?: number): Promi
                 'Accept': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'text/event-stream'
+                'Content-Type': 'text/event-stream',
+                'Accept-Encoding': 'identity'
             }
         }
     );
@@ -333,7 +334,9 @@ export const createNotificationSSEWithHeaders = async (lastEventId?: number): Pr
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'text/event-stream',
-                'Cache-Control': 'no-cache'
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Accept-Encoding': 'identity'
             },
             heartbeatTimeout: 120000,
             retryInterval: 1000

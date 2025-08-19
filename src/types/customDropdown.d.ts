@@ -14,6 +14,8 @@ export interface CustomDropDownTagProps {
     value: string;
     onChange: (value: string) => void;
     companyId: number;
+    onSuccess?: (title: string, message: string) => void;
+    onError?: (title: string, message: string) => void;
 }
 
 export interface TagDropdownState {
