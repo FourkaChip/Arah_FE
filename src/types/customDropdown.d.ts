@@ -12,6 +12,7 @@ export interface DropdownOption {
 
 export interface CustomDropDownTagProps {
     value: string;
+    options: string[];
     onChange: (value: string) => void;
     companyId: number;
 }
