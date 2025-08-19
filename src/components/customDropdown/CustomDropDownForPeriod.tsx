@@ -7,8 +7,8 @@ import type { OptionType, CustomDropDownForPeriodProps } from '@/types/analyze';
 export default function CustomDropDownForPeriod({value, onChange}: CustomDropDownForPeriodProps) {
     const options: OptionType[] = [
         {value: '시간별 보기', label: '시간별 보기'},
-        {value: '주별 보기', label: '주별 보기'},
         {value: '일별 보기', label: '일별 보기'},
+        {value: '주별 보기', label: '주별 보기'},
         {value: '월별 보기', label: '월별 보기'}
     ];
 

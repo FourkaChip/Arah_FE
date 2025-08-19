@@ -32,7 +32,7 @@ export type PeriodFeedbackData =
   | HourlyFeedbackData;
 
 // 피드백 추이 기간 타입
-export type FeedbackPeriod = '시간별 보기' | '주별 보기' | '일별 보기' | '월별 보기';
+export type FeedbackPeriod = '시간별 보기' | '일별 보기' | '주별 보기' | '월별 보기';
 
 // 피드백 유형 데이터 타입
 export interface FeedbackTypeData {

@@ -295,7 +295,9 @@ export default function FaqAdminTable() {
                                                         <strong>사유</strong>
                                                     </p>
                                                     <p className ="feedback-content feedback_reason-content">
-                                                        {row.original.feedback_content || row.original.feedback_reason || '사유 없음'}
+                                                        {row.original.feedback_content
+                                                            ? row.original.feedback_content
+                                                            : getFeedbackReasonKorean(row.original.feedback_reason)}
                                                     </p>
                                                 </div>
                                             </div>
