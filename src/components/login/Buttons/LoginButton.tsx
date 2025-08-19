@@ -5,7 +5,12 @@ import {LoginButtonProps} from "@/types/auth"; // globals.scss에 있는 스타�
 
 export default function LoginButton({ label, type, onClick, disabled }: LoginButtonProps) {
     return (
-        <button type="submit" onClick={onClick} className="common-button-login">
+        <button 
+            type={type} 
+            onClick={onClick} 
+            className="common-button-login" 
+            disabled={disabled}
+        >
             {label}
         </button>
     );

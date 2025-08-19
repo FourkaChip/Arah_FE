@@ -228,6 +228,26 @@ export default function LoginForm() {
 
     const isLoading = masterLoginMutation.isPending || adminLoginMutation.isPending || verifyMutation.isPending;
 
+    // 로그인 버튼 활성화 조건
+    const isLoginDisabled = () => {
+        // 로딩 중이면 비활성화
+        if (isLoading) return true;
+        
+        // 이메일이 비어있으면 비활성화
+        if (!email.trim()) return true;
+        
+        // 비밀번호가 비어있으면 비활성화
+        if (!password.trim()) return true;
+        
+        // 이메일 형식이 잘못되었으면 비활성화
+        if (emailError) return true;
+        
+        // 마스터 로그인인 경우 기업명도 체크
+        if (pathname === '/master/login' && !companyName.trim()) return true;
+        
+        return false;
+    };
+
     return (
         <>
             {isLoading && (
@@ -308,11 +328,9 @@ export default function LoginForm() {
                         }}
                         onInvalid={(e) => e.preventDefault()}
                     />
-                    {emailError && (
-                        <p className="login-form-error-message">
-                            이메일 형식이 맞지 않습니다
-                        </p>
-                    )}
+                    <p className="login-form-error-message">
+                        {emailError ? "이메일 형식이 맞지 않습니다" : ""}
+                    </p>
                 </label>
 
                 <label className="login-form-label">
@@ -359,7 +377,7 @@ export default function LoginForm() {
                 <LoginButton
                     label="로그인"
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoginDisabled()}
                 />
             </form>
 
