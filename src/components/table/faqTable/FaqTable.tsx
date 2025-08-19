@@ -99,7 +99,7 @@ export default function FaqAdminTable() {
                 setFaqData(
                     sortedData.map((faq: any, index: number) => ({
                         id: faq.faq_id,
-                        no: index + 1,
+                        // no: index + 1,
                         tag: faq.tag_name || "",
                         registeredAt: faq.created_at?.slice(0, 10) || "",
                         question: faq.question,
@@ -119,7 +119,7 @@ export default function FaqAdminTable() {
             const targetFaq = faqData.find(faq => faq.id.toString() === faqId);
 
             if (targetFaq) {
-                const sortedData = faqData.sort((a, b) => b.no - a.no);
+                const sortedData = faqData.sort((a, b) => ((b.no ?? 0) - (a.no ?? 0)));
                 const targetIndex = sortedData.findIndex(faq => faq.id.toString() === faqId);
 
                 if (targetIndex !== -1) {
@@ -370,7 +370,7 @@ export default function FaqAdminTable() {
             );
             setFaqData(sortedData.map((faq: any, index: number) => ({
                 id: faq.faq_id,
-                no: index + 1,
+                // no: index + 1,
                 tag: faq.tag_name || "",
                 registeredAt: faq.created_at?.slice(0, 10) || "",
                 question: faq.question,

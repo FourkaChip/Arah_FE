@@ -2,7 +2,7 @@
 
 export type RowData = {
     id: number;
-    no: number;
+    no?: number;
     tag: string;
     registeredAt: string;
     question: string;
