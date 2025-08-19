@@ -10,23 +10,39 @@ export default function Pagination({
 }: PaginationProps) {
   const pageItems = useMemo((): PageItem[] => {
     const items: PageItem[] = [];
-    const pagesPerGroup = 10;
     
-    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
-    
-    const startPage = currentGroup * pagesPerGroup + 1;
-    const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
-    
-    for (let i = startPage; i <= endPage; i++) {
-      items.push({
-        type: 'page',
-        page: i,
-        isActive: i === currentPage
-      });
+    // 10개 미만이면 모든 페이지 표시
+    if (totalPages <= 10) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push({
+          type: 'page',
+          page: i,
+          isActive: i === currentPage
+        });
+      }
+    } else {
+      // 10개 이상이면 10개 단위로 그룹화
+      const pagesPerGroup = 10;
+      const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+      const startPage = currentGroup * pagesPerGroup + 1;
+      const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        items.push({
+          type: 'page',
+          page: i,
+          isActive: i === currentPage
+        });
+      }
     }
 
     return items;
   }, [currentPage, totalPages]);
+
+  // 데이터가 없거나 페이지가 1개 이하면 페이지네이션을 표시하지 않음
+  if (totalPages <= 1) {
+    return null;
+  }
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
@@ -51,8 +67,10 @@ export default function Pagination({
 
   const pagesPerGroup = 10;
   const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
-  const hasNextGroup = (currentGroup + 1) * pagesPerGroup < totalPages;
-  const hasPrevGroup = currentGroup > 0;
+  
+  // 10개 미만이면 그룹 네비게이션 비활성화
+  const hasNextGroup = totalPages > 10 && (currentGroup + 1) * pagesPerGroup < totalPages;
+  const hasPrevGroup = totalPages > 10 && currentGroup > 0;
 
   return (
     <nav 

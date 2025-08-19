@@ -174,3 +174,32 @@ export const fetchAddAdminFaqTag = async (companyId: number, tagName: string) =>
 
     return data.result;
 }
+
+// FAQ 태그 삭제용 함수입니다.
+export const fetchDeleteAdminFaqTag = async (tag_id: number) => {
+    const res = await authorizedFetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ai/faq-tag/delete/${tag_id}`,
+        {
+            method: 'DELETE',
+        }
+    );
+    
+    if (!res.ok) {
+        try {
+            const errorData = await res.json();
+            if (errorData.detail) {
+                throw new Error(errorData.detail);
+            }
+            throw new Error('admin faq 태그 삭제 실패');
+        } catch (parseError) {
+            if (parseError instanceof Error && parseError.message !== 'admin faq 태그 삭제 실패') {
+                throw parseError;
+            }
+            throw new Error('admin faq 태그 삭제 실패');
+        }
+    }
+    
+    const data = await res.json();
+    clearFaqTagListCache();
+    return data.result;
+}

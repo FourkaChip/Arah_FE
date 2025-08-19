@@ -1,46 +1,124 @@
 import React, {useEffect, useState} from "react";
 import Select, {SingleValue} from "react-select";
-import {CustomDropDownProps} from "@/types/modals";
-import {fetchAdminFaqTagList, fetchAddAdminFaqTag, clearFaqTagListCache} from "@/api/admin/faq/faqFetch";
+import {fetchAdminFaqTagList, fetchAddAdminFaqTag, fetchDeleteAdminFaqTag} from "@/api/admin/faq/faqFetch";
 import ModalInput from "@/components/modal/ModalInput/ModalInput";
 import ModalDefault from "@/components/modal/ModalDefault/ModalDefault";
 import {useModalMessage} from "@/hooks/useModalMessage";
+import {Tag, DropdownOption, CustomDropDownTagProps} from "@/types/customDropdown";
+import {
+    DROPDOWN_ACTIONS,
+    DROPDOWN_LABELS,
+    MODAL_MESSAGES,
+    DELETE_BUTTON_SYMBOL
+} from "@/constants/customDropdownConfig";
+import "./CustomDropDown.scss";
 
 export default function CustomDropDown({
     value,
-    options: _options,
     onChange,
-    onAddOption,
     companyId,
-}: CustomDropDownProps & { companyId: number }) {
-    const [options, setOptions] = useState<string[]>(_options);
+}: CustomDropDownTagProps) {
+    const [tags, setTags] = useState<Tag[]>([]);
     const [showInputModal, setShowInputModal] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [dropdownKey] = useState(0);
     const {
+        openSuccessModal,
+        successTitle,
+        successDescription,
         openErrorModal,
+        errorTitle,
         errorDescription,
+        showSuccess,
         showError,
+        closeSuccess,
         closeError,
     } = useModalMessage();
 
     useEffect(() => {
         fetchAdminFaqTagList()
-            .then((tags) => {
-                const tagNames = tags.map((tag: any) => tag.name);
-                setOptions(tagNames);
+            .then((tagList) => {
+                setTags(tagList);
+            })
+            .catch((error) => {
+                console.error("태그 목록 조회 실패:", error);
+                showError(MODAL_MESSAGES.TAG_FETCH_ERROR.title, MODAL_MESSAGES.TAG_FETCH_ERROR.description);
             });
-    }, [companyId]);
+    }, [companyId, showError]);
 
-    const categoryOptions = [
-        ...options.map((cat) => ({value: cat, label: cat})),
-        {value: "add", label: "➕ 태그 추가"}
-    ];
+    const formatOptionLabel = (option: DropdownOption) => {
+        // 편집 모드에서 태그 삭제 버튼 표시
+        if (isEditMode && option.value !== DROPDOWN_ACTIONS.ADD && option.value !== DROPDOWN_ACTIONS.EDIT) {
+            const tag = tags.find(t => t.name === option.value);
+            
+            // 태그 ID를 추출
+            const tagId = tag?.tag_id;
+            
+            return (
+                <div className="dropdown-option-container">
+                    <span>{option.label}</span>
+                    <button
+                        className="delete-button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (tag && tagId) {
+                                handleDeleteTag(tagId);
+                            } else {
+                            }
+                        }}
+                    >
+                        {DELETE_BUTTON_SYMBOL}
+                    </button>
+                </div>
+            );
+        }
+        
+        // 특별한 액션들에 아이콘 추가
+        if (option.value === DROPDOWN_ACTIONS.ADD) {
+            return (
+                <span className="dropdown-option-add">
+                    <span style={{ marginRight: '8px' }}>➕</span>
+                    태그 추가
+                </span>
+            );
+        }
+        
+        if (option.value === DROPDOWN_ACTIONS.EDIT) {
+            return (
+                <span className="dropdown-option-with-icon">
+                    <span>태그 편집</span>
+                    <i className="fa-solid fa-gear"></i>
+                </span>
+            );
+        }
+        
+        return option.label;
+    };
+
+    const getCategoryOptions = (): DropdownOption[] => {
+        if (isEditMode) {
+            return [
+                ...tags.map((tag) => ({value: tag.name, label: tag.name})),
+                {value: DROPDOWN_ACTIONS.ADD, label: "태그 추가"}
+            ];
+        } else {
+            return [
+                ...tags.map((tag) => ({value: tag.name, label: tag.name})),
+                {value: DROPDOWN_ACTIONS.EDIT, label: "태그 편집"}
+            ];
+        }
+    };
 
     const selectedOption = value ? {value, label: value} : null;
 
-    const handleCategoryChange = (selected: SingleValue<{ value: string; label: string }>) => {
-        if (selected?.value === "add") {
+    const handleCategoryChange = (selected: SingleValue<DropdownOption>) => {
+        if (selected?.value === DROPDOWN_ACTIONS.ADD) {
             setShowInputModal(true);
-        } else {
+        } else if (selected?.value === DROPDOWN_ACTIONS.EDIT) {
+            setIsEditMode(true);
+            // 드롭다운을 닫지 않고 편집 모드로 전환
+        } else if (!isEditMode) {
             onChange(selected?.value ?? "");
         }
     };
@@ -48,53 +126,77 @@ export default function CustomDropDown({
     const handleAddTag = async (tagName: string) => {
         try {
             await fetchAddAdminFaqTag(companyId, tagName);
-            const tags = await fetchAdminFaqTagList();
-            const tagNames = tags.map((tag: any) => tag.name);
-            setOptions(tagNames);
+            const tagList = await fetchAdminFaqTagList();
+            setTags(tagList);
             onChange(tagName);
+            showSuccess("전송되었습니다", "태그가 성공적으로 등록되었습니다.");
+            // 편집 모드는 유지하되 모달만 닫기
         } catch {
-            showError("태그 등록에 실패했습니다.");
+            showError(MODAL_MESSAGES.TAG_ADD_ERROR.title, MODAL_MESSAGES.TAG_ADD_ERROR.description);
         } finally {
             setShowInputModal(false);
         }
     };
 
+    const handleDeleteTag = async (tagId: number) => {
+        try {
+            await fetchDeleteAdminFaqTag(tagId);
+            const tagList = await fetchAdminFaqTagList();
+            setTags(tagList);
+            // 현재 선택된 태그가 삭제된 경우 선택 해제
+            const deletedTag = tags.find(tag => tag.tag_id === tagId);
+            if (deletedTag && value === deletedTag.name) {
+                onChange("");
+            }
+        } catch (error) {
+            console.error("태그 삭제 실패:", error);
+            // 에러 메시지가 있으면 그것을 사용하고, 없으면 기본 메시지 사용
+            const errorMessage = error instanceof Error ? error.message : MODAL_MESSAGES.TAG_DELETE_ERROR.description;
+            showError(MODAL_MESSAGES.TAG_DELETE_ERROR.title, errorMessage);
+        }
+    };
+
     return (
-        <div style={{width: "30%"}}>
+        <div className="custom-dropdown-container">
             <Select
-                options={categoryOptions}
-                value={selectedOption}
+                className="basic-single"
+                classNamePrefix="select"
+                key={dropdownKey}
+                options={getCategoryOptions()}
+                value={isEditMode ? null : selectedOption}
                 onChange={handleCategoryChange}
-                placeholder="태그 선택"
+                placeholder={DROPDOWN_LABELS.SELECT_TAG}
                 isSearchable={false}
-                styles={{
-                    control: (base) => ({
-                        ...base,
-                        borderRadius: "6px",
-                        borderColor: "#ccc",
-                        minHeight: "38px"
-                    }),
-                    option: (base, state) => ({
-                        ...base,
-                        backgroundColor: state.isFocused ? "#f0f0f0" : "white",
-                        color: "#333",
-                        cursor: "pointer"
-                    })
+                formatOptionLabel={formatOptionLabel}
+                menuIsOpen={isEditMode ? true : undefined}
+                onMenuClose={() => {
+                    if (isEditMode) {
+                        setIsEditMode(false);
+                    }
                 }}
             />
             {showInputModal && (
                 <ModalInput
                     modalType="tag"
-                    title="태그 추가"
-                    description="새로운 태그 이름을 입력해 주세요."
+                    title={MODAL_MESSAGES.TAG_INPUT_MODAL.title}
+                    description={MODAL_MESSAGES.TAG_INPUT_MODAL.description}
                     onClose={() => setShowInputModal(false)}
                     onSubmit={handleAddTag}
+                />
+            )}
+            {openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={successTitle}
+                    description={successDescription}
+                    onClose={closeSuccess}
                 />
             )}
             {openErrorModal && (
                 <ModalDefault
                     type="default"
-                    label={errorDescription}
+                    label={errorTitle}
+                    description={errorDescription}
                     onClose={closeError}
                 />
             )}

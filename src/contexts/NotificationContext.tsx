@@ -10,6 +10,8 @@ import React, {
     useRef
 } from 'react';
 import {usePathname} from 'next/navigation';
+import {toast} from 'react-hot-toast';
+import './NotificationContext.scss';
 import {
     fetchNotificationList,
     fetchUnreadNotificationCount,
@@ -98,27 +100,36 @@ export function NotificationProvider({
         staleTime: 10000,
     });
 
+    const showToastNotification = useCallback((notification: ServerNotificationItem) => {
+        toast.success(
+            <div className="notification-toast-content">
+                <div className="notification-toast-header">
+                    <strong className="notification-toast-title">새 알림이 도착했습니다!</strong>
+                </div>
+                <div className="notification-toast-description">{notification.content.description}</div>
+            </div>,
+            {
+                duration: 5000,
+                position: 'top-right',
+                className: 'notification-toast',
+                icon: <i className="fa-solid fa-file notification-toast-icon"></i>,
+            }
+        );
+    }, []);
+
     const handleNewNotification = useCallback((serverNotification: ServerNotificationItem) => {
         try {
-            if (filters.tab === '전체' || filters.tab === '읽지 않음') {
-                const newNotification = transformServerDataToClient(serverNotification);
-
-                setNotifications(prev => {
-                    const exists = prev.some(item => item.id === newNotification.id);
-                    if (exists) {
-                        return prev;
-                    }
-
-                    const updated = [newNotification, ...prev];
-                    return updated;
-                });
-            }
-
+            // 캐시 무효화 (다음 새로고침 시 최신 데이터 보장)
             clearNotificationCache();
-            showNotificationToast?.(serverNotification);
+            
+            // 안읽음 카운트 즉시 업데이트
+            refetchUnreadCount();
+            showToastNotification(serverNotification);
+
+            // 알림 목록은 실시간 반영 x
         } catch (error) {
         }
-    }, [filters.tab, currentPage]);
+    }, [refetchUnreadCount, showToastNotification]);
 
     const handleConnectionOpen = useCallback(() => {
     }, []);
@@ -143,16 +154,6 @@ export function NotificationProvider({
             sseInitializedRef.current = true;
         }
     }, [isConnected]);
-
-    const showNotificationToast = useCallback((notification: ServerNotificationItem) => {
-        if (Notification.permission === 'granted') {
-            new Notification(`${notification.content.department}에서 알림`, {
-                body: notification.content.description,
-                icon: '/favicon.ico',
-                tag: `notification-${notification.id}`
-            });
-        }
-    }, []);
 
     useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -188,14 +189,22 @@ export function NotificationProvider({
                     refetchUnreadCount();
                     setHasNext(response.result.hasNext);
 
-                    setTotalPages((prev) => {
-                        if (transformed.length === 0) {
-                            return Math.max(page - 1, 1);
-                        }
-                        return response.result.hasNext
-                            ? Math.max(prev, page + 1)
-                            : Math.max(prev, page);
-                    });
+                    let calculatedTotalPages = 1;
+                    
+                    if (filters.tab === '전체') {
+                        calculatedTotalPages = response.result.totalPages;
+                    } else if (filters.tab === '읽지 않음') {
+                        calculatedTotalPages = Math.ceil(unreadCount / itemsPerPage);
+                    } else if (filters.tab === '읽음') {
+                        const readCount = response.result.totalCount - unreadCount;
+                        calculatedTotalPages = Math.ceil(readCount / itemsPerPage);
+                    }
+                    
+                    if (calculatedTotalPages === 0 || (transformed.length === 0 && page === 1)) {
+                        calculatedTotalPages = 1;
+                    }
+                    
+                    setTotalPages(calculatedTotalPages);
                 }
             } catch (error) {
                 setNotifications([]);
@@ -203,7 +212,7 @@ export function NotificationProvider({
                 setIsLoading(false);
             }
         },
-        [filters.tab, itemsPerPage]
+        [filters.tab, itemsPerPage, unreadCount, refetchUnreadCount]
     );
 
     const filteredNotifications = notifications;
