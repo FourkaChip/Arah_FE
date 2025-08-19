@@ -23,10 +23,15 @@ export default function CustomDropDown({
     const [isEditMode, setIsEditMode] = useState(false);
     const [dropdownKey] = useState(0);
     const {
+        openSuccessModal,
+        successTitle,
+        successDescription,
         openErrorModal,
         errorTitle,
         errorDescription,
+        showSuccess,
         showError,
+        closeSuccess,
         closeError,
     } = useModalMessage();
 
@@ -124,6 +129,7 @@ export default function CustomDropDown({
             const tagList = await fetchAdminFaqTagList();
             setTags(tagList);
             onChange(tagName);
+            showSuccess("전송되었습니다", "태그가 성공적으로 등록되었습니다.");
             // 편집 모드는 유지하되 모달만 닫기
         } catch {
             showError(MODAL_MESSAGES.TAG_ADD_ERROR.title, MODAL_MESSAGES.TAG_ADD_ERROR.description);
@@ -176,6 +182,14 @@ export default function CustomDropDown({
                     description={MODAL_MESSAGES.TAG_INPUT_MODAL.description}
                     onClose={() => setShowInputModal(false)}
                     onSubmit={handleAddTag}
+                />
+            )}
+            {openSuccessModal && (
+                <ModalDefault
+                    type="default"
+                    label={successTitle}
+                    description={successDescription}
+                    onClose={closeSuccess}
                 />
             )}
             {openErrorModal && (
