@@ -113,7 +113,7 @@ export default function CustomDropDown({
             const tagList = await fetchAdminFaqTagList();
             setTags(tagList);
             onChange(tagName);
-            onSuccess?.("수정 성공", "태그가 성공적으로 등록되었습니다.");
+            onSuccess?.("추가 성공", "태그가 성공적으로 추가되었습니다.");
         } catch {
             onError?.(MODAL_MESSAGES.TAG_ADD_ERROR.title, MODAL_MESSAGES.TAG_ADD_ERROR.description);
         } finally {
