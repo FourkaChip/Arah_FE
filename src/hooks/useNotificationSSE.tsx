@@ -102,6 +102,7 @@ export const useNotificationSSE = ({
                 'Cache-Control': 'no-cache',
                 'Content-Type': 'text/event-stream',
                 'Authorization': `Bearer ${token}`,
+                'Accept-Encoding': 'identity'
             };
 
             const es = new EventSourcePolyfill(
