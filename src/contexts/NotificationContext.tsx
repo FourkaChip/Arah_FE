@@ -349,12 +349,7 @@ export function NotificationProvider({
 
     const refreshModalData = useCallback(async () => {
         try {
-
-            let isReadParam: boolean | undefined;
-            if (filters.tab === '읽음') isReadParam = true;
-            else if (filters.tab === '읽지 않음') isReadParam = false;
-            const offset = (currentPage - 1) * itemsPerPage;
-            const response = await fetchNotificationList(isReadParam, offset, undefined, true);
+            const response = await fetchNotificationList(false, 0, itemsPerPage, true);
             if (response.success) {
                 const transformed = response.result.notificationResponseList.map(
                     transformServerDataToClient
@@ -364,7 +359,7 @@ export function NotificationProvider({
             await refetchUnreadCount();
         } catch (error) {
         }
-    }, [filters.tab, currentPage, itemsPerPage, refetchUnreadCount]);
+    }, [itemsPerPage, refetchUnreadCount]);
 
     const contextValue: NotificationContextType = {
         notifications,
